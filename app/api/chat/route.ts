@@ -134,7 +134,12 @@ export async function POST(req: NextRequest) {
         result => result.toolName === 'assessCrisis'
       );
 
-      const crisisAssessment = crisisToolResult?.result as { riskLevel: string; resources?: any; urgency?: string } | undefined;
+      // Access the result value from the tool execution
+      const crisisAssessment = crisisToolResult ? (crisisToolResult as any).result as {
+        riskLevel: string;
+        resources?: any;
+        urgency?: string
+      } | undefined : undefined;
 
       if (crisisAssessment && ['high', 'critical'].includes(crisisAssessment.riskLevel)) {
         console.log(`🆘 CRISIS DETECTED: ${crisisAssessment.riskLevel}`);

@@ -111,8 +111,8 @@ export function middleware(request: NextRequest) {
     'Content-Security-Policy': [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-inline needed for Next.js
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com data:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+      "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:",
       "img-src 'self' data: https:",
       "connect-src 'self' https://*.supabase.co https://api.openai.com https://api.elevenlabs.io",
       "media-src 'self' blob:",

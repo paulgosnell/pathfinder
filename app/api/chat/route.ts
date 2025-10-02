@@ -82,17 +82,24 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Extract or create user ID
-    userId = context?.userId || crypto.randomUUID();
+    // Extract user ID and session ID
+    userId = context?.userId;
     sessionId = context?.sessionId;
 
-    // Check for authenticated user
+    // Check for authenticated user - REQUIRED
     const supabase = await createServerClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
     
-    if (authUser) {
-      userId = authUser.id;
+    if (!authUser) {
+      return new Response(JSON.stringify({
+        message: "Authentication required. Please sign in to continue."
+      }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
+    
+    userId = authUser.id;
     
     // Ensure user record exists
     const serviceClient = createServiceClient();
@@ -114,10 +121,6 @@ export async function POST(req: NextRequest) {
     // Get or create session
     let session = sessionId ? await sessionManager.getSession(sessionId) : null;
     if (!session) {
-      // Ensure userId is defined before creating session
-      if (!userId) {
-        userId = crypto.randomUUID();
-      }
       session = await sessionManager.createSession(userId);
       sessionId = session.id;
     }
@@ -152,7 +155,7 @@ export async function POST(req: NextRequest) {
         // Track and return
         await performanceTracker.trackSession({
           sessionId: session.id,
-          userId: userId || 'anonymous',
+          userId: userId,
           totalTokens: crisisResult.usage?.totalTokens || 0,
           promptTokens: (crisisResult.usage as any)?.promptTokens || 0,
           completionTokens: (crisisResult.usage as any)?.completionTokens || 0,
@@ -220,7 +223,7 @@ export async function POST(req: NextRequest) {
     const therapeuticAgent = createProperToolsAgent();
     console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history`);
     const agentResult = await therapeuticAgent(message, {
-      userId: userId || 'anonymous',
+      userId: userId,
       sessionId: session.id,
       conversationHistory: conversationHistory || [],
       userProfile: userProfile ? {
@@ -263,7 +266,7 @@ export async function POST(req: NextRequest) {
     const responseTime = Date.now() - startTime;
     await performanceTracker.trackSession({
       sessionId: session.id,
-      userId: userId || 'anonymous',
+      userId: userId,
       totalTokens: agentResult.usage?.totalTokens || 0,
       promptTokens: (agentResult.usage as any)?.promptTokens || 0,
       completionTokens: (agentResult.usage as any)?.completionTokens || 0,

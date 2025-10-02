@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { createBrowserClient } from '@supabase/ssr';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/lib/auth/auth-context';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -41,33 +42,19 @@ const markdownComponents: Components = {
   br: () => <br />
 };
 
-export default function ADHDSupportChat() {
+function ADHDSupportChat() {
+  const { user, signOut } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'assistant', 
-      content: "Hello" 
+      content: "Hello! I'm here to help you with ADHD parenting challenges. What's on your mind today?" 
     }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string>();
-  const [userId, setUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
-
-  // Initialize Supabase client and get user
-  useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setUserId(user.id);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,7 +76,7 @@ export default function ADHDSupportChat() {
         body: JSON.stringify({
           message: textToSend,
           context: {
-            userId: userId || crypto.randomUUID(),
+            userId: user?.id,
             sessionId: sessionId
           }
         })
@@ -188,6 +175,20 @@ export default function ADHDSupportChat() {
                 Your AI therapeutic companion
               </p>
             </div>
+            
+            {/* Logout Button */}
+            <button
+              onClick={signOut}
+              className="text-xs px-3 py-1 rounded-full border transition-all hover:scale-105"
+              style={{
+                color: '#586C8E',
+                borderColor: 'rgba(215, 205, 236, 0.3)',
+                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif"
+              }}
+            >
+              Sign Out
+            </button>
           </div>
         </div>
         
@@ -355,5 +356,13 @@ export default function ADHDSupportChat() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <ProtectedRoute>
+      <ADHDSupportChat />
+    </ProtectedRoute>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Quicksand, Inter } from 'next/font/google'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { AuthProvider } from '@/lib/auth/auth-context'
 import './globals.css'
 
 // Import Quicksand font for headings
@@ -38,7 +39,9 @@ export default function RootLayout({
       </head>
       <body style={{ fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif" }} className="bg-cream text-navy antialiased">
         <ErrorBoundary>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ErrorBoundary>
       </body>
     </html>

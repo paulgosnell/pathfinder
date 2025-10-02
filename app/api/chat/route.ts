@@ -130,9 +130,11 @@ export async function POST(req: NextRequest) {
       const crisisAgent = createCrisisToolsAgent();
       const crisisResult = await crisisAgent(message, []);
       
-      const crisisAssessment = crisisResult?.toolResults?.find(
+      const crisisToolResult = crisisResult?.toolResults?.find(
         result => result.toolName === 'assessCrisis'
-      )?.result;
+      );
+
+      const crisisAssessment = crisisToolResult?.result as { riskLevel: string; resources?: any; urgency?: string } | undefined;
 
       if (crisisAssessment && ['high', 'critical'].includes(crisisAssessment.riskLevel)) {
         console.log(`🆘 CRISIS DETECTED: ${crisisAssessment.riskLevel}`);

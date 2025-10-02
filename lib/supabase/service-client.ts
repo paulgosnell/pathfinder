@@ -12,7 +12,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 }
 
 export function createServiceClient() {
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient(supabaseUrl!, serviceRoleKey!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false

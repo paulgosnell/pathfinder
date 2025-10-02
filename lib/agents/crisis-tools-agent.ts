@@ -80,23 +80,7 @@ export const createCrisisToolsAgent = () => {
             };
           }
         })
-      },
-
-      // Enhanced stopping conditions
-      stopWhen: ({ steps, stepCount }) => {
-        const crisisAssessed = steps?.some(step => 
-          step.toolCalls?.some(call => call.toolName === 'assessCrisis')
-        ) || false;
-        
-        const emergencyTriggered = steps?.some(step => 
-          step.toolCalls?.some(call => call.toolName === 'triggerEmergencyResponse')
-        ) || false;
-        
-        // Stop after crisis assessment or emergency trigger, or prevent loops
-        return crisisAssessed || emergencyTriggered || stepCount >= 3;
-      },
-
-      maxSteps: 3 // Crisis detection should be fast
+      }
       });
 
       // Log crisis agent usage

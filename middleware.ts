@@ -46,7 +46,7 @@ function rateLimit(ip: string, limit: number): { limited: boolean; remaining: nu
  */
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, data] of rateLimitMap.entries()) {
+  for (const [ip, data] of Array.from(rateLimitMap.entries())) {
     if (now > data.resetTime) {
       rateLimitMap.delete(ip);
     }
@@ -57,7 +57,7 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Get client IP
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
   // Apply stricter rate limiting to API routes
   const isApiRoute = request.nextUrl.pathname.startsWith('/api/');

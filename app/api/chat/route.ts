@@ -114,6 +114,10 @@ export async function POST(req: NextRequest) {
     // Get or create session
     let session = sessionId ? await sessionManager.getSession(sessionId) : null;
     if (!session) {
+      // Ensure userId is defined before creating session
+      if (!userId) {
+        userId = crypto.randomUUID();
+      }
       session = await sessionManager.createSession(userId);
       sessionId = session.id;
     }

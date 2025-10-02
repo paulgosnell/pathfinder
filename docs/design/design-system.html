@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADHD Support Agent - Design System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/atkinson-hyperlegible@1.0.2/stylesheet.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --color-cream: #F9F7F3;
+      --color-sage: #E3EADD;
+      --color-lavender: #D7CDEC;
+      --color-teal: #B7D3D8;
+      --color-blush: #F0D9DA;
+      --color-coral: #E6A897;
+      --color-navy: #2A3F5A;
+      --color-slate: #586C8E;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Atkinson Hyperlegible', sans-serif;
+      color: var(--color-navy);
+      background-color: var(--color-cream);
+      line-height: 1.6;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 0 5px 20px rgba(42, 63, 90, 0.05);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Quicksand', sans-serif;
+      color: var(--color-navy);
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-size: 24px;
+      margin-top: 60px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--color-lavender);
+      padding-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 20px;
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    /* Color Palette */
+    .color-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .color-swatch {
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-5px);
+    }
+
+    .color-swatch p {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .color-swatch .hex {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* Typography */
+    .typography-section {
+      margin: 40px 0;
+    }
+
+    .heading-sample h1 { font-size: 32px; margin-bottom: 10px; }
+    .heading-sample h2 { font-size: 24px; margin-bottom: 10px; border-bottom: none; padding-bottom: 0; }
+    .heading-sample h3 { font-size: 20px; margin-bottom: 10px; }
+    .heading-sample h4 { font-size: 18px; margin-bottom: 10px; }
+
+    .text-sample {
+      max-width: 800px;
+      margin-bottom: 30px;
+    }
+
+    .text-sample p {
+      margin-bottom: 10px;
+    }
+
+    .text-secondary {
+      color: var(--color-slate);
+    }
+
+    /* Components */
+    .components-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .components-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .component-card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(42, 63, 90, 0.07);
+      padding: 20px;
+      border: 1px solid rgba(215, 205, 236, 0.2);
+    }
+
+    .component-title {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    /* Chat Bubbles */
+    .chat-container {
+      max-width: 100%;
+      background-color: rgba(249, 247, 243, 0.5);
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .chat-message {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .user-message {
+      justify-content: flex-end;
+    }
+
+    .assistant-message {
+      justify-content: flex-start;
+    }
+
+    .message-bubble {
+      max-width: 80%;
+      padding: 15px 20px;
+      box-shadow: 0 2px 5px rgba(42, 63, 90, 0.05);
+    }
+
+    .user-bubble {
+      background-color: var(--color-teal);
+      color: var(--color-navy);
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .assistant-bubble {
+      background-color: var(--color-sage);
+      color: var(--color-navy);
+      border-radius: 18px 18px 18px 4px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-lavender);
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: pulseDot 1.5s infinite ease-in-out;
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Input Field */
+    .input-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      background-color: rgba(249, 247, 243, 0.5);
+      border-radius: 16px;
+      border-top: 1px solid rgba(215, 205, 236, 0.1);
+    }
+
+    .input-field {
+      flex-grow: 1;
+      background-color: white;
+      border-radius: 50px;
+      border: 1px solid rgba(215, 205, 236, 0.2);
+      padding: 12px 20px;
+      box-shadow: inset 0 2px 4px rgba(42, 63, 90, 0.03);
+      color: var(--color-navy);
+      font-family: 'Atkinson Hyperlegible', sans-serif;
+    }
+
+    .send-button {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to right, var(--color-lavender), var(--color-teal));
+      border-radius: 50%;
+      color: var(--color-navy);
+      transition: transform 0.2s ease;
+    }
+
+    .send-button:hover {
+      transform: scale(1.05);
+    }
+
+    /* Strategy Card */
+    .strategy-card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(42, 63, 90, 0.08);
+      border: 1px solid rgba(215, 205, 236, 0.2);
+      overflow: hidden;
+    }
+
+    .strategy-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(215, 205, 236, 0.1);
+    }
+
+    .strategy-header h3 {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .strategy-header p {
+      color: var(--color-slate);
+      margin: 8px 0 0;
+      font-size: 14px;
+    }
+
+    .strategy-content {
+      padding: 20px;
+    }
+
+    .strategy-content h4 {
+      margin: 15px 0 10px;
+      font-size: 16px;
+    }
+
+    .strategy-content ul {
+      padding-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    .strategy-footer {
+      background-color: var(--color-sage);
+      padding: 15px 20px;
+    }
+
+    .strategy-footer p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Header Component */
+    .header-component {
+      background: linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7));
+      padding: 20px;
+      border-radius: 16px 16px 0 0;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .header-component h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .header-component p {
+      margin: 5px 0 0;
+      color: var(--color-slate);
+      font-size: 14px;
+    }
+
+    .header-illustration {
+      position: absolute;
+      right: -20px;
+      bottom: -20px;
+      width: 100px;
+      height: 100px;
+      opacity: 0.2;
+    }
+
+    /* Button Styles */
+    .buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 50px;
+      color: var(--color-navy);
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(42, 63, 90, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--color-lavender), var(--color-teal));
+      box-shadow: 0 2px 5px rgba(42, 63, 90, 0.1);
+    }
+
+    .btn-secondary {
+      background: white;
+      box-shadow: 0 2px 5px rgba(42, 63, 90, 0.05);
+      border: 1px solid rgba(215, 205, 236, 0.3);
+    }
+
+    .btn-cta {
+      background: linear-gradient(to right, var(--color-coral), var(--color-blush));
+      box-shadow: 0 2px 5px rgba(42, 63, 90, 0.1);
+    }
+
+    /* Background Textures */
+    .textures-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .texture-swatch {
+      width: 200px;
+      height: 100px;
+      border-radius: 8px;
+      text-align: center;
+      padding-top: 40px;
+      color: var(--color-navy);
+      box-shadow: 0 2px 5px rgba(42, 63, 90, 0.05);
+    }
+
+    .texture-noise {
+      background-color: var(--color-cream);
+      position: relative;
+    }
+
+    .texture-noise::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='a' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath filter='url(%23a)' opacity='.05' d='M0 0h200v200H0z'/%3E%3C/svg%3E");
+    }
+
+    .texture-watercolor {
+      background: linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7));
+    }
+
+    .texture-dots {
+      background-color: white;
+      position: relative;
+    }
+
+    .texture-dots::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(var(--color-slate) 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0.1;
+    }
+
+    /* Full UI Example */
+    .ui-example {
+      max-width: 400px;
+      margin: 30px auto;
+      background-color: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(42, 63, 90, 0.1);
+      border: 1px solid rgba(215, 205, 236, 0.2);
+    }
+
+    .ui-header {
+      background: linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7));
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .ui-header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .ui-header p {
+      margin: 5px 0 0;
+      color: var(--color-slate);
+      font-size: 14px;
+    }
+
+    .ui-chat-area {
+      height: 300px;
+      padding: 20px;
+      background-color: var(--color-cream);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+    }
+
+    .ui-chat-area::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='a' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath filter='url(%23a)' opacity='.05' d='M0 0h200v200H0z'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .ui-input-area {
+      padding: 15px;
+      border-top: 1px solid rgba(215, 205, 236, 0.1);
+      background-color: white;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+      
+      .components-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ADHD Support Agent Design System</h1>
+    
+    <section>
+      <h2>Color Palette</h2>
+      <div class="color-palette">
+        <div class="color-swatch" style="background-color: #F9F7F3;">
+          <p>Cream</p>
+          <p class="hex">#F9F7F3</p>
+        </div>
+        <div class="color-swatch" style="background-color: #E3EADD;">
+          <p>Sage</p>
+          <p class="hex">#E3EADD</p>
+        </div>
+        <div class="color-swatch" style="background-color: #D7CDEC;">
+          <p>Lavender</p>
+          <p class="hex">#D7CDEC</p>
+        </div>
+        <div class="color-swatch" style="background-color: #B7D3D8;">
+          <p>Teal</p>
+          <p class="hex">#B7D3D8</p>
+        </div>
+        <div class="color-swatch" style="background-color: #F0D9DA;">
+          <p>Blush</p>
+          <p class="hex">#F0D9DA</p>
+        </div>
+        <div class="color-swatch" style="background-color: #E6A897;">
+          <p>Coral</p>
+          <p class="hex">#E6A897</p>
+        </div>
+        <div class="color-swatch" style="background-color: #2A3F5A; color: white;">
+          <p>Navy</p>
+          <p class="hex">#2A3F5A</p>
+        </div>
+        <div class="color-swatch" style="background-color: #586C8E; color: white;">
+          <p>Slate</p>
+          <p class="hex">#586C8E</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Typography</h2>
+      
+      <div class="typography-section">
+        <h3>Headings (Quicksand)</h3>
+        <div class="heading-sample">
+          <h1>Heading 1 (32px)</h1>
+          <h2>Heading 2 (24px)</h2>
+          <h3>Heading 3 (20px)</h3>
+          <h4>Heading 4 (18px)</h4>
+        </div>
+      </div>
+      
+      <div class="typography-section">
+        <h3>Body Text (Atkinson Hyperlegible)</h3>
+        <div class="text-sample">
+          <p>Primary body text is set in Atkinson Hyperlegible at 16px with a line height of 1.6. This font was specifically designed to increase legibility for readers with low vision, and it's also excellent for those with dyslexia or other visual processing challenges.</p>
+          <p class="text-secondary">Secondary text is displayed in our slate color to create visual hierarchy without losing readability.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Components</h2>
+      
+      <div class="components-grid">
+        <div class="component-card">
+          <h3 class="component-title">Chat Bubbles</h3>
+          <div class="chat-container">
+            <!-- User Message -->
+            <div class="chat-message user-message">
+              <div class="message-bubble user-bubble">
+                <p>My 8-year-old takes forever to get ready for school every morning.</p>
+              </div>
+            </div>
+            
+            <!-- Assistant Message -->
+            <div class="chat-message assistant-message">
+              <div class="message-bubble assistant-bubble">
+                <p>I understand how frustrating morning routines can be. Have you tried using a visual schedule to help your child stay on track?</p>
+              </div>
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="chat-message assistant-message">
+              <div class="message-bubble assistant-bubble">
+                <div class="typing-indicator">
+                  <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                  </div>
+                  <span style="font-size: 14px; color: var(--color-slate);">Thinking...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="component-card">
+          <h3 class="component-title">Input Field and Button</h3>
+          <div class="input-container">
+            <div class="input-field">Share what's on your mind...</div>
+            <div class="send-button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div class="component-card">
+          <h3 class="component-title">Strategy Card</h3>
+          <div class="strategy-card">
+            <div class="strategy-header">
+              <h3>Visual Morning Routine Chart</h3>
+              <p>For ages 5-8</p>
+            </div>
+            <div class="strategy-content">
+              <p>Create a visual step-by-step morning routine chart with pictures to help your child stay on track.</p>
+              <h4>Implementation Steps:</h4>
+              <ul>
+                <li>Take photos of your child doing each morning task</li>
+                <li>Create a laminated chart with pictures in sequence</li>
+                <li>Use checkboxes or velcro stars for completion</li>
+                <li>Place chart at child's eye level in bedroom</li>
+              </ul>
+            </div>
+            <div class="strategy-footer">
+              <p>Timeframe: 1-2 weeks to establish</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="component-card">
+          <h3 class="component-title">Header Component</h3>
+          <div class="header-component">
+            <div style="position: relative; z-index: 1;">
+              <h1>ADHD Support</h1>
+              <p>Your AI therapeutic companion</p>
+            </div>
+            <div class="header-illustration">
+              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#D7CDEC" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,89.9,-16.3,88.6,-0.7C87.3,14.8,82.2,29.7,74.1,43.1C66.1,56.5,55.1,68.5,41.9,74.7C28.7,80.9,14.4,81.3,-0.3,81.9C-14.9,82.4,-29.8,83.1,-43.2,77.2C-56.5,71.2,-68.3,58.7,-76.9,44.3C-85.6,29.8,-91.1,14.9,-91.6,-0.3C-92.2,-15.5,-87.8,-31.1,-79.4,-43.9C-70.9,-56.7,-58.4,-66.9,-44.5,-74.3C-30.5,-81.8,-15.3,-86.6,-0.1,-86.5C15.2,-86.4,30.5,-83.5,44.7,-76.4Z" transform="translate(100 100)" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="component-card" style="margin-top: 30px;">
+        <h3 class="component-title">Button Styles</h3>
+        <div class="buttons-container">
+          <!-- Primary Button -->
+          <div class="btn btn-primary">Primary Button</div>
+          
+          <!-- Secondary Button -->
+          <div class="btn btn-secondary">Secondary Button</div>
+          
+          <!-- Call to Action -->
+          <div class="btn btn-cta">Call to Action</div>
+        </div>
+      </div>
+      
+      <div class="component-card" style="margin-top: 30px;">
+        <h3 class="component-title">Background Textures</h3>
+        <div class="textures-container">
+          <!-- Main Background -->
+          <div class="texture-swatch texture-noise">
+            Noise Texture
+          </div>
+          
+          <!-- Watercolor Header -->
+          <div class="texture-swatch texture-watercolor">
+            Watercolor Gradient
+          </div>
+          
+          <!-- Dot Pattern -->
+          <div class="texture-swatch texture-dots">
+            Dot Pattern
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section>
+      <h2>User Interface Example</h2>
+      <div class="ui-example">
+        <!-- Header -->
+        <div class="ui-header">
+          <div style="position: relative; z-index: 1;">
+            <h1>ADHD Support</h1>
+            <p>Your AI therapeutic companion</p>
+          </div>
+          <div class="header-illustration">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#D7CDEC" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,89.9,-16.3,88.6,-0.7C87.3,14.8,82.2,29.7,74.1,43.1C66.1,56.5,55.1,68.5,41.9,74.7C28.7,80.9,14.4,81.3,-0.3,81.9C-14.9,82.4,-29.8,83.1,-43.2,77.2C-56.5,71.2,-68.3,58.7,-76.9,44.3C-85.6,29.8,-91.1,14.9,-91.6,-0.3C-92.2,-15.5,-87.8,-31.1,-79.4,-43.9C-70.9,-56.7,-58.4,-66.9,-44.5,-74.3C-30.5,-81.8,-15.3,-86.6,-0.1,-86.5C15.2,-86.4,30.5,-83.5,44.7,-76.4Z" transform="translate(100 100)" />
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="ui-chat-area">
+          <!-- Assistant Message -->
+          <div class="chat-message assistant-message">
+            <div class="message-bubble assistant-bubble">
+              <p>Hey there! I'm your ADHD support agent. Whether you're overwhelmed, curious, or just need to talk it out, I can help.</p>
+            </div>
+          </div>
+          
+          <!-- User Message -->
+          <div class="chat-message user-message">
+            <div class="message-bubble user-bubble">
+              <p>My 8-year-old takes forever to get ready for school every morning.</p>
+            </div>
+          </div>
+          
+          <!-- Assistant Message -->
+          <div class="chat-message assistant-message">
+            <div class="message-bubble assistant-bubble">
+              <p>I understand how frustrating morning routines can be with ADHD children. Would you like me to suggest some strategies that could help make mornings smoother?</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="ui-input-area">
+          <div class="input-container" style="padding: 0;">
+            <div class="input-field">Yes, please share some strategies...</div>
+            <div class="send-button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

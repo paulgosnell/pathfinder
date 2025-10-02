@@ -83,13 +83,13 @@ export const createCrisisToolsAgent = () => {
       },
 
       // Enhanced stopping conditions
-      stopWhen: ({ toolResults, stepCount }) => {
-        const crisisAssessed = toolResults?.some(result => 
-          result.toolName === 'assessCrisis'
+      stopWhen: ({ steps, stepCount }) => {
+        const crisisAssessed = steps?.some(step => 
+          step.toolCalls?.some(call => call.toolName === 'assessCrisis')
         ) || false;
         
-        const emergencyTriggered = toolResults?.some(result => 
-          result.toolName === 'triggerEmergencyResponse'
+        const emergencyTriggered = steps?.some(step => 
+          step.toolCalls?.some(call => call.toolName === 'triggerEmergencyResponse')
         ) || false;
         
         // Stop after crisis assessment or emergency trigger, or prevent loops

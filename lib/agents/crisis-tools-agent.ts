@@ -4,18 +4,9 @@ import { z } from 'zod';
 
 export const createCrisisToolsAgent = () => {
   return async (message: string, sessionHistory: any[]) => {
-    const result = await generateText({
-      model: openai('gpt-4o-mini'),
-      
-      // Enhanced error handling
-      onError({ error, prompt, settings }) {
-        console.error('Crisis Agent error:', {
-          error: error.message,
-          timestamp: new Date().toISOString(),
-          model: settings.model,
-          messageLength: message.length
-        });
-      },
+    try {
+      const result = await generateText({
+        model: openai('gpt-4o-mini'),
       system: `You are a crisis detection specialist for parents of ADHD children. 
       
       Your primary responsibility is to assess for:
@@ -106,17 +97,31 @@ export const createCrisisToolsAgent = () => {
       },
 
       maxSteps: 3 // Crisis detection should be fast
-    });
-
-    // Log crisis agent usage
-    if (result.usage) {
-      console.log('Crisis Agent usage:', {
-        totalTokens: result.usage.totalTokens,
-        timestamp: new Date().toISOString(),
-        toolsUsed: result.toolResults?.length || 0
       });
-    }
 
-    return result;
+      // Log crisis agent usage
+      if (result.usage) {
+        console.log('Crisis Agent usage:', {
+          totalTokens: result.usage.totalTokens,
+          timestamp: new Date().toISOString(),
+          toolsUsed: result.toolResults?.length || 0
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Crisis Agent error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+        messageLength: message.length
+      });
+      
+      // Return a fallback response for crisis detection
+      return {
+        text: 'I\'m experiencing technical difficulties. If you\'re in crisis, please contact emergency services at 999 or Samaritans at 116 123.',
+        toolResults: [],
+        usage: { totalTokens: 0 }
+      };
+    }
   };
 };

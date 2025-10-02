@@ -152,10 +152,10 @@ export async function POST(req: NextRequest) {
         // Track and return
         await performanceTracker.trackSession({
           sessionId: session.id,
-          userId: userId,
+          userId: userId || 'anonymous',
           totalTokens: crisisResult.usage?.totalTokens || 0,
-          promptTokens: crisisResult.usage?.promptTokens || 0,
-          completionTokens: crisisResult.usage?.completionTokens || 0,
+          promptTokens: (crisisResult.usage as any)?.promptTokens || 0,
+          completionTokens: (crisisResult.usage as any)?.completionTokens || 0,
           toolsUsed: crisisResult.toolResults?.length || 0,
           responseTimeMs: Date.now() - startTime,
           successfulCompletion: true,
@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
     const therapeuticAgent = createProperToolsAgent();
     console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history`);
     const agentResult = await therapeuticAgent(message, {
-      userId: userId,
+      userId: userId || 'anonymous',
       sessionId: session.id,
       conversationHistory: conversationHistory || [],
       userProfile: userProfile ? {
@@ -263,10 +263,10 @@ export async function POST(req: NextRequest) {
     const responseTime = Date.now() - startTime;
     await performanceTracker.trackSession({
       sessionId: session.id,
-      userId: userId,
+      userId: userId || 'anonymous',
       totalTokens: agentResult.usage?.totalTokens || 0,
-      promptTokens: agentResult.usage?.promptTokens || 0,
-      completionTokens: agentResult.usage?.completionTokens || 0,
+      promptTokens: (agentResult.usage as any)?.promptTokens || 0,
+      completionTokens: (agentResult.usage as any)?.completionTokens || 0,
       toolsUsed: 0,
       responseTimeMs: responseTime,
       successfulCompletion: true,
@@ -283,8 +283,8 @@ export async function POST(req: NextRequest) {
       usage: {
         totalTokens: agentResult.usage?.totalTokens,
         cost: performanceTracker.calculateCost(
-          agentResult.usage?.promptTokens || 0,
-          agentResult.usage?.completionTokens || 0
+          (agentResult.usage as any)?.promptTokens || 0,
+          (agentResult.usage as any)?.completionTokens || 0
         )
       },
       timestamp: new Date().toISOString()

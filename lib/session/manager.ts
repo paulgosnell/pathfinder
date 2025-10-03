@@ -8,9 +8,14 @@ export interface SessionState {
   crisisLevel: string;
   startedAt: Date;
   lastActivity: Date;
-  discoveryPhaseComplete?: boolean;
-  questionsAsked?: number;
-  contextGathered?: Record<string, any>;
+  // Coaching phases - track where we are in GROW model
+  currentPhase: 'goal' | 'reality' | 'options' | 'will' | 'closing';
+  realityExplorationDepth: number;      // How many exchanges in Reality phase
+  emotionsReflected: boolean;           // Have we validated feelings?
+  exceptionsExplored: boolean;          // Have we asked about when it works?
+  strengthsIdentified: string[];        // What's working well
+  parentGeneratedIdeas: string[];       // Their ideas, not ours
+  readyForOptions: boolean;             // Only true after thorough Reality exploration
   currentChallenge?: string;
   parentStressLevel?: string;
 }
@@ -35,9 +40,13 @@ class SessionManager {
       therapeuticGoal: undefined,
       startedAt,
       lastActivity: startedAt,
-      discoveryPhaseComplete: false,
-      questionsAsked: 0,
-      contextGathered: {}
+      currentPhase: 'goal',
+      realityExplorationDepth: 0,
+      emotionsReflected: false,
+      exceptionsExplored: false,
+      strengthsIdentified: [],
+      parentGeneratedIdeas: [],
+      readyForOptions: false
     };
   }
 
@@ -56,16 +65,32 @@ class SessionManager {
       payload.crisis_level = updates.crisisLevel;
     }
 
-    if (updates.discoveryPhaseComplete !== undefined) {
-      payload.discovery_phase_complete = updates.discoveryPhaseComplete;
+    if (updates.currentPhase !== undefined) {
+      payload.current_phase = updates.currentPhase;
     }
 
-    if (updates.questionsAsked !== undefined) {
-      payload.questions_asked = updates.questionsAsked;
+    if (updates.realityExplorationDepth !== undefined) {
+      payload.reality_exploration_depth = updates.realityExplorationDepth;
     }
 
-    if (updates.contextGathered !== undefined) {
-      payload.context_gathered = updates.contextGathered;
+    if (updates.emotionsReflected !== undefined) {
+      payload.emotions_reflected = updates.emotionsReflected;
+    }
+
+    if (updates.exceptionsExplored !== undefined) {
+      payload.exceptions_explored = updates.exceptionsExplored;
+    }
+
+    if (updates.strengthsIdentified !== undefined) {
+      payload.strengths_identified = updates.strengthsIdentified;
+    }
+
+    if (updates.parentGeneratedIdeas !== undefined) {
+      payload.parent_generated_ideas = updates.parentGeneratedIdeas;
+    }
+
+    if (updates.readyForOptions !== undefined) {
+      payload.ready_for_options = updates.readyForOptions;
     }
 
     if (updates.currentChallenge !== undefined) {
@@ -95,9 +120,13 @@ class SessionManager {
       crisisLevel: session.crisis_level || 'none',
       startedAt: new Date(session.started_at),
       lastActivity: new Date(session.updated_at || session.started_at),
-      discoveryPhaseComplete: session.discovery_phase_complete || false,
-      questionsAsked: session.questions_asked || 0,
-      contextGathered: session.context_gathered || {},
+      currentPhase: session.current_phase || 'goal',
+      realityExplorationDepth: session.reality_exploration_depth || 0,
+      emotionsReflected: session.emotions_reflected || false,
+      exceptionsExplored: session.exceptions_explored || false,
+      strengthsIdentified: session.strengths_identified || [],
+      parentGeneratedIdeas: session.parent_generated_ideas || [],
+      readyForOptions: session.ready_for_options || false,
       currentChallenge: session.current_challenge || undefined,
       parentStressLevel: session.parent_stress_level || undefined
     };

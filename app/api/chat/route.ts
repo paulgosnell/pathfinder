@@ -217,11 +217,17 @@ export async function POST(req: NextRequest) {
       console.log(`   Sample: ${conversationHistory[0].role}: ${conversationHistory[0].content.substring(0, 50)}...`);
     }
 
-    // STEP 4: Run main agent
-    console.log('🤖 Running ADHD support agent...');
+    // STEP 4: Run main coaching agent
+    console.log('🤖 Running ADHD coaching agent...');
 
     const therapeuticAgent = createProperToolsAgent();
     console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history`);
+
+    // Calculate Reality phase depth (non-crisis messages in current session)
+    const realityDepth = conversationHistory?.filter(m =>
+      m.role === 'assistant' && !m.content.includes('999') && !m.content.includes('crisis')
+    ).length || 0;
+
     const agentResult = await therapeuticAgent(message, {
       userId: userId,
       sessionId: session.id,
@@ -234,6 +240,14 @@ export async function POST(req: NextRequest) {
         failedStrategies: userProfile.failed_strategies || [],
         parentStressLevel: userProfile.parent_stress_level,
       } : undefined,
+      // Add coaching state
+      sessionState: {
+        currentPhase: session.currentPhase || 'goal',
+        realityExplorationDepth: realityDepth,
+        emotionsReflected: session.emotionsReflected || false,
+        exceptionsExplored: session.exceptionsExplored || false,
+        readyForOptions: session.readyForOptions || false
+      }
     });
 
     console.log(`   Agent result received: ${agentResult ? 'success' : 'failed'}`);
@@ -241,7 +255,28 @@ export async function POST(req: NextRequest) {
       console.log(`   Response length: ${agentResult.text.length} characters`);
     }
 
-    // STEP 5: Save conversation to database (using service client to bypass RLS)
+    // STEP 5: Update session state based on conversation depth
+    console.log('📊 Updating coaching session state...');
+
+    // Increment reality exploration depth (each exchange counts)
+    const newRealityDepth = realityDepth + 1;
+
+    // Check if we've had enough exploration to move to Options
+    const minRealityDepth = 10; // Minimum 10 exchanges in Reality
+    const canMoveToOptions = newRealityDepth >= minRealityDepth;
+
+    // Update session with new coaching state
+    await sessionManager.updateSession(session.id, {
+      realityExplorationDepth: newRealityDepth,
+      readyForOptions: canMoveToOptions,
+      // Keep current phase unless explicitly changed
+      currentPhase: session.currentPhase || 'reality'
+    });
+
+    console.log(`   Reality depth: ${newRealityDepth} exchanges`);
+    console.log(`   Ready for Options: ${canMoveToOptions ? 'Yes' : 'No (minimum 10 exchanges)'}`);
+
+    // STEP 6: Save conversation to database (using service client to bypass RLS)
     console.log('💾 Saving conversation to database...');
     const { error: saveError } = await serviceClient.from('agent_conversations').insert([
       {
@@ -262,7 +297,7 @@ export async function POST(req: NextRequest) {
       console.log('✅ Conversation saved successfully');
     }
 
-    // STEP 6: Track performance
+    // STEP 7: Track performance
     const responseTime = Date.now() - startTime;
     await performanceTracker.trackSession({
       sessionId: session.id,

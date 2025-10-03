@@ -1,7 +1,8 @@
-# ADHD Support Agent - Technical Specification
-**Version**: 1.0  
-**Date**: January 25, 2025  
+# ADHD Parent Coaching Agent - Technical Specification
+**Version**: 2.0 (Coaching Transformation)
+**Date**: October 3, 2025
 **Technology Stack**: Next.js 15, AI SDK v5, Supabase, OpenAI GPT-4o-mini
+**Coaching Framework**: GROW Model + OARS (Motivational Interviewing)
 
 ---
 
@@ -9,10 +10,10 @@
 
 ### **High-Level Overview**
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Frontend UI   │◄──►│   API Gateway    │◄──►│  AI Agent Core  │
-│   (Next.js)     │    │  (Next.js API)   │    │  (Multi-Agent)  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
+│   Frontend UI   │◄──►│   API Gateway    │◄──►│  Coaching AI Core   │
+│   (Next.js)     │    │  (Next.js API)   │    │  (GROW Model)       │
+└─────────────────┘    └──────────────────┘    └─────────────────────┘
                                 │                        │
                                 ▼                        ▼
                        ┌─────────────────┐    ┌─────────────────┐
@@ -21,12 +22,12 @@
                        └─────────────────┘    └─────────────────┘
 ```
 
-### **Multi-Agent Architecture**
-The system employs a sophisticated multi-agent approach with specialized AI agents:
+### **Coaching-First Architecture**
+The system employs a **coaching-based approach** helping parents discover their own solutions:
 
-1. **Crisis Detection Agent** (Priority 1)
-2. **Main Therapeutic Agent** (Priority 2)
-3. **Strategy Retrieval System** (Support)
+1. **Crisis Detection Agent** (Priority 1 - Safety First)
+2. **Main Coaching Agent** (Priority 2 - GROW Model)
+3. **Strategy Support System** (Collaborative, not prescriptive)
 
 ---
 
@@ -51,80 +52,114 @@ interface CrisisAssessment {
 }
 ```
 
-### **Main Therapeutic Agent**
+### **Main Coaching Agent** (NEW - v2.0)
 - **Model**: OpenAI GPT-4o-mini
-- **Purpose**: Evidence-based ADHD support and strategy provision
-- **Max Steps**: 5 (prevents infinite loops)
-- **Tools**:
+- **Purpose**: Facilitative coaching using GROW model to help parents discover solutions
+- **Approach**: OARS Framework (Open questions, Affirmations, Reflective listening, Summaries)
+- **Session Structure**:
+  - Goal: 10% (set intention)
+  - Reality: 60% (deep exploration, 10-15 exchanges minimum)
+  - Options: 20% (parent-generated + collaborative suggestions)
+  - Will: 10% (commitment and action planning)
+- **No artificial time limits**: Sessions end when parent has their own plan
 
-#### **1. Situation Assessment Tool**
+#### **Coaching Principles** (System Prompt)
 ```typescript
-assessSituation: {
-  primaryChallenge: string;
-  stressLevel: 'low' | 'medium' | 'high' | 'crisis';
-  urgency: 'routine' | 'same_day' | 'immediate';
-  recommendedApproach: 'strategy_support' | 'emotional_support' | 'crisis_intervention' | 'professional_referral';
+systemPrompt: `
+You are an ADHD parent coach. Your role is to help parents discover
+their own solutions through facilitative guidance, NOT to dispense advice.
+
+CORE PHILOSOPHY:
+- Coaches help parents discover their own solutions
+- Parents are experts on their child - you facilitate thinking
+- Curiosity over advice. Always.
+
+OARS FRAMEWORK:
+- Open Questions: "Tell me more about mornings at your house"
+- Affirmations: "That shows real creativity in how you handled it"
+- Reflective Listening: "That sounds really overwhelming"
+- Summaries: "Let me make sure I've understood..."
+
+GROW MODEL PACING:
+- Stay in Reality phase for minimum 10-15 exchanges
+- Can't move to Options until: emotions reflected AND exceptions explored
+- No automatic progression based on message count
+`;
+```
+
+#### **Session State Tracking** (Replaces old tool-based approach)
+```typescript
+interface CoachingSessionState {
+  currentPhase: 'goal' | 'reality' | 'options' | 'will' | 'closing';
+  realityExplorationDepth: number;  // Counts exchanges, enforces minimum
+  emotionsReflected: boolean;        // Must be true before Options
+  exceptionsExplored: boolean;       // Must be true before Options
+  strengthsIdentified: string[];     // What's working well
+  parentGeneratedIdeas: string[];    // Their solutions, not bot's
+  readyForOptions: boolean;          // Gated: only true after deep Reality exploration
 }
 ```
 
-#### **2. Strategy Retrieval Tool**
+### **Conversation Flow Logic** (NEW - Coaching-Based)
+Unlike the previous transactional approach, conversations now follow coaching principles:
+
 ```typescript
-retrieveStrategy: {
-  challenge: string; // e.g., "morning-routines", "homework-focus"
-  childAge?: '5-8' | '9-12' | '13-17';
-  previouslyTried?: string[]; // Avoid suggesting same strategies
+// OLD APPROACH (v1.0): Stopped after tools executed
+stopWhen: ({ toolResults }) => {
+  return goalSet && strategyProvided; // 3-5 exchanges typical
+}
+
+// NEW APPROACH (v2.0): No artificial stopping
+// Conversation ends when:
+// 1. Parent feels heard (subjective, agent-detected)
+// 2. Parent has generated their own plan (Will phase complete)
+// 3. Crisis situation (immediate stop with resources)
+
+conversationGuidelines: {
+  minimumRealityExchanges: 10,
+  emotionReflectionRequired: true,
+  exceptionExplorationRequired: true,
+  parentMustGenerateIdeas: true,
+  noMessageCountLimits: true
 }
 ```
 
-#### **3. Crisis Detection Tool**
-```typescript
-detectCrisis: {
-  riskIndicators: string[];
-  severity: 'none' | 'mild' | 'moderate' | 'severe' | 'critical';
-  immediateAction: boolean;
-}
-```
+---
 
-#### **4. Therapeutic Goal Setting Tool**
-```typescript
-setTherapeuticGoal: {
-  goal: string; // Specific, measurable objective
-  timeframe: string; // Expected achievement timeline
-  successMetrics: string[]; // How to measure progress
-}
-```
+## 🔄 **V2.0 Transformation Summary**
 
-### **Intelligent Stopping Conditions**
-The system uses sophisticated logic to determine when conversations are complete:
+### **What Changed (October 2025)**
 
-```typescript
-stopWhen: ({ toolResults, stepCount }) => {
-  // Immediate stop for crisis situations
-  const crisisDetected = toolResults?.some(result => 
-    result.toolName === 'detectCrisis' && 
-    ['severe', 'critical'].includes(result.result.severity)
-  );
-  
-  // Stop when therapeutic objectives are met
-  const goalSet = toolResults?.some(result => 
-    result.toolName === 'setTherapeuticGoal'
-  );
-  const strategyProvided = toolResults?.some(result => 
-    result.toolName === 'retrieveStrategy'
-  );
-  
-  // Prevent infinite loops
-  return crisisDetected || (goalSet && strategyProvided) || stepCount >= 5;
-}
+| **Aspect** | **V1.0 (Discovery-First)** | **V2.0 (Coaching-First)** |
+|------------|---------------------------|---------------------------|
+| **Approach** | Solution dispenser | Coaching companion |
+| **Session Length** | 3-4 questions, then advice | 50 minutes, parent-driven ending |
+| **System Prompt** | Transactional | OARS + GROW model |
+| **Session State** | `discoveryPhaseComplete`, `questionsAsked` | `currentPhase`, `realityExplorationDepth`, `emotionsReflected` |
+| **Agent Role** | Assess → Recommend | Explore → Reflect → Facilitate |
+| **Parent Role** | Passive recipient | Active problem-solver |
+| **Solutions** | Bot prescribes | Parent generates with support |
+
+### **Migration Required**
+```sql
+-- Database schema changed (see migrations/add-coaching-state-columns.sql)
+ALTER TABLE agent_sessions
+  DROP COLUMN discovery_phase_complete,
+  DROP COLUMN questions_asked,
+  ADD COLUMN current_phase TEXT DEFAULT 'goal',
+  ADD COLUMN reality_exploration_depth INTEGER DEFAULT 0,
+  ADD COLUMN emotions_reflected BOOLEAN DEFAULT false,
+  ADD COLUMN exceptions_explored BOOLEAN DEFAULT false,
+  ADD COLUMN ready_for_options BOOLEAN DEFAULT false;
 ```
 
 ---
 
 ## 🗃️ **Database Schema**
 
-### **Core Session Tables**
+### **Core Session Tables** (Updated for V2.0)
 ```sql
--- Main user sessions
+-- Main user sessions (COACHING STATE ADDED)
 CREATE TABLE agent_sessions (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id),
@@ -132,11 +167,21 @@ CREATE TABLE agent_sessions (
     crisis_level TEXT DEFAULT 'none',
     strategies_discussed TEXT[],
     session_outcome TEXT,
+
+    -- NEW: GROW Model Coaching State
+    current_phase TEXT DEFAULT 'goal' CHECK (current_phase IN ('goal', 'reality', 'options', 'will', 'closing')),
+    reality_exploration_depth INTEGER DEFAULT 0,
+    emotions_reflected BOOLEAN DEFAULT false,
+    exceptions_explored BOOLEAN DEFAULT false,
+    strengths_identified TEXT[] DEFAULT '{}',
+    parent_generated_ideas TEXT[] DEFAULT '{}',
+    ready_for_options BOOLEAN DEFAULT false,
+
     started_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ
 );
 
--- Conversation history
+-- Conversation history (unchanged)
 CREATE TABLE agent_conversations (
     id UUID PRIMARY KEY,
     session_id UUID REFERENCES agent_sessions(id),

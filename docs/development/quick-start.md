@@ -1,9 +1,14 @@
 # 🚀 ADHD Support Agent - Quick Start Guide
 
+## Prerequisites
+
+**Authentication Required**: The app now requires user sign-in to use the chat feature.
+
 ## Start the Application
 
 ```bash
-cd /Users/paulgosnell/Sites/pathfinder/adhd-support-agent
+cd adhd-support-agent
+npm install  # If first time
 npm run dev
 ```
 
@@ -13,29 +18,46 @@ npm run dev
 
 ## Quick Test Scenarios
 
-### 1. Normal Support (Morning Routines)
+> **Note**: The agent uses a coaching approach (GROW model + OARS framework). Expect 10-15 exchanges of deep exploration before solutions are offered. See [COACHING-METHODOLOGY.md](../COACHING-METHODOLOGY.md).
+
+### 1. Morning Routines Challenge
 ```
 "My 8-year-old takes forever to get ready for school"
 ```
-**Expected**: Strategy suggestions with visual routine charts
+**Expected**:
+- Agent asks open questions about specific behaviors
+- Reflects your emotions and validates frustration
+- Explores what's been tried before
+- Eventually helps you generate your own solutions
 
-### 2. Homework Help
+### 2. Homework Focus
 ```
 "How can I help my 10-year-old focus on homework?"
 ```
-**Expected**: Pomodoro technique, break schedules, workspace setup
+**Expected**:
+- Deep exploration of homework environment and triggers
+- Reflective listening about your stress
+- Solution-focused questions about exceptions (when it works)
+- Collaborative strategy development after exploration
 
-### 3. Bedtime Issues
+### 3. Bedtime Battles
 ```
 "Bedtime is a nightmare - it takes 3 hours every night"
 ```
-**Expected**: Wind-down routine, sleep hygiene strategies
+**Expected**:
+- Agent explores current bedtime routine in detail
+- Validates exhaustion and overwhelm
+- Looks for patterns and strengths
+- Helps you craft your own plan
 
-### 4. Parent Burnout (Elevated Support)
+### 4. Parent Burnout
 ```
 "I'm so exhausted, I feel completely overwhelmed"
 ```
-**Expected**: Validation, support resources, self-care strategies
+**Expected**:
+- Immediate emotional validation
+- Space to explore feelings without rushing to solutions
+- Focus on self-care and support systems
 
 ---
 

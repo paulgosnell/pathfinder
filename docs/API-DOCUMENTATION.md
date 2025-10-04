@@ -17,14 +17,15 @@ Most endpoints are currently unauthenticated for ease of access. User authentica
 
 ### POST `/api/chat`
 
-Main endpoint for conversing with the AI agent.
+Main endpoint for conversing with the ADHD parent coaching agent using GROW model and OARS framework.
+
+**Authentication Required:** Yes (must be signed in)
 
 **Request Body:**
 ```json
 {
   "message": "My child won't do homework",
   "context": {
-    "userId": "uuid-optional",
     "sessionId": "uuid-optional"
   }
 }
@@ -33,30 +34,22 @@ Main endpoint for conversing with the AI agent.
 **Response:**
 ```json
 {
-  "message": "I understand homework time can be really challenging...",
-  "strategies": [
-    {
-      "id": "homework-focus-1",
-      "title": "Pomodoro Technique",
-      "challenge": "homework-focus",
-      "ageRange": ["9-12", "13-17"],
-      "description": "...",
-      "implementation": ["Step 1", "Step 2"],
-      "timeframe": "1-2 weeks",
-      "difficultyLevel": "easy",
-      "evidenceLevel": "research-backed",
-      "successIndicators": ["..."]
-    }
-  ],
+  "message": "I hear that homework time is really challenging for you. Tell me more about what happens during homework - what specific behaviors are you seeing?",
   "sessionId": "uuid",
-  "userId": "uuid"
+  "usage": {
+    "totalTokens": 1234,
+    "cost": 0.0012
+  },
+  "timestamp": "2025-10-04T12:00:00.000Z"
 }
 ```
+
+**Note:** The coaching agent uses a conversational approach. Strategies and guidance are embedded in the natural conversation text, not returned as separate structured data. The agent follows the GROW model (Goal, Reality, Options, Will) and spends most time in deep exploration before offering solutions.
 
 **Response Codes:**
 - `200` - Success
 - `400` - Invalid request (missing message)
-- `429` - Rate limit exceeded
+- `401` - Unauthorized (not signed in)
 - `500` - Server error
 
 **Example:**
@@ -252,14 +245,13 @@ Create a new user account.
 **Response:**
 ```json
 {
-  "success": true,
-  "message": "Account created successfully"
+  "message": "Registration successful. Please verify your email."
 }
 ```
 
 **Response Codes:**
 - `200` - Success
-- `400` - Invalid input or user already exists
+- `400` - Invalid input (Zod validation errors included)
 - `500` - Server error
 
 ---
@@ -350,13 +342,14 @@ Get the current user's profile.
 **Response:**
 ```json
 {
-  "id": "uuid",
-  "email": "parent@example.com",
-  "child_age_range": "9-12",
-  "support_system_strength": "moderate",
-  "created_at": "2025-09-30T12:00:00.000Z"
+  "parent_name": "Jane Smith",
+  "relationship_to_child": "mother",
+  "parent_age_range": "35-44",
+  "support_system_strength": "moderate"
 }
 ```
+
+**Note:** Returns empty object `{}` if no profile exists yet.
 
 **Response Codes:**
 - `200` - Success
@@ -374,7 +367,9 @@ Update the current user's profile.
 **Request Body:**
 ```json
 {
-  "child_age_range": "9-12",
+  "parent_name": "Jane Smith",
+  "relationship_to_child": "mother",
+  "parent_age_range": "35-44",
   "support_system_strength": "strong"
 }
 ```
@@ -382,40 +377,21 @@ Update the current user's profile.
 **Response:**
 ```json
 {
-  "success": true,
-  "message": "Profile updated successfully"
+  "ok": true
 }
 ```
 
 **Response Codes:**
 - `200` - Success
 - `401` - Not authenticated
-- `400` - Invalid input
+- `400` - Invalid input (Zod validation errors included)
 - `500` - Server error
 
 ---
 
 ## Rate Limiting
 
-All API endpoints are rate-limited:
-
-- **Standard routes**: 60 requests per minute
-- **API routes**: 20 requests per minute
-
-Rate limit headers are included in every response:
-```
-X-RateLimit-Limit: 20
-X-RateLimit-Remaining: 19
-```
-
-When rate limited:
-```json
-{
-  "error": "Too Many Requests",
-  "message": "Please slow down and try again in a moment.",
-  "retryAfter": 60
-}
-```
+**Note:** Rate limiting is not currently implemented in the production codebase. This may be added in future versions.
 
 ---
 
@@ -481,10 +457,16 @@ data = response.json()
 
 ## Changelog
 
+### v2.0.0 (2025-10-04)
+- **MAJOR**: Coaching transformation using GROW model & OARS framework
+- Chat endpoint now requires authentication
+- Response format updated (removed `strategies` array, added `usage` and `timestamp`)
+- Profile API fields updated to match actual schema
+- Removed rate limiting (not implemented)
+
 ### v1.0.0 (2025-09-30)
 - Initial API release
 - Chat, analytics, voice, auth endpoints
-- Rate limiting and security headers
 - GDPR compliance features
 
 ---
@@ -492,11 +474,10 @@ data = response.json()
 ## Support
 
 For API support:
-- GitHub Issues: (repository link)
-- Documentation: See README.md and other docs/
+- Documentation: See [README.md](README.md) and [COACHING-METHODOLOGY.md](COACHING-METHODOLOGY.md)
 
 ---
 
-**Last Updated:** September 30, 2025  
-**API Version:** 1.0.0
+**Last Updated:** October 4, 2025
+**API Version:** 2.0.0
 

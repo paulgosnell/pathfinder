@@ -27,9 +27,12 @@
 
 1. In Supabase Dashboard, go to **SQL Editor**
 2. Click **New Query**
-3. Copy contents of `supabase-schema.sql`
-4. Paste and click **Run**
-5. Repeat with `performance-schema.sql`
+3. Run migrations in order from the `migrations/` folder:
+   - `01-initial-schema.sql` (base tables and RLS)
+   - `02-performance-schema.sql` (analytics)
+   - `03-user-profiles-discovery.sql` (user profiles)
+   - `add-coaching-state-columns.sql` (GROW model state tracking)
+4. Paste each file and click **Run**
 
 ### 1.3 Get API Keys
 

@@ -5,6 +5,7 @@ Welcome to the ADHD AI Coach documentation. This directory contains all project 
 ## 📚 Quick Navigation
 
 ### 🚀 Getting Started
+- **[Coaching Methodology](COACHING-METHODOLOGY.md)** - **START HERE** - Understand the therapeutic approach
 - **[Quick Start Guide](development/quick-start.md)** - Get the app running in 5 minutes
 - **[API Documentation](API-DOCUMENTATION.md)** - Complete API reference
 - **[Technical Specification](technical/technical-specification.md)** - System design and architecture
@@ -17,9 +18,8 @@ Welcome to the ADHD AI Coach documentation. This directory contains all project 
 **Location:** `docs/implementation/`
 
 Detailed guides for implemented features:
-- **[Discovery Phase](implementation/discovery-phase.md)** - Context-gathering conversation flow
-- **[Voice Integration](implementation/voice-integration.md)** - Speech-to-text and text-to-speech
 - **[System Implementation](implementation/system-implementation.md)** - Complete system overview
+- **[Voice Integration](implementation/voice-integration.md)** - Speech-to-text and text-to-speech
 - **[UI Fixes](implementation/ui-fixes.md)** - UI/UX improvements and fixes
 - **[Database Fixes](implementation/database-fixes.md)** - Database schema updates and fixes
 
@@ -102,6 +102,9 @@ Utility scripts:
 ## 🔍 Finding What You Need
 
 ### I want to...
+
+**...understand the coaching approach** (START HERE)
+→ Read [Coaching Methodology](COACHING-METHODOLOGY.md) to understand GROW model & OARS framework
 
 **...set up the project locally**
 → Start with [Quick Start Guide](development/quick-start.md)

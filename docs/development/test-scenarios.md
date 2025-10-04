@@ -1,77 +1,66 @@
-# Discovery Phase Test Scenarios
+# Coaching-Based Agent Test Scenarios
 
-Use these scenarios to verify the discovery-first implementation is working correctly.
+Use these scenarios to verify the GROW model coaching implementation is working correctly.
+
+---
+
+> **⚠️ October 2025 Update:**
+> These scenarios have been updated to reflect the coaching transformation. The agent now follows the GROW model (Goal, Reality, Options, Will) with deep exploration in the Reality phase. See [COACHING-METHODOLOGY.md](../COACHING-METHODOLOGY.md).
+
+---
 
 ## 🎯 Success Criteria (All Scenarios)
 
 For each scenario, verify:
-- ✅ Agent asks 3-4 questions BEFORE suggesting solutions
-- ✅ Each question is singular and conversational (not multi-part)
-- ✅ Agent starts with empathy ("That sounds challenging...")
-- ✅ Solutions reference specific things parent shared
-- ✅ User profile is updated after conversation
-- ✅ Response time stays under 2 seconds
+- ✅ Agent spends 10-15 exchanges in Reality phase (deep exploration)
+- ✅ Agent uses OARS framework: Open questions, Affirmations, Reflective listening, Summaries
+- ✅ Agent starts with empathy and validation
+- ✅ Agent explores exceptions ("When does it work better?")
+- ✅ Agent reflects emotions before problem-solving
+- ✅ Parent generates their own solutions (agent facilitates, doesn't prescribe)
+- ✅ No artificial conversation limits - ends when parent has their own plan
+- ✅ Session state tracked in database (current_phase, reality_exploration_depth)
 
 ---
 
-## Scenario 1: Morning Routine Struggles
+## Scenario 1: Morning Routine Struggles (Coaching Approach)
 
-### Test Conversation
+### Expected Conversation Flow
 
-**Parent (Message 1):**
-```
-We have terrible morning struggles getting my 8-year-old ready for school
-```
+**GOAL Phase (Exchanges 1-2):**
+- Parent shares initial challenge
+- Agent establishes what would be helpful today
 
-**Expected Agent Response 1:**
-```
-That sounds really challenging - mornings can be especially tough with ADHD. 
-What specific part of the morning routine causes the most difficulty - is it 
-waking up, getting dressed, eating breakfast, or something else?
-```
+**REALITY Phase (Exchanges 3-15+):**
+- Deep exploration using open questions
+- Reflective listening and emotion validation
+- Explore exceptions: "Tell me about a morning that went better"
+- Identify child's strengths: "What is your child good at?"
+- Understand what's been tried
+- Explore parent's feelings and stress levels
+- Look for patterns and triggers
 
-**Parent (Message 2):**
-```
-Getting dressed takes forever - they get distracted by everything
-```
+**OPTIONS Phase (Exchanges 16+):**
+- "What options do you see?"
+- "What's worked before in other situations?"
+- Parent generates ideas first
+- Agent offers collaborative suggestions only after parent's ideas
 
-**Expected Agent Response 2:**
-```
-I hear you - transitions and focus during tasks can be really hard for kids 
-with ADHD. How are you holding up with these morning battles?
-```
-
-**Parent (Message 3):**
-```
-Pretty stressed honestly, it happens every single day and we're always late
-```
-
-**Expected Agent Response 3:**
-```
-That stress is completely understandable when you're starting every day with 
-a battle. What have you already tried for the getting dressed part?
-```
-
-**Parent (Message 4):**
-```
-We've tried laying out clothes the night before and setting timers
-```
-
-**Expected Agent Response 4:**
-```
-Good thinking on those strategies - preparation and time awareness are helpful. 
-Let me suggest some approaches that build on what you've tried...
-
-[NOW provides specific strategies that mention: 8-year-old, getting dressed, 
-tried timers/preparation already]
-```
+**WILL Phase (Final exchanges):**
+- "What will you try first?"
+- "How confident are you, 1-10?"
+- "What might get in the way?"
+- "When will you start?"
 
 ### Verification Checklist
-- [ ] 3 questions asked before solutions
-- [ ] Questions were: trigger specifics, stress level, tried solutions
-- [ ] Agent used empathetic language
-- [ ] Solutions mentioned child age (8), getting dressed specifically
-- [ ] Solutions didn't just repeat timers/laying out clothes
+- [ ] Minimum 10-15 exchanges before Options phase
+- [ ] Agent used reflective listening ("That sounds really overwhelming")
+- [ ] Agent explored exceptions ("When does morning go better?")
+- [ ] Agent asked about child's strengths
+- [ ] Parent generated their own ideas before agent suggestions
+- [ ] No premature solution-dispensing
+- [ ] Session state shows: `reality_exploration_depth >= 10`
+- [ ] Database shows: `emotions_reflected = true`, `exceptions_explored = true`
 
 ---
 

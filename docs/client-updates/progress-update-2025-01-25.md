@@ -1,7 +1,14 @@
 # ADHD Support Agent - Progress Update
-**Date**: September 25, 2025  
-**Project**: AI-Powered ADHD Therapeutic Support System  
+**Date**: September 25, 2025
+**Project**: AI-Powered ADHD Therapeutic Support System
 **Status**: Development Complete - Production Ready
+
+---
+
+> **⚠️ NOTE - October 2025 Update:**
+> This progress report describes the system as of September 2025. Since then, the system has undergone a **major coaching transformation** (October 2025) moving from a transactional 3-4 question discovery approach to a full therapeutic coaching model using the GROW framework and OARS methodology. See [COACHING-METHODOLOGY.md](../COACHING-METHODOLOGY.md) for the current approach.
+
+---
 
 ## Executive Summary
 

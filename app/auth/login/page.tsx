@@ -37,7 +37,7 @@ function LoginForm() {
         return;
       }
 
-      router.push('/');
+      router.push('/chat');
     } catch (err) {
       setError('We had trouble signing you in. Please try again.');
     } finally {

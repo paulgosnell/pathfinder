@@ -1,368 +1,628 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { useAuth } from '@/lib/auth/auth-context';
+import { useState } from 'react';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  strategies?: any[];
-  audioUrl?: string;
-}
-
-const markdownComponents: Components = {
-  p: ({ node, ...props }) => (
-    <p
-      className="m-0 text-base leading-relaxed"
-      style={{ color: '#2A3F5A' }}
-      {...props}
-    />
-  ),
-  strong: ({ node, ...props }) => (
-    <strong style={{ color: '#2A3F5A' }} {...props} />
-  ),
-  em: ({ node, ...props }) => (
-    <em style={{ color: '#2A3F5A' }} {...props} />
-  ),
-  ul: ({ node, ...props }) => (
-    <ul className="pl-5 mb-0 space-y-2" style={{ color: '#2A3F5A' }} {...props} />
-  ),
-  ol: ({ node, ...props }) => (
-    <ol className="pl-5 mb-0 space-y-2" style={{ color: '#2A3F5A' }} {...props} />
-  ),
-  li: ({ node, ...props }) => (
-    <li className="text-base leading-relaxed" style={{ color: '#2A3F5A' }} {...props} />
-  ),
-  a: ({ node, ...props }) => (
-    <a style={{ color: '#2A3F5A', textDecoration: 'underline' }} {...props} />
-  ),
-  br: () => <br />
-};
-
-function ADHDSupportChat() {
-  const { user, signOut } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: "Hello! I'm here to help you with ADHD parenting challenges. What's on your mind today?" 
-    }
-  ]);
-  const [input, setInput] = useState('');
+export default function LandingPage() {
+  const [email, setEmail] = useState('');
+  const [earlyTester, setEarlyTester] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string>();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatAreaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const sendMessage = async (messageText?: string) => {
-    const textToSend = messageText || input;
-    if (!textToSend.trim() || loading) return;
-
-    const userMessage: Message = { role: 'user', content: textToSend };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/waitlist', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          message: textToSend,
-          context: {
-            userId: user?.id,
-            sessionId: sessionId
-          }
-        })
+          email,
+          earlyTester,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.message || 'Unexpected response from chat API');
+        // Handle error
+        alert(data.message || data.error || 'Something went wrong. Please try again.');
+        setLoading(false);
+        return;
       }
 
-      if (data.sessionId && !sessionId) {
-        setSessionId(data.sessionId);
-      }
-
-      const strategyResult = data.toolResults?.find(
-        (r: any) => r.toolName === 'retrieveStrategy'
-      );
-
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: data.message,
-        strategies: strategyResult?.result?.availableStrategies,
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-
-      if (data.usage?.cost) {
-        console.log(`💰 Cost: $${data.usage.cost.toFixed(6)} | Tokens: ${data.usage.totalTokens}`);
-      }
+      // Success!
+      setSubmitted(true);
     } catch (error) {
-      console.error('Chat error:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "I'm having trouble connecting right now. Please try again in a moment." 
-      }]);
+      console.error('Signup error:', error);
+      alert('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#F9F7F3' }}>
+        <div className="max-w-lg w-full bg-white rounded-3xl p-10 text-center" style={{
+          boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
+          border: '1px solid rgba(215, 205, 236, 0.2)'
+        }}>
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center" style={{
+            background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)'
+          }}>
+            <svg className="w-10 h-10" style={{ color: '#2A3F5A' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          <h1 style={{
+            fontFamily: 'Quicksand, sans-serif',
+            fontSize: '2rem',
+            fontWeight: 600,
+            color: '#2A3F5A',
+            marginBottom: '1rem'
+          }}>
+            {earlyTester ? "Welcome to Early Testing!" : "You're on the list!"}
+          </h1>
+
+          <p style={{
+            fontSize: '1rem',
+            color: '#586C8E',
+            marginBottom: '2rem',
+            lineHeight: 1.6
+          }}>
+            {earlyTester
+              ? "Thank you for joining our early testing program. We'll be in touch within 48 hours with access details."
+              : "We'll notify you as soon as we launch. Get ready to transform your ADHD parenting journey."
+            }
+          </p>
+
+          <p style={{ fontSize: '0.875rem', color: '#586C8E', marginBottom: '2rem' }}>
+            Check your email at <strong style={{ color: '#2A3F5A' }}>{email}</strong>
+          </p>
+
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setEmail('');
+              setEarlyTester(false);
+            }}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '9999px',
+              fontFamily: 'Quicksand, sans-serif',
+              fontWeight: 600,
+              color: '#2A3F5A',
+              background: 'rgba(227, 234, 221, 0.5)',
+              border: '1px solid rgba(215, 205, 236, 0.3)',
+              cursor: 'pointer',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            Submit Another Response
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 sm:p-10" style={{ backgroundColor: '#F9F7F3' }}>
-      
-      {/* Main UI Container - mobile sized */}
-      <div className="w-full max-w-[400px] h-[700px] mx-auto bg-white rounded-3xl overflow-hidden border flex flex-col" 
-           style={{ 
-             boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
-             borderColor: 'rgba(215, 205, 236, 0.2)'
-           }}>
-        
-        {/* Header - matching design system with minimize on scroll */}
-        <div 
-          className="relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7))',
-            padding: '16px 24px',
-            textAlign: 'left',
-            minHeight: '72px',
-            boxShadow: '0 2px 8px rgba(42, 63, 90, 0.06)'
-          }}
-        >
-          <div className="relative z-10" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px'
+    <div style={{ minHeight: '100vh', backgroundColor: '#F9F7F3' }}>
+
+      {/* Navigation Header */}
+      <nav style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        backgroundColor: 'rgba(249, 247, 243, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(215, 205, 236, 0.2)',
+        boxShadow: '0 2px 8px rgba(42, 63, 90, 0.05)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '1rem 1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          {/* Logo */}
+          <div style={{
+            fontFamily: 'Quicksand, sans-serif',
+            fontSize: '1.25rem',
+            fontWeight: 600,
+            color: '#2A3F5A'
           }}>
-            <div>
-              <h1 
-                className="font-display font-semibold m-0" 
-                style={{ 
-                  color: '#2A3F5A',
-                  fontSize: '20px',
-                  lineHeight: 1.05,
-                  letterSpacing: '0'
-                }}
-              >
-                ADHD Support
-              </h1>
-              <p 
-                className="text-sm" 
-                style={{ 
-                  color: '#586C8E',
-                  fontSize: '13px',
-                  margin: '2px 0 0 0'
-                }}
-              >
-                Your AI therapeutic companion
-              </p>
-            </div>
-            
-            {/* Logout Button */}
-            <button
-              onClick={signOut}
-              className="text-xs px-3 py-1 rounded-full border transition-all hover:scale-105"
+            ADHD Support
+          </div>
+
+          {/* Auth Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '0.75rem',
+            alignItems: 'center'
+          }}>
+            <a
+              href="/auth/login"
               style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: '9999px',
+                fontFamily: 'Quicksand, sans-serif',
+                fontWeight: 600,
+                fontSize: '0.875rem',
                 color: '#586C8E',
-                borderColor: 'rgba(215, 205, 236, 0.3)',
-                backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif"
+                backgroundColor: 'transparent',
+                border: 'none',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+                cursor: 'pointer'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#2A3F5A'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#586C8E'}
             >
-              Sign Out
-            </button>
+              Log In
+            </a>
+            <a
+              href="/auth/register"
+              style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: '9999px',
+                fontFamily: 'Quicksand, sans-serif',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                color: '#2A3F5A',
+                backgroundColor: 'white',
+                border: '1px solid rgba(215, 205, 236, 0.3)',
+                boxShadow: '0 2px 5px rgba(42, 63, 90, 0.05)',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+                cursor: 'pointer',
+                display: 'inline-block'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              Sign Up
+            </a>
           </div>
         </div>
-        
-        {/* Chat Area - flex grow to fill available space */}
-        <div ref={chatAreaRef} className="flex-grow relative overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
-          {/* Noise texture overlay */}
-          <div 
-            className="absolute inset-0 opacity-[0.05] pointer-events-none"
-            style={{
-              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='a' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath filter='url(%23a)' opacity='.05' d='M0 0h200v200H0z'/%3E%3C/svg%3E\")"
-            }}
-          ></div>
-          
-          {/* Messages - with proper padding and margin */}
-          <div className="relative z-10 flex flex-col px-4 py-6" style={{ gap: '20px' }}>
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} style={{ paddingLeft: '8px', paddingRight: '8px' }}>
-                <div className="max-w-[80%]">
-                  {/* Message bubble - with more padding */}
-                  <div 
-                    style={{
-                      backgroundColor: msg.role === 'user' ? '#B7D3D8' : '#E3EADD',
-                      color: '#2A3F5A',
-                      borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      boxShadow: '0 2px 5px rgba(42, 63, 90, 0.05)',
-                      padding: '15px 20px',
-                      margin: '4px 0'
-                    }}
-                  >
-                    {msg.role === 'assistant' ? (
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={markdownComponents}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
-                    ) : (
-                      <p className="m-0 text-base leading-relaxed">{msg.content}</p>
-                    )}
-                  </div>
+      </nav>
 
-                  {/* Strategy cards */}
-                  {msg.strategies && msg.strategies.length > 0 && (
-                    <div className="mt-3 space-y-3">
-                      {msg.strategies.map((strategy: any, sIdx: number) => (
-                        <div 
-                          key={sIdx}
-                          className="bg-white rounded-2xl overflow-hidden border"
-                          style={{ 
-                            boxShadow: '0 2px 10px rgba(42, 63, 90, 0.08)',
-                            borderColor: 'rgba(215, 205, 236, 0.2)'
-                          }}
-                        >
-                          <div className="p-5 border-b" style={{ borderColor: 'rgba(215, 205, 236, 0.1)' }}>
-                            <h3 className="font-display text-base font-semibold m-0" style={{ color: '#2A3F5A' }}>
-                              {strategy.title}
-                            </h3>
-                            <p className="text-sm mt-2 mb-0" style={{ color: '#586C8E' }}>
-                              For ages {strategy.ageRange.join(', ')}
-                            </p>
-                          </div>
-                          
-                          <div className="p-5">
-                            <p className="text-sm mb-3" style={{ color: '#2A3F5A' }}>
-                              {strategy.description}
-                            </p>
-                            <h4 className="font-display text-base font-semibold mt-[15px] mb-[10px]" style={{ color: '#2A3F5A' }}>
-                              Implementation Steps:
-                            </h4>
-                            <ul className="pl-5 mb-[15px] space-y-1">
-                              {strategy.implementation.slice(0, 4).map((step: string, stepIdx: number) => (
-                                <li key={stepIdx} className="text-sm" style={{ color: '#2A3F5A' }}>{step}</li>
-                              ))}
-                            </ul>
-                          </div>
+      {/* Hero Section */}
+      <section style={{ position: 'relative', overflow: 'hidden' }}>
+        {/* Background gradient */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(135deg, rgba(227, 234, 221, 0.6) 0%, rgba(215, 205, 236, 0.6) 50%, rgba(183, 211, 216, 0.5) 100%)',
+          opacity: 0.9
+        }} />
 
-                          <div className="px-5 py-[15px]" style={{ backgroundColor: '#E3EADD' }}>
-                            <p className="text-sm m-0" style={{ color: '#2A3F5A' }}>
-                              Timeframe: {strategy.timeframe}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+        {/* Content */}
+        <div style={{
+          position: 'relative',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '4rem 1.5rem 5rem',
+          textAlign: 'center'
+        }}>
+
+          {/* Badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 1rem',
+            borderRadius: '9999px',
+            marginBottom: '2rem',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            border: '1px solid rgba(215, 205, 236, 0.3)',
+            boxShadow: '0 2px 8px rgba(42, 63, 90, 0.05)'
+          }}>
+            <div style={{
+              width: '0.5rem',
+              height: '0.5rem',
+              borderRadius: '9999px',
+              backgroundColor: '#E6A897',
+              animation: 'pulse 2s ease-in-out infinite'
+            }} />
+            <span style={{
+              fontSize: '0.875rem',
+              fontFamily: 'Quicksand, sans-serif',
+              fontWeight: 600,
+              color: '#2A3F5A'
+            }}>
+              Now Accepting Early Testers
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: 'Quicksand, sans-serif',
+            fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
+            fontWeight: 700,
+            color: '#2A3F5A',
+            marginBottom: '1.5rem',
+            lineHeight: 1.2
+          }}>
+            You're not alone<br />in this journey
+          </h1>
+
+          {/* Subheadline */}
+          <p style={{
+            fontSize: 'clamp(1.125rem, 2vw, 1.5rem)',
+            color: '#586C8E',
+            marginBottom: '2rem',
+            lineHeight: 1.6,
+            maxWidth: '48rem',
+            margin: '0 auto 2rem'
+          }}>
+            AI-powered coaching that helps parents of ADHD children discover their own solutions through guided, therapeutic conversations.
+          </p>
+
+          {/* Key differentiator */}
+          <div style={{
+            display: 'inline-block',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '1rem',
+            marginBottom: '3rem',
+            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+            border: '1px solid rgba(215, 205, 236, 0.2)'
+          }}>
+            <p style={{
+              fontSize: '1rem',
+              color: '#2A3F5A',
+              margin: 0
+            }}>
+              <strong style={{ fontFamily: 'Quicksand, sans-serif' }}>Not a chatbot.</strong> A 50-minute coaching session using the proven GROW model.
+            </p>
+          </div>
+
+          {/* CTA Buttons */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '2rem'
+          }}>
+            <a
+              href="#early-access"
+              style={{
+                padding: '1rem 2rem',
+                borderRadius: '9999px',
+                fontFamily: 'Quicksand, sans-serif',
+                fontWeight: 600,
+                fontSize: '1.125rem',
+                color: '#2A3F5A',
+                background: 'linear-gradient(to right, #E6A897, #F0D9DA)',
+                boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+                display: 'inline-block'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              Join Early Testing →
+            </a>
+
+            <a
+              href="#early-access"
+              style={{
+                padding: '1rem 2rem',
+                borderRadius: '9999px',
+                fontFamily: 'Quicksand, sans-serif',
+                fontWeight: 600,
+                fontSize: '1.125rem',
+                color: '#2A3F5A',
+                backgroundColor: 'white',
+                border: '1px solid rgba(215, 205, 236, 0.3)',
+                boxShadow: '0 2px 5px rgba(42, 63, 90, 0.05)',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+                display: 'inline-block'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              Notify Me at Launch
+            </a>
+          </div>
+
+          {/* Trust indicator */}
+          <p style={{
+            fontSize: '0.875rem',
+            color: '#586C8E'
+          }}>
+            Evidence-based • Crisis-safe • GDPR compliant
+          </p>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section style={{ padding: '5rem 1.5rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <h2 style={{
+              fontFamily: 'Quicksand, sans-serif',
+              fontSize: 'clamp(2rem, 4vw, 2.5rem)',
+              fontWeight: 600,
+              color: '#2A3F5A',
+              marginBottom: '1rem'
+            }}>
+              Coaching, not consulting
+            </h2>
+            <p style={{
+              fontSize: '1.125rem',
+              color: '#586C8E',
+              maxWidth: '42rem',
+              margin: '0 auto'
+            }}>
+              We don't give you answers. We help you discover them. Because you're the expert on your child.
+            </p>
+          </div>
+
+          {/* GROW Model Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1.5rem'
+          }}>
+
+            {[
+              { emoji: '🎯', title: 'Goal', color: '#E3EADD', desc: 'What do you want to achieve? We help you clarify your objectives and what success looks like.' },
+              { emoji: '🔍', title: 'Reality', color: '#D7CDEC', desc: 'Deep exploration of your situation. We spend 60% of our time here, understanding what\'s really happening.' },
+              { emoji: '💡', title: 'Options', color: '#B7D3D8', desc: 'What could you try? We explore possibilities together, drawing on your strengths and our evidence base.' },
+              { emoji: '✨', title: 'Will', color: '#F0D9DA', desc: 'Your action plan. You leave with concrete steps you\'ve chosen, not prescriptions we\'ve given.' }
+            ].map((item, i) => (
+              <div key={i} style={{
+                backgroundColor: 'white',
+                borderRadius: '1rem',
+                padding: '1.5rem',
+                border: '1px solid rgba(215, 205, 236, 0.2)',
+                boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
+                transition: 'box-shadow 0.3s'
+              }}>
+                <div style={{
+                  width: '3rem',
+                  height: '3rem',
+                  borderRadius: '9999px',
+                  backgroundColor: item.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '1rem',
+                  fontSize: '1.5rem'
+                }}>
+                  {item.emoji}
                 </div>
+                <h3 style={{
+                  fontFamily: 'Quicksand, sans-serif',
+                  fontSize: '1.25rem',
+                  fontWeight: 600,
+                  color: '#2A3F5A',
+                  marginBottom: '0.5rem'
+                }}>
+                  {item.title}
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#586C8E',
+                  lineHeight: 1.6,
+                  margin: 0
+                }}>
+                  {item.desc}
+                </p>
               </div>
             ))}
 
-            {/* Typing indicator */}
-              {loading && (
-              <div className="flex justify-start">
-                <div 
-                  style={{
-                    backgroundColor: '#E3EADD',
-                    color: '#2A3F5A',
-                    borderRadius: '18px 18px 18px 4px',
-                    boxShadow: '0 2px 5px rgba(42, 63, 90, 0.05)',
-                    padding: '15px 20px',
-                    margin: '4px 0'
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 rounded-full opacity-70 animate-[pulseDot_1.5s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC' }}></div>
-                      <div className="w-2 h-2 rounded-full opacity-70 animate-[pulseDot_1.5s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC', animationDelay: '0.15s' }}></div>
-                      <div className="w-2 h-2 rounded-full opacity-70 animate-[pulseDot_1.5s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC', animationDelay: '0.3s' }}></div>
-                    </div>
-                    <span className="text-sm" style={{ color: '#586C8E' }}>Thinking...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
           </div>
         </div>
-        
-        {/* Input Area - lighter background color from design system */}
-        <div className="border-t" style={{ 
-          borderColor: 'rgba(215, 205, 236, 0.1)',
-          backgroundColor: 'rgba(249, 247, 243, 0.5)'
-        }}>
-          {/* Input Row */}
-          <div className="px-[15px] py-[15px]">
-            <div className="flex items-center" style={{ gap: '10px' }}>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message..."
-                className="flex-1 bg-white rounded-full border focus:outline-none focus:ring-2 transition-all font-body"
-                style={{
+      </section>
+
+      {/* Early Access Form */}
+      <section id="early-access" style={{
+        padding: '5rem 1.5rem',
+        background: 'linear-gradient(to bottom, rgba(215, 205, 236, 0.15), rgba(183, 211, 216, 0.15))'
+      }}>
+        <div style={{ maxWidth: '42rem', margin: '0 auto' }}>
+
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{
+              fontFamily: 'Quicksand, sans-serif',
+              fontSize: 'clamp(2rem, 4vw, 2.5rem)',
+              fontWeight: 600,
+              color: '#2A3F5A',
+              marginBottom: '1rem'
+            }}>
+              Be part of something meaningful
+            </h2>
+            <p style={{
+              fontSize: '1.125rem',
+              color: '#586C8E'
+            }}>
+              Join our early testing program or get notified when we launch.
+            </p>
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            border: '1px solid rgba(215, 205, 236, 0.2)',
+            boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)'
+          }}>
+
+            <form onSubmit={handleSubmit}>
+
+              {/* Email Input */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label htmlFor="email" style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontFamily: 'Quicksand, sans-serif',
+                  fontWeight: 600,
                   color: '#2A3F5A',
-                  borderColor: 'rgba(215, 205, 236, 0.2)',
-                  boxShadow: 'inset 0 2px 4px rgba(42, 63, 90, 0.03)',
-                  fontSize: '16px',
-                  padding: '12px 20px'
-                }}
-              />
-              
-              {/* Send Button */}
-              <button 
-                onClick={() => sendMessage()}
-                disabled={loading || !input.trim()}
-                aria-label="Send message"
-                className="flex-shrink-0 flex items-center justify-center rounded-full disabled:opacity-80 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+                  marginBottom: '0.5rem'
+                }}>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="your.email@example.com"
+                  style={{
+                    width: '100%',
+                    padding: '1rem 1.5rem',
+                    borderRadius: '9999px',
+                    border: '1px solid rgba(215, 205, 236, 0.3)',
+                    backgroundColor: 'rgba(249, 247, 243, 0.5)',
+                    boxShadow: 'inset 0 2px 4px rgba(42, 63, 90, 0.03)',
+                    fontSize: '1rem',
+                    color: '#2A3F5A',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Early Tester Checkbox */}
+              <div style={{
+                display: 'flex',
+                gap: '0.75rem',
+                padding: '1rem 1.25rem',
+                borderRadius: '1.5rem',
+                border: '1px solid rgba(215, 205, 236, 0.3)',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                boxShadow: 'inset 0 2px 4px rgba(42, 63, 90, 0.03)',
+                marginBottom: '1.5rem'
+              }}>
+                <input
+                  type="checkbox"
+                  id="earlyTester"
+                  checked={earlyTester}
+                  onChange={(e) => setEarlyTester(e.target.checked)}
+                  style={{
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    marginTop: '0.125rem',
+                    cursor: 'pointer'
+                  }}
+                />
+                <label htmlFor="earlyTester" style={{
+                  fontSize: '0.875rem',
+                  color: '#586C8E',
+                  lineHeight: 1.6,
+                  cursor: 'pointer'
+                }}>
+                  <strong style={{ color: '#2A3F5A' }}>Yes, I want to be an early tester!</strong> I understand I'll get early access and can provide feedback to help shape the product.
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading || !email}
                 style={{
-                  width: '48px',
-                  height: '48px',
-                  background: loading || !input.trim() 
-                    ? 'rgba(215, 205, 236, 0.55)'
+                  width: '100%',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '9999px',
+                  fontFamily: 'Quicksand, sans-serif',
+                  fontWeight: 600,
+                  color: '#2A3F5A',
+                  background: earlyTester
+                    ? 'linear-gradient(to right, #E6A897, #F0D9DA)'
                     : 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
-                  color: '#2A3F5A',
-                  boxShadow: '0 2px 5px rgba(42, 63, 90, 0.1)'
+                  border: 'none',
+                  boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
+                  cursor: loading || !email ? 'not-allowed' : 'pointer',
+                  opacity: loading || !email ? 0.5 : 1,
+                  transition: 'transform 0.2s'
                 }}
+                onMouseEnter={(e) => {
+                  if (!loading && email) e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <span aria-hidden="true" className="text-xl" style={{ marginLeft: '2px', transform: 'translateY(-1px)' }}>
-                  ➤
-                </span>
+                {loading ? 'Submitting...' : earlyTester ? 'Join Early Testing →' : 'Notify Me at Launch'}
               </button>
+
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#586C8E',
+                textAlign: 'center',
+                marginTop: '1rem',
+                marginBottom: 0
+              }}>
+                We respect your privacy. Unsubscribe anytime.
+              </p>
+
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        padding: '3rem 1.5rem',
+        borderTop: '1px solid rgba(215, 205, 236, 0.2)',
+        backgroundColor: 'rgba(249, 247, 243, 0.5)'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <div>
+              <h3 style={{
+                fontFamily: 'Quicksand, sans-serif',
+                fontSize: '1.25rem',
+                fontWeight: 600,
+                color: '#2A3F5A',
+                marginBottom: '0.25rem'
+              }}>
+                ADHD Support
+              </h3>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#586C8E',
+                margin: 0
+              }}>
+                Your AI therapeutic companion
+              </p>
+            </div>
+
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#586C8E',
+              paddingTop: '2rem',
+              borderTop: '1px solid rgba(215, 205, 236, 0.2)',
+              width: '100%'
+            }}>
+              <p style={{ margin: '0 0 0.5rem 0' }}>
+                © 2025 ADHD Support. This is not a replacement for professional medical or therapeutic care.
+              </p>
+              <p style={{ margin: 0 }}>
+                If you're in crisis, call 999 (UK) or Samaritans 116 123
+              </p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      </footer>
 
-export default function Page() {
-  return (
-    <ProtectedRoute>
-      <ADHDSupportChat />
-    </ProtectedRoute>
+    </div>
   );
 }

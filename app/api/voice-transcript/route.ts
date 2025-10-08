@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
+
+// Use service role key for server-side operations (bypasses RLS)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 interface TranscriptMessage {
   sessionId: string;
@@ -28,14 +40,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Ensure user exists (create if needed)
-    const { data: existingUser } = await supabase
+    const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('id', userId)
       .single();
 
     if (!existingUser) {
-      const { error: userError } = await supabase
+      const { error: userError } = await supabaseAdmin
         .from('users')
         .insert({
           id: userId,
@@ -44,15 +56,16 @@ export async function POST(req: NextRequest) {
         });
 
       if (userError) {
+        console.error('Failed to create user:', userError);
         return NextResponse.json(
-          { error: 'Failed to create user' },
+          { error: 'Failed to create user', details: userError.message },
           { status: 500 }
         );
       }
     }
 
     // Ensure session exists with mode='voice'
-    const { data: existingSession } = await supabase
+    const { data: existingSession } = await supabaseAdmin
       .from('agent_sessions')
       .select('id')
       .eq('id', sessionId)
@@ -60,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     if (!existingSession) {
       // Create new voice session
-      const { error: sessionError } = await supabase
+      const { error: sessionError } = await supabaseAdmin
         .from('agent_sessions')
         .insert({
           id: sessionId,
@@ -72,15 +85,16 @@ export async function POST(req: NextRequest) {
         });
 
       if (sessionError) {
+        console.error('Failed to create session:', sessionError);
         return NextResponse.json(
-          { error: 'Failed to create session' },
+          { error: 'Failed to create session', details: sessionError.message },
           { status: 500 }
         );
       }
     }
 
     // Save message to agent_conversations table
-    const { error: messageError } = await supabase
+    const { error: messageError } = await supabaseAdmin
       .from('agent_conversations')
       .insert({
         session_id: sessionId,
@@ -89,8 +103,9 @@ export async function POST(req: NextRequest) {
       });
 
     if (messageError) {
+      console.error('Failed to save transcript:', messageError);
       return NextResponse.json(
-        { error: 'Failed to save transcript' },
+        { error: 'Failed to save transcript', details: messageError.message },
         { status: 500 }
       );
     }

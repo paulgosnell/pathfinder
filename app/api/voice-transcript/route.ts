@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@/lib/supabase/server-client';
 
 export const runtime = 'edge';
 
@@ -39,7 +40,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Ensure user exists (create if needed)
+    // SECURITY: Verify the authenticated user matches the userId in request
+    const supabase = await createServerClient();
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (authUser.id !== userId) {
+      return NextResponse.json(
+        { error: 'User ID mismatch - cannot save transcript for another user' },
+        { status: 403 }
+      );
+    }
+
+    // Ensure user record exists (should already exist from auth, but create if needed)
     const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id')

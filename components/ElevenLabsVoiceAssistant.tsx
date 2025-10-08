@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { Mic, MessageCircle, Ear, Volume2, Info, AlertCircle } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 
 // Design system colors
 const colors = {
@@ -16,22 +17,48 @@ const colors = {
   accent5: '#F0D9DA',
 };
 
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export function ElevenLabsVoiceAssistant() {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string>();
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
-  // Generate stable session and user IDs for this voice session
+  // Generate stable session ID, get real user ID from auth
   const sessionIdRef = useRef<string>('');
   const userIdRef = useRef<string>('');
 
   if (!sessionIdRef.current) {
     sessionIdRef.current = crypto.randomUUID();
   }
-  if (!userIdRef.current) {
-    // Generate a UUID for this user session
-    // TODO: Replace with actual user ID from auth system
-    userIdRef.current = crypto.randomUUID();
-  }
+
+  // Get authenticated user ID
+  useEffect(() => {
+    async function getAuthUser() {
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+          setError('Please sign in to use voice mode');
+          setIsLoadingAuth(false);
+          return;
+        }
+
+        userIdRef.current = user.id;
+        setIsLoadingAuth(false);
+      } catch (err) {
+        console.error('Failed to get authenticated user:', err);
+        setError('Authentication error. Please try signing in again.');
+        setIsLoadingAuth(false);
+      }
+    }
+
+    getAuthUser();
+  }, []);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -93,6 +120,44 @@ export function ElevenLabsVoiceAssistant() {
     setIsConnected(false);
   };
 
+  // Show loading state while checking auth
+  if (isLoadingAuth) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-5"
+        style={{ backgroundColor: colors.background }}
+      >
+        <div
+          className="w-full max-w-[400px] bg-white rounded-3xl overflow-hidden border flex flex-col p-8"
+          style={{
+            boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
+            borderColor: 'rgba(215, 205, 236, 0.2)'
+          }}
+        >
+          <div className="text-center">
+            <div
+              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(215, 205, 236, 0.2)' }}
+            >
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  border: '3px solid',
+                  borderColor: colors.accent1,
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}
+              ></div>
+            </div>
+            <p style={{ color: colors.secondary }}>Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div
@@ -117,27 +182,42 @@ export function ElevenLabsVoiceAssistant() {
               className="font-display font-semibold text-xl mb-2"
               style={{ color: colors.primary }}
             >
-              Connection Error
+              {error.includes('sign in') ? 'Authentication Required' : 'Connection Error'}
             </h2>
             <p style={{ color: colors.secondary, marginBottom: '1.5rem' }}>
               {error}
             </p>
           </div>
 
-          <button
-            onClick={() => {
-              setError(undefined);
-              startSession();
-            }}
-            className="w-full py-3 px-6 rounded-full font-semibold transition-transform hover:scale-105"
-            style={{
-              background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
-              color: colors.primary,
-              boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
-            }}
-          >
-            Try Again
-          </button>
+          {error.includes('sign in') ? (
+            <a
+              href="/chat"
+              className="w-full py-3 px-6 rounded-full font-semibold transition-transform hover:scale-105 text-center block"
+              style={{
+                background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+                color: colors.primary,
+                boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
+                textDecoration: 'none'
+              }}
+            >
+              Go to Sign In
+            </a>
+          ) : (
+            <button
+              onClick={() => {
+                setError(undefined);
+                startSession();
+              }}
+              className="w-full py-3 px-6 rounded-full font-semibold transition-transform hover:scale-105"
+              style={{
+                background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+                color: colors.primary,
+                boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
+              }}
+            >
+              Try Again
+            </button>
+          )}
         </div>
       </div>
     );

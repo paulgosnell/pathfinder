@@ -107,15 +107,16 @@ export function middleware(request: NextRequest) {
     // Permissions policy (disable unnecessary features)
     'Permissions-Policy': 'camera=(), microphone=(self), geolocation=(), interest-cohort=()',
     
-    // Content Security Policy (adjust as needed for your app)
+    // Content Security Policy (adjusted for voice mode with ElevenLabs & LiveKit)
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-inline needed for Next.js
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data:", // blob: and data: needed for AudioWorklet
+      "worker-src 'self' blob:", // AudioWorklet support
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
       "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://*.supabase.co https://api.openai.com https://api.elevenlabs.io",
-      "media-src 'self' blob:",
+      "connect-src 'self' https://*.supabase.co https://api.openai.com https://api.elevenlabs.io https://*.elevenlabs.io wss://*.elevenlabs.io wss://*.livekit.cloud https://*.livekit.cloud",
+      "media-src 'self' blob: https://*.elevenlabs.io",
     ].join('; '),
     
     // HSTS (Strict-Transport-Security) - only in production with HTTPS

@@ -30,6 +30,7 @@ export interface AgentSession {
   crisis_level: string;
   strategies_discussed: string[];
   session_outcome?: string;
+  mode: 'chat' | 'voice';
   started_at: string;
   ended_at?: string;
 }

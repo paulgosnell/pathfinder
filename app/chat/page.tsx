@@ -5,6 +5,7 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/lib/auth/auth-context';
+import { Mic } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -176,19 +177,46 @@ function ADHDSupportChat() {
               </p>
             </div>
 
-            {/* Logout Button */}
-            <button
-              onClick={signOut}
-              className="text-xs px-3 py-1 rounded-full border transition-all hover:scale-105"
-              style={{
-                color: '#586C8E',
-                borderColor: 'rgba(215, 205, 236, 0.3)',
-                backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif"
-              }}
-            >
-              Sign Out
-            </button>
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {/* Voice Mode Button */}
+              <a
+                href="/voice"
+                className="text-xs rounded-full border transition-all hover:scale-105"
+                style={{
+                  color: '#586C8E',
+                  borderColor: 'rgba(215, 205, 236, 0.3)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                  fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  textDecoration: 'none',
+                  padding: '10px 16px'
+                }}
+              >
+                <Mic size={16} />
+                <span>Voice</span>
+              </a>
+
+              {/* Logout Button - Icon Only */}
+              <button
+                onClick={signOut}
+                className="w-8 h-8 rounded-full border transition-all hover:scale-105 flex items-center justify-center"
+                style={{
+                  color: '#586C8E',
+                  borderColor: 'rgba(215, 205, 236, 0.3)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)'
+                }}
+                title="Sign Out"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

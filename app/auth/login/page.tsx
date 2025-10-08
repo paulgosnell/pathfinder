@@ -37,7 +37,8 @@ function LoginForm() {
         return;
       }
 
-      router.push('/chat');
+      // Force a hard reload to ensure auth cookies are picked up
+      window.location.href = '/chat';
     } catch (err) {
       setError('We had trouble signing you in. Please try again.');
     } finally {

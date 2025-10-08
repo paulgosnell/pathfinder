@@ -21,8 +21,8 @@ export function ElevenLabsVoiceAssistant() {
   const [error, setError] = useState<string>();
 
   // Generate stable session and user IDs for this voice session
-  const sessionIdRef = useRef<string>();
-  const userIdRef = useRef<string>();
+  const sessionIdRef = useRef<string>('');
+  const userIdRef = useRef<string>('');
 
   if (!sessionIdRef.current) {
     sessionIdRef.current = crypto.randomUUID();

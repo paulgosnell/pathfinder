@@ -78,10 +78,6 @@ module.exports = {
           '0%, 100%': { opacity: 0.4 },
           '50%': { opacity: 0.7 },
         },
-        pulseDot: {
-          '0%, 100%': { opacity: 0.4 },
-          '50%': { opacity: 0.7 },
-        },
         slideRight: {
           '0%': { opacity: 0, transform: 'translateX(-10px)' },
           '100%': { opacity: 1, transform: 'translateX(0)' },

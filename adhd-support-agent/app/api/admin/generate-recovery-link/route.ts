@@ -18,24 +18,11 @@ export async function POST(req: NextRequest) {
     const supabase = createServiceClient();
 
     // Generate recovery link (does NOT send email)
-    // Use production URL if available, otherwise get from request headers
-    const host = req.headers.get('host');
-    const protocol = req.headers.get('x-forwarded-proto') || 'http';
-
-    // Determine site URL: env variable > request headers > hardcoded fallback
-    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (!siteUrl && host) {
-      siteUrl = `${protocol}://${host}`;
-    }
-    if (!siteUrl || siteUrl.includes('localhost')) {
-      siteUrl = 'https://pathfinder001.netlify.app';
-    }
-
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email,
       options: {
-        redirectTo: `${siteUrl}/auth/update-password`
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/update-password`
       }
     });
 

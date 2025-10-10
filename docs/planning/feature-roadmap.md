@@ -404,25 +404,31 @@ CREATE TABLE strategies_v2 (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE strategy_usage (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  strategy_id UUID REFERENCES strategies_v2(id),
-  user_id UUID REFERENCES auth.users(id),
-  session_id UUID REFERENCES agent_sessions(id),
-  suggested_at TIMESTAMPTZ DEFAULT NOW(),
-  user_interest TEXT, -- 'selected', 'dismissed', 'bookmarked'
-  effectiveness_rating INTEGER, -- 1-5, null until follow-up
-  feedback TEXT
-);
+-- ⚠️ REMOVED Oct 2025: strategy_usage table
+-- Never implemented - no insert/update logic exists
+-- See: DATABASE-CLEANUP.md for details
+--
+-- CREATE TABLE strategy_usage (
+--   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   strategy_id UUID REFERENCES strategies_v2(id),
+--   user_id UUID REFERENCES auth.users(id),
+--   session_id UUID REFERENCES agent_sessions(id),
+--   suggested_at TIMESTAMPTZ DEFAULT NOW(),
+--   user_interest TEXT, -- 'selected', 'dismissed', 'bookmarked'
+--   effectiveness_rating INTEGER, -- 1-5, null until follow-up
+--   feedback TEXT
+-- );
 ```
 
-**Strategy Source Pipeline:**
+**⚠️ NOTE**: This feature (strategy tracking) was planned but never implemented. The `strategy_usage` table was removed in October 2025 cleanup. If implementing this feature in the future, recreate the table and add tracking logic.
+
+**Strategy Source Pipeline (if reimplemented):**
 - Public research databases (CHADD, ADDitude)
 - Evidence-based parenting programs
 - Clinical guidelines (NICE, AAP)
 - User-contributed (moderated)
 
-**Success Metrics:**
+**Success Metrics (if reimplemented):**
 - Strategy suggestion acceptance rate
 - Effectiveness ratings over time
 - Most successful strategies by age/topic

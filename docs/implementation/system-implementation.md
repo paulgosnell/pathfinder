@@ -165,12 +165,12 @@ Return Response to User
 - Error logging with database backup
 
 #### Database Tables Supported:
-- `agent_performance` - Metrics and cost tracking
-- `agent_errors` - Error logging
-- `agent_sessions` - Session management
-- `agent_conversations` - Chat history
+- `agent_performance` - Metrics and cost tracking ✅ ACTIVE
+- `agent_sessions` - Session management ✅ ACTIVE
+- `agent_conversations` - Chat history ✅ ACTIVE
+- ~~`agent_errors`~~ - ❌ REMOVED (Oct 2025 - never implemented)
 
-**Note**: Database tables need to be created in Supabase (SQL schemas provided in `supabase-schema.sql` and `performance-schema.sql`)
+**Note**: Database tables need to be created in Supabase (SQL schemas provided in migrations folder). See `DATABASE-CLEANUP.md` for removed tables.
 
 ---
 

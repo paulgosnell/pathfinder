@@ -63,13 +63,13 @@ await supabase.from('agent_performance').insert({...});
 
 ## Results
 
-All database tables are now being populated correctly:
+All active database tables are being populated correctly:
 
 - ✅ `users` - User records created on first chat
 - ✅ `agent_sessions` - Session tracking working
 - ✅ `agent_conversations` - Messages being saved
 - ✅ `agent_performance` - Performance metrics tracking
-- ✅ `agent_errors` - Error logging enabled
+- ❌ ~~`agent_errors`~~ - **REMOVED Oct 2025** (never actually implemented - see DATABASE-CLEANUP.md)
 
 ## Why Service Role Key?
 
@@ -126,7 +126,7 @@ OPENAI_API_KEY=your_openai_key
 1. Monitor database growth in Supabase Dashboard
 2. Check performance metrics accumulation
 3. Review RLS policies if you want to tighten security further
-4. Consider adding `agent_decisions` and `agent_tool_usage` tracking
+4. ~~Consider adding `agent_decisions` and `agent_tool_usage` tracking~~ - **Tables removed in Oct 2025 cleanup** (see DATABASE-CLEANUP.md)
 
 ---
 

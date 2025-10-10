@@ -44,10 +44,15 @@ export class ErrorBoundary extends Component<Props, State> {
       this.props.onError(error, errorInfo);
     }
 
-    // In production, you might want to log to an error tracking service
+    // In production, log to error tracking service
+    // Future enhancement: Integrate Sentry or LogRocket
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to error tracking service (e.g., Sentry, LogRocket)
-      // logErrorToService(error, errorInfo);
+      // Production error logging placeholder
+      console.error('[Production Error]:', {
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack
+      });
     }
   }
 

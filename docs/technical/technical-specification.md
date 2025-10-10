@@ -214,27 +214,13 @@ CREATE TABLE agent_performance (
     model_used TEXT DEFAULT 'gpt-4o-mini'
 );
 
--- Tool usage tracking
-CREATE TABLE agent_tool_usage (
-    id UUID PRIMARY KEY,
-    session_id UUID REFERENCES agent_sessions(id),
-    tool_name TEXT NOT NULL,
-    tool_input JSONB,
-    tool_output JSONB,
-    execution_time_ms INTEGER,
-    success BOOLEAN,
-    created_at TIMESTAMPTZ
-);
-
--- Error logging
-CREATE TABLE agent_errors (
-    id UUID PRIMARY KEY,
-    session_id UUID REFERENCES agent_sessions(id),
-    agent_type TEXT, -- 'crisis' or 'main'
-    error_message TEXT,
-    error_context JSONB,
-    created_at TIMESTAMPTZ
-);
+-- ⚠️ REMOVED in October 2025 cleanup:
+-- - agent_tool_usage (never implemented)
+-- - agent_errors (never implemented)
+-- - agent_daily_stats (broken upsert logic)
+-- - agent_decisions (never implemented)
+-- - strategy_usage (never implemented)
+-- See: DATABASE-CLEANUP.md for details
 ```
 
 ---

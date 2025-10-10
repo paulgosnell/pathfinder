@@ -60,7 +60,7 @@ export default function ADHDSupportChat() {
         <div className="bg-gradient-to-r from-sage to-sage-light p-6 text-center relative">
           <div className="absolute top-0 left-0 right-0 h-1 bg-lavender animate-pulse-slow"></div>
           <h1 className="text-gray-800 text-xl font-semibold">ADHD Support</h1>
-          <p className="text-gray-700 text-sm mt-1">Your AI therapeutic companion</p>
+          <p className="text-gray-700 text-sm mt-1">Your AI coaching support</p>
         </div>
 
         {/* Chat messages */}

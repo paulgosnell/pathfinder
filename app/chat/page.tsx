@@ -173,7 +173,7 @@ function ADHDSupportChat() {
                   margin: '2px 0 0 0'
                 }}
               >
-                Your AI therapeutic companion
+                Your AI parenting coach
               </p>
             </div>
 

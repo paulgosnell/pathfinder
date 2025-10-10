@@ -16,11 +16,11 @@ export const createStrategyAgent = () => {
   return async (challenge: string, childContext: any) => {
     const result = await generateObject({
       model: openai('gpt-4'),
-      system: `You are an ADHD strategy specialist. Provide evidence-based, practical interventions for specific parenting challenges.
-      
+      system: `You are an ADHD strategy specialist. Provide practical, coaching-based interventions for specific parenting challenges.
+
       Focus on:
-      - Strategies proven effective for ADHD
-      - Age-appropriate implementations  
+      - Strategies for ADHD parenting
+      - Age-appropriate implementations
       - Clear, actionable steps
       - Realistic expectations for overwhelmed parents`,
 

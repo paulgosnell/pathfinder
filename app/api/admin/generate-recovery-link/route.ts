@@ -31,6 +31,15 @@ export async function POST(req: NextRequest) {
       siteUrl = 'https://pathfinder001.netlify.app';
     }
 
+    // Debug logging
+    console.log('Recovery link generation:', {
+      host,
+      protocol,
+      envUrl: process.env.NEXT_PUBLIC_SITE_URL,
+      finalUrl: siteUrl,
+      email
+    });
+
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email,

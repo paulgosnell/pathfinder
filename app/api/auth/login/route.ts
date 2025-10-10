@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server-client';
-import { recordAuthEvent } from '@/lib/database/performance';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -35,15 +34,6 @@ export async function POST(req: NextRequest) {
 
     if (userError) {
       console.error('Failed to upsert user:', userError);
-    }
-
-    try {
-      await recordAuthEvent({
-        userId: data.session.user.id,
-        type: 'login'
-      });
-    } catch (authEventError) {
-      console.warn('Failed to record auth event (non-critical):', authEventError);
     }
 
     return Response.json({

@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { createServiceClient } from '@/lib/supabase/service-client';
-import { recordAuthEvent } from '@/lib/database/performance';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -24,7 +23,17 @@ export async function POST(req: NextRequest) {
 
     if (authError || !authData.user) {
       console.error('Supabase auth user creation failed', authError);
-      return Response.json({ message: 'Unable to register user right now.' }, { status: 400 });
+
+      // Handle specific error cases
+      if (authError?.message?.includes('already been registered') || authError?.code === 'email_exists') {
+        return Response.json({
+          message: 'This email is already registered. Please sign in instead.'
+        }, { status: 422 });
+      }
+
+      return Response.json({
+        message: 'Unable to register user right now. Please try again.'
+      }, { status: 400 });
     }
 
     const userId = authData.user.id;
@@ -45,17 +54,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ message: 'Unable to complete registration.' }, { status: 500 });
     }
 
-    try {
-      await recordAuthEvent({
-        userId,
-        type: 'register',
-        metadata: { consentGiven }
-      });
-    } catch (authEventError) {
-      console.warn('Failed to record auth event (non-critical):', authEventError);
-    }
-
-    return Response.json({ message: 'Registration successful. Please verify your email.' });
+    return Response.json({ message: 'Registration successful. You can now sign in.' });
   } catch (error) {
     console.error('Registration error', error);
     if (error instanceof z.ZodError) {

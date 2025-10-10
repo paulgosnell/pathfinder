@@ -18,11 +18,16 @@ export async function POST(req: NextRequest) {
     const supabase = createServiceClient();
 
     // Generate recovery link (does NOT send email)
+    // Use production URL if available, otherwise get from request headers
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || 'http';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
+
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email,
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/update-password`
+        redirectTo: `${siteUrl}/auth/update-password`
       }
     });
 

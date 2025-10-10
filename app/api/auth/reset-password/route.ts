@@ -13,9 +13,17 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServiceClient();
 
+    // Get the correct site URL for redirect
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || 'http';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
+
     const { error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
-      email
+      email,
+      options: {
+        redirectTo: `${siteUrl}/auth/update-password`
+      }
     });
 
     if (error) {

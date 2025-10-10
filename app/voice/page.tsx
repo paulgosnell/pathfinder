@@ -6,6 +6,9 @@ export const metadata = {
   description: 'Voice-based ADHD parent coaching powered by ElevenLabs',
 };
 
+// Force dynamic rendering since this uses authentication
+export const dynamic = 'force-dynamic';
+
 export default function VoiceV2Page() {
   return (
     <ProtectedRoute>

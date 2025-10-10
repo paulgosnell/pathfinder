@@ -22,6 +22,14 @@ if (!supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Export a function to create browser clients (for SSR compatibility)
+export function createBrowserClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
 // Database types
 export interface AgentSession {
   id: string;

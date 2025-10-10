@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { Quicksand, Inter } from 'next/font/google'
-import ErrorBoundary from '@/components/ErrorBoundary'
-import { AuthProvider } from '@/lib/auth/auth-context'
 import './globals.css'
+import { Providers } from './providers'
 
 // Import Quicksand font for headings
 const quicksand = Quicksand({ 
@@ -29,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${quicksand.variable} ${inter.variable}`} style={{ fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif" }}>
+    <html lang="en" className={`${quicksand.variable} ${inter.variable}`}>
       <head>
         {/* Add Atkinson Hyperlegible font */}
         <link
@@ -37,12 +36,10 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/atkinson-hyperlegible@1.0.2/stylesheet.min.css"
         />
       </head>
-      <body style={{ fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif" }} className="bg-cream text-navy antialiased">
-        <ErrorBoundary>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </ErrorBoundary>
+      <body className="font-body bg-cream text-gray-800">
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

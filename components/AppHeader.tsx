@@ -36,6 +36,11 @@ export default function AppHeader({ onMenuClick, title, subtitle }: AppHeaderPro
     <div
       className="relative overflow-hidden"
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
         background: 'linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7))',
         padding: '16px 24px',
         minHeight: '72px',

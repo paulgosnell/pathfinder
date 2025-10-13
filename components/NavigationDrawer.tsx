@@ -37,12 +37,11 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
         <div
           onClick={onClose}
           style={{
-            position: 'absolute',
+            position: 'fixed',
             inset: 0,
             backgroundColor: 'rgba(42, 63, 90, 0.5)',
             zIndex: 999,
-            animation: 'fadeIn 0.2s ease-out',
-            borderRadius: '24px'
+            animation: 'fadeIn 0.2s ease-out'
           }}
         />
       )}
@@ -50,7 +49,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
       {/* Drawer */}
       <div
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           right: 0,
           bottom: 0,
@@ -64,7 +63,8 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           display: 'flex',
           flexDirection: 'column',
           borderTopLeftRadius: '24px',
-          borderBottomLeftRadius: '24px'
+          borderBottomLeftRadius: '24px',
+          overflowY: 'hidden'
         }}
       >
         {/* Mini Profile Area */}

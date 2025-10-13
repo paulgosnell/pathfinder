@@ -20,7 +20,15 @@ export default function VoicePage() {
   if (timeBudgetMinutes === null) {
     return (
       <MobileDeviceMockup>
-        <div className="w-full h-full bg-white flex flex-col relative" style={{ overflow: 'hidden' }}>
+        <div className="w-full h-full bg-white flex flex-col"
+             style={{
+               position: 'fixed',
+               top: 0,
+               left: 0,
+               right: 0,
+               bottom: 0,
+               overflow: 'hidden'
+             }}>
           <NavigationDrawer
             isOpen={isDrawerOpen}
             onClose={() => setIsDrawerOpen(false)}
@@ -32,7 +40,11 @@ export default function VoicePage() {
             subtitle="Speak naturally with your coach"
           />
 
-          <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+          <div className="flex-grow overflow-y-auto"
+               style={{
+                 backgroundColor: '#F9F7F3',
+                 marginTop: '72px'
+               }}>
             <ContentContainer>
               <TimeSelectionCard onTimeSelected={handleTimeSelected} />
             </ContentContainer>
@@ -45,8 +57,13 @@ export default function VoicePage() {
   // Show voice interface once time is selected
   return (
     <MobileDeviceMockup>
-      <div className="w-full h-full bg-white flex flex-col relative"
+      <div className="w-full h-full bg-white flex flex-col"
            style={{
+             position: 'fixed',
+             top: 0,
+             left: 0,
+             right: 0,
+             bottom: 0,
              overflow: 'hidden'
            }}>
 
@@ -55,13 +72,19 @@ export default function VoicePage() {
           onClose={() => setIsDrawerOpen(false)}
         />
 
+        {/* Header - Fixed at top */}
         <AppHeader
           onMenuClick={() => setIsDrawerOpen(true)}
           title="Voice Coaching"
           subtitle="Speak naturally with your coach"
         />
 
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+        {/* Voice content - with margin for fixed header */}
+        <div style={{
+          flex: 1,
+          overflow: 'hidden',
+          marginTop: '72px' // Height of fixed header
+        }}>
           <ElevenLabsVoiceAssistant timeBudgetMinutes={timeBudgetMinutes} />
         </div>
       </div>

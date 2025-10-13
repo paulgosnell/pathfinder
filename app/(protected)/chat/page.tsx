@@ -213,7 +213,15 @@ export default function ChatPage() {
   if (loadingSession) {
     return (
       <MobileDeviceMockup>
-        <div className="w-full h-full bg-white flex flex-col relative" style={{ overflow: 'hidden' }}>
+        <div className="w-full h-full bg-white flex flex-col"
+             style={{
+               position: 'fixed',
+               top: 0,
+               left: 0,
+               right: 0,
+               bottom: 0,
+               overflow: 'hidden'
+             }}>
           <NavigationDrawer
             isOpen={isDrawerOpen}
             onClose={() => setIsDrawerOpen(false)}
@@ -225,7 +233,11 @@ export default function ChatPage() {
             subtitle="Your AI parenting coach"
           />
 
-          <div className="flex-grow overflow-y-auto flex items-center justify-center" style={{ backgroundColor: '#F9F7F3' }}>
+          <div className="flex-grow overflow-y-auto flex items-center justify-center"
+               style={{
+                 backgroundColor: '#F9F7F3',
+                 marginTop: '72px'
+               }}>
             <div className="text-center">
               <div className="animate-pulse" style={{ color: '#D7CDEC', fontSize: '48px', marginBottom: '16px' }}>
                 💬
@@ -242,7 +254,15 @@ export default function ChatPage() {
   if (timeBudgetMinutes === null) {
     return (
       <MobileDeviceMockup>
-        <div className="w-full h-full bg-white flex flex-col relative" style={{ overflow: 'hidden' }}>
+        <div className="w-full h-full bg-white flex flex-col"
+             style={{
+               position: 'fixed',
+               top: 0,
+               left: 0,
+               right: 0,
+               bottom: 0,
+               overflow: 'hidden'
+             }}>
           <NavigationDrawer
             isOpen={isDrawerOpen}
             onClose={() => setIsDrawerOpen(false)}
@@ -254,7 +274,11 @@ export default function ChatPage() {
             subtitle="Your AI parenting coach"
           />
 
-          <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+          <div className="flex-grow overflow-y-auto"
+               style={{
+                 backgroundColor: '#F9F7F3',
+                 marginTop: '72px'
+               }}>
             <ContentContainer>
               <TimeSelectionCard onTimeSelected={handleTimeSelected} />
             </ContentContainer>
@@ -268,8 +292,13 @@ export default function ChatPage() {
   return (
     <MobileDeviceMockup>
       {/* Main UI Container - mobile sized */}
-      <div className="w-full h-full bg-white flex flex-col relative"
+      <div className="w-full h-full bg-white flex flex-col"
            style={{
+             position: 'fixed',
+             top: 0,
+             left: 0,
+             right: 0,
+             bottom: 0,
              overflow: 'hidden'
            }}>
 
@@ -278,15 +307,23 @@ export default function ChatPage() {
           onClose={() => setIsDrawerOpen(false)}
         />
 
-        {/* Header */}
+        {/* Header - Fixed at top */}
         <AppHeader
           onMenuClick={() => setIsDrawerOpen(true)}
           title="ADHD Support"
           subtitle="Your AI parenting coach"
         />
 
-        {/* Chat Area - flex grow to fill available space */}
-        <div ref={chatAreaRef} className="flex-grow relative overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+        {/* Chat Area - scrollable between header and input */}
+        <div
+          ref={chatAreaRef}
+          className="flex-grow relative overflow-y-auto"
+          style={{
+            backgroundColor: '#F9F7F3',
+            marginTop: '72px', // Height of fixed header
+            marginBottom: '88px' // Height of fixed input area
+          }}
+        >
           {/* Noise texture overlay */}
           <div
             className="absolute inset-0 opacity-[0.05] pointer-events-none"
@@ -400,10 +437,16 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Input Area - lighter background color from design system */}
+        {/* Input Area - Fixed at bottom */}
         <div className="border-t" style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
           borderColor: 'rgba(215, 205, 236, 0.1)',
-          backgroundColor: 'rgba(249, 247, 243, 0.5)'
+          backgroundColor: 'rgba(249, 247, 243, 0.95)',
+          backdropFilter: 'blur(8px)'
         }}>
           {/* Input Row */}
           <div className="px-[15px] py-[15px]">

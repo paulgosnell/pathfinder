@@ -5,10 +5,17 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialization to avoid runtime errors during build
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 /**
  * Get top-line analytics metrics
@@ -16,6 +23,7 @@ const supabase = createClient(
 export async function getAnalyticsOverview(days: number = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     // Total visits
@@ -30,7 +38,7 @@ export async function getAnalyticsOverview(days: number = 7) {
       .select('visitor_id')
       .gte('visited_at', startDate.toISOString());
 
-    const uniqueVisitors = new Set(uniqueVisitorsData?.map(v => v.visitor_id) || []).size;
+    const uniqueVisitors = new Set(uniqueVisitorsData?.map((v: any) => v.visitor_id) || []).size;
 
     // Page views
     const { count: pageViews } = await supabase
@@ -77,7 +85,7 @@ export async function getAnalyticsOverview(days: number = 7) {
       .gte('first_visit_at', startDate.toISOString());
 
     const avgSessionDuration = sessionData && sessionData.length > 0
-      ? Math.round(sessionData.reduce((sum, s) => sum + s.session_duration_seconds, 0) / sessionData.length)
+      ? Math.round(sessionData.reduce((sum: any, s: any) => sum + s.session_duration_seconds, 0) / sessionData.length)
       : 0;
 
     // Bounce rate (sessions with only 1 page view)
@@ -120,6 +128,7 @@ export async function getAnalyticsOverview(days: number = 7) {
 export async function getTrafficSources(days: number = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -135,7 +144,7 @@ export async function getTrafficSources(days: number = 7) {
       llm: 0,
     };
 
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const type = visit.referrer_type || 'direct';
       sources[type] = (sources[type] || 0) + 1;
     });
@@ -153,6 +162,7 @@ export async function getTrafficSources(days: number = 7) {
 export async function getTopReferrers(days: number = 7, limit: number = 10) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -163,7 +173,7 @@ export async function getTopReferrers(days: number = 7, limit: number = 10) {
 
     // Count occurrences
     const counts: Record<string, number> = {};
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const domain = visit.referrer_domain;
       if (domain) {
         counts[domain] = (counts[domain] || 0) + 1;
@@ -187,6 +197,7 @@ export async function getTopReferrers(days: number = 7, limit: number = 10) {
 export async function getTopSearchQueries(days: number = 7, limit: number = 10) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -197,7 +208,7 @@ export async function getTopSearchQueries(days: number = 7, limit: number = 10) 
 
     // Count occurrences
     const counts: Record<string, number> = {};
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const query = visit.search_query;
       if (query) {
         counts[query] = (counts[query] || 0) + 1;
@@ -221,6 +232,7 @@ export async function getTopSearchQueries(days: number = 7, limit: number = 10) 
 export async function getTopPages(days: number = 7, limit: number = 10) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -230,7 +242,7 @@ export async function getTopPages(days: number = 7, limit: number = 10) {
 
     // Count occurrences
     const counts: Record<string, { count: number; title: string }> = {};
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const path = visit.path;
       if (!counts[path]) {
         counts[path] = { count: 0, title: visit.page_title || path };
@@ -255,6 +267,7 @@ export async function getTopPages(days: number = 7, limit: number = 10) {
 export async function getLLMTrafficBreakdown(days: number = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -271,7 +284,7 @@ export async function getLLMTrafficBreakdown(days: number = 7) {
       other_bot: 0,
     };
 
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const source = visit.llm_source;
       if (source && breakdown.hasOwnProperty(source)) {
         breakdown[source]++;
@@ -291,6 +304,7 @@ export async function getLLMTrafficBreakdown(days: number = 7) {
 export async function getDeviceBreakdown(days: number = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -304,7 +318,7 @@ export async function getDeviceBreakdown(days: number = 7) {
       tablet: 0,
     };
 
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const type = visit.device_type || 'desktop';
       breakdown[type] = (breakdown[type] || 0) + 1;
     });
@@ -322,6 +336,7 @@ export async function getDeviceBreakdown(days: number = 7) {
 export async function getBrowserBreakdown(days: number = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -330,7 +345,7 @@ export async function getBrowserBreakdown(days: number = 7) {
       .gte('visited_at', startDate.toISOString());
 
     const counts: Record<string, number> = {};
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const browser = visit.browser || 'Unknown';
       counts[browser] = (counts[browser] || 0) + 1;
     });
@@ -350,6 +365,7 @@ export async function getBrowserBreakdown(days: number = 7) {
 export async function getDailyTrends(days: number = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase
@@ -360,7 +376,7 @@ export async function getDailyTrends(days: number = 7) {
 
     // Group by date
     const trendsByDate: Record<string, number> = {};
-    data?.forEach(visit => {
+    data?.forEach((visit: any) => {
       const date = new Date(visit.visited_at).toISOString().split('T')[0];
       trendsByDate[date] = (trendsByDate[date] || 0) + 1;
     });
@@ -390,6 +406,7 @@ export async function getDailyTrends(days: number = 7) {
 export async function getRealTimeVisitors() {
   const fiveMinutesAgo = new Date();
   fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+  const supabase = getSupabaseClient();
 
   try {
     const { data } = await supabase

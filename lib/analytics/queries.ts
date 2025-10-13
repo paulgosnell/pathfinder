@@ -1,20 +1,20 @@
 /**
  * Analytics Queries
- * Server-side functions for fetching analytics data
+ * Client-side functions for fetching analytics data
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Lazy initialization to avoid runtime errors during build
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase environment variables');
   }
 
-  return createClient(supabaseUrl, supabaseKey);
+  return createBrowserClient(supabaseUrl, supabaseKey);
 }
 
 /**

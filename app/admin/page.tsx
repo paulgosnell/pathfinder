@@ -2,26 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
-import {
-  getExecutiveMetrics,
-  getActiveSessions,
-  getSessionQualityMetrics,
-  getSevenDayTrends,
-  getAllUsers,
-  getWaitlistSignups,
-  getSessions
-} from '@/lib/admin/queries';
-import {
-  getAnalyticsOverview,
-  getTrafficSources,
-  getTopReferrers,
-  getTopSearchQueries,
-  getTopPages,
-  getLLMTrafficBreakdown,
-  getDeviceBreakdown,
-  getDailyTrends,
-  getRealTimeVisitors
-} from '@/lib/analytics/queries';
 import { logAdminAction } from '@/lib/admin/auth';
 
 // Tab types
@@ -55,59 +35,40 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [
-        exec,
-        active,
-        quality,
-        trend,
-        userList,
-        wait,
-        sessions,
-        analyticsOv,
-        trafficSrc,
-        topRef,
-        topSearch,
-        topPg,
-        llmBd,
-        deviceBd,
-        dailyTr,
-        realTime
-      ] = await Promise.all([
-        getExecutiveMetrics(),
-        getActiveSessions(),
-        getSessionQualityMetrics(),
-        getSevenDayTrends(),
-        getAllUsers(),
-        getWaitlistSignups(),
-        getSessions(),
-        getAnalyticsOverview(7),
-        getTrafficSources(7),
-        getTopReferrers(7, 10),
-        getTopSearchQueries(7, 10),
-        getTopPages(7, 10),
-        getLLMTrafficBreakdown(7),
-        getDeviceBreakdown(7),
-        getDailyTrends(7),
-        getRealTimeVisitors()
+      // Fetch from API routes instead of direct Supabase queries
+      const [dashboardRes, analyticsRes] = await Promise.all([
+        fetch('/api/admin/dashboard'),
+        fetch('/api/admin/analytics?days=7')
       ]);
 
-      setExecutiveMetrics(exec);
-      setActiveSessions(active);
-      setQualityMetrics(quality);
-      setTrends(trend);
-      setUsers(userList);
-      setWaitlist(wait);
-      setAllSessions(sessions);
+      if (!dashboardRes.ok || !analyticsRes.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
 
-      setAnalyticsOverview(analyticsOv);
-      setTrafficSources(trafficSrc);
-      setTopReferrers(topRef);
-      setTopSearchQueries(topSearch);
-      setTopPages(topPg);
-      setLLMBreakdown(llmBd);
-      setDeviceBreakdown(deviceBd);
-      setDailyTrends(dailyTr);
-      setRealTimeVisitors(realTime);
+      const dashboardData = await dashboardRes.json();
+      const analyticsData = await analyticsRes.json();
+
+      // Set dashboard data
+      setExecutiveMetrics(dashboardData.executiveMetrics);
+      setActiveSessions(dashboardData.activeSessions);
+      setQualityMetrics(dashboardData.qualityMetrics);
+      setTrends(dashboardData.trends);
+      setUsers(dashboardData.users);
+      setWaitlist(dashboardData.waitlist);
+      setAllSessions(dashboardData.allSessions);
+
+      // Set analytics data
+      setAnalyticsOverview(analyticsData.overview);
+      setRealTimeVisitors(analyticsData.realTimeVisitors);
+
+      // Set empty arrays for data we're not fetching yet
+      setTrafficSources({ direct: 0, search: 0, social: 0, referral: 0, llm: 0 });
+      setTopReferrers([]);
+      setTopSearchQueries([]);
+      setTopPages([]);
+      setLLMBreakdown({ chatgpt: 0, claude: 0, perplexity: 0, gemini: 0, other_bot: 0 });
+      setDeviceBreakdown({ desktop: 0, mobile: 0, tablet: 0 });
+      setDailyTrends([]);
 
       setLastRefresh(new Date());
 

@@ -266,7 +266,12 @@ export async function POST(req: NextRequest) {
     const newRealityDepth = realityDepth + 1;
 
     // Check if we've had enough exploration to move to Options
-    const minRealityDepth = 10; // Minimum 10 exchanges in Reality
+    // Adapt minimum depth based on parent's available time
+    const minRealityDepth =
+      session.timeBudgetMinutes === 5 ? 2 :   // 5 mins: 1-2 exchanges (quick check-in)
+      session.timeBudgetMinutes === 15 ? 6 :  // 15 mins: 5-7 exchanges (brief session)
+      session.timeBudgetMinutes === 30 ? 9 :  // 30 mins: 8-12 exchanges (standard session)
+      10;                                      // 50 mins: 10-15+ exchanges (full exploration)
     const canMoveToOptions = newRealityDepth >= minRealityDepth;
 
     // Estimate time elapsed (rough approximation: 2 minutes per exchange)
@@ -285,7 +290,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`   Reality depth: ${newRealityDepth} exchanges`);
-    console.log(`   Ready for Options: ${canMoveToOptions ? 'Yes' : 'No (minimum 10 exchanges)'}`);
+    console.log(`   Ready for Options: ${canMoveToOptions ? 'Yes' : `No (minimum ${minRealityDepth} exchanges for ${session.timeBudgetMinutes}-min session)`}`);
     console.log(`   Time elapsed: ~${estimatedTimeElapsed}/${session.timeBudgetMinutes} minutes`);
 
     // STEP 6: Save conversation to database (using service client to bypass RLS)

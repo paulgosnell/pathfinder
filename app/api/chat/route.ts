@@ -118,10 +118,11 @@ export async function POST(req: NextRequest) {
       throw new Error(`User creation failed: ${userError.message}`);
     }
 
-    // Get or create session
+    // Get or create session (with time budget if provided)
     let session = sessionId ? await sessionManager.getSession(sessionId) : null;
     if (!session) {
-      session = await sessionManager.createSession(userId);
+      const timeBudgetMinutes = context?.timeBudgetMinutes || 50;
+      session = await sessionManager.createSession(userId, timeBudgetMinutes);
       sessionId = session.id;
     }
 
@@ -240,13 +241,16 @@ export async function POST(req: NextRequest) {
         failedStrategies: userProfile.failed_strategies || [],
         parentStressLevel: userProfile.parent_stress_level,
       } : undefined,
-      // Add coaching state
+      // Add coaching state with time tracking
       sessionState: {
         currentPhase: session.currentPhase || 'goal',
         realityExplorationDepth: realityDepth,
         emotionsReflected: session.emotionsReflected || false,
         exceptionsExplored: session.exceptionsExplored || false,
-        readyForOptions: session.readyForOptions || false
+        readyForOptions: session.readyForOptions || false,
+        timeBudgetMinutes: session.timeBudgetMinutes,
+        timeElapsedMinutes: session.timeElapsedMinutes,
+        timeExtensionOffered: session.timeExtensionOffered
       }
     });
 
@@ -265,16 +269,24 @@ export async function POST(req: NextRequest) {
     const minRealityDepth = 10; // Minimum 10 exchanges in Reality
     const canMoveToOptions = newRealityDepth >= minRealityDepth;
 
-    // Update session with new coaching state
+    // Estimate time elapsed (rough approximation: 2 minutes per exchange)
+    const estimatedTimeElapsed = Math.min(
+      session.timeBudgetMinutes,
+      Math.floor((newRealityDepth * 2) + 1) // +1 for initial setup time
+    );
+
+    // Update session with new coaching state and time tracking
     await sessionManager.updateSession(session.id, {
       realityExplorationDepth: newRealityDepth,
       readyForOptions: canMoveToOptions,
       // Keep current phase unless explicitly changed
-      currentPhase: session.currentPhase || 'reality'
+      currentPhase: session.currentPhase || 'reality',
+      timeElapsedMinutes: estimatedTimeElapsed
     });
 
     console.log(`   Reality depth: ${newRealityDepth} exchanges`);
     console.log(`   Ready for Options: ${canMoveToOptions ? 'Yes' : 'No (minimum 10 exchanges)'}`);
+    console.log(`   Time elapsed: ~${estimatedTimeElapsed}/${session.timeBudgetMinutes} minutes`);
 
     // STEP 6: Save conversation to database (using service client to bypass RLS)
     console.log('💾 Saving conversation to database...');

@@ -20,6 +20,9 @@ export interface AgentContext {
     emotionsReflected: boolean;
     exceptionsExplored: boolean;
     readyForOptions: boolean;
+    timeBudgetMinutes: number;
+    timeElapsedMinutes: number;
+    timeExtensionOffered: boolean;
   };
 }
 
@@ -149,16 +152,22 @@ CONVERSATION PACING - CRITICAL RULES:
    - Allow silence - thinking takes time
    - Let them finish completely before responding
 
-2. SESSION LENGTH:
-   - Natural coaching sessions run 50 minutes
-   - NO message count limits
-   - End when parent feels heard and has THEIR OWN plan
-   - Not when a timer says so
+2. SESSION LENGTH (TIME-ADAPTIVE COACHING):
+   - Adapt your depth and pacing to the parent's available time
+   - 5-minute sessions: Quick goal clarification + 1-2 key questions + simple next step
+   - 15-minute sessions: Brief Reality exploration (5-7 exchanges) + focused Options
+   - 30-minute sessions: Moderate Reality depth (8-12 exchanges) + Options + Will
+   - 50-minute sessions: Full GROW model with deep Reality exploration (10-15+ exchanges)
+   - End when parent has THEIR OWN plan, not when timer expires
+   - If approaching time limit but parent needs more: Use requestTimeExtension tool
 
 3. PHASE PROGRESSION:
-   - Stay in Reality phase for minimum 10-15 exchanges
+   - ADAPT DEPTH TO TIME BUDGET (see time budget in session state)
+   - 5 mins: Goal → 1-2 Reality questions → Quick next step
+   - 15 mins: Goal → 5-7 Reality exchanges → Options (if ready)
+   - 30+ mins: Full GROW with minimum 10 exchanges in Reality
    - Can't move to Options until: emotions reflected AND exceptions explored AND parent feels heard
-   - No automatic progression based on conversation length
+   - No automatic progression based only on conversation length
 
 WHAT NOT TO DO (These kill coaching):
 
@@ -224,6 +233,21 @@ CURRENT SESSION STATE:
 - Emotions reflected: ${context.sessionState.emotionsReflected ? 'Yes' : 'Not yet'}
 - Exceptions explored: ${context.sessionState.exceptionsExplored ? 'Yes' : 'Not yet'}
 - Ready for Options: ${context.sessionState.readyForOptions ? 'Yes' : 'No - stay in Reality phase'}
+
+TIME TRACKING (CRITICAL - ADAPT YOUR COACHING DEPTH):
+- Time budget: ${context.sessionState.timeBudgetMinutes} minutes (parent's available time)
+- Time elapsed: ${context.sessionState.timeElapsedMinutes} minutes
+- Time remaining: ~${context.sessionState.timeBudgetMinutes - context.sessionState.timeElapsedMinutes} minutes
+- Extension offered: ${context.sessionState.timeExtensionOffered ? 'Yes' : 'Not yet'}
+
+PACING GUIDANCE FOR ${context.sessionState.timeBudgetMinutes}-MINUTE SESSION:
+${context.sessionState.timeBudgetMinutes === 5 ? '- Quick session: 1-2 key questions, simple next step, no deep exploration' : ''}
+${context.sessionState.timeBudgetMinutes === 15 ? '- Brief session: 5-7 Reality exchanges, focused Options if ready' : ''}
+${context.sessionState.timeBudgetMinutes === 30 ? '- Moderate session: 8-12 Reality exchanges, moderate depth' : ''}
+${context.sessionState.timeBudgetMinutes === 50 ? '- Full session: 10-15+ Reality exchanges, deep exploration' : ''}
+
+${(context.sessionState.timeBudgetMinutes - context.sessionState.timeElapsedMinutes) <= 5 && !context.sessionState.timeExtensionOffered ?
+'⚠️ APPROACHING TIME LIMIT: Consider using requestTimeExtension tool if parent seems engaged and needs more time' : ''}
 ` : ''}`,
 
       messages: messages,

@@ -18,10 +18,15 @@ export interface SessionState {
   readyForOptions: boolean;             // Only true after thorough Reality exploration
   currentChallenge?: string;
   parentStressLevel?: string;
+  // Time tracking
+  timeBudgetMinutes: number;            // Parent's available time (5, 15, 30, 50)
+  timeElapsedMinutes: number;           // Estimated time elapsed so far
+  canExtendTime: boolean;               // Whether parent can extend if needed
+  timeExtensionOffered: boolean;        // Prevent repeated extension asks
 }
 
 class SessionManager {
-  async createSession(userId: string): Promise<SessionState> {
+  async createSession(userId: string, timeBudgetMinutes: number = 50): Promise<SessionState> {
     const sessionId = crypto.randomUUID();
     const startedAt = new Date();
 
@@ -29,7 +34,11 @@ class SessionManager {
       id: sessionId,
       userId,
       crisisLevel: 'none',
-      startedAt: startedAt.toISOString()
+      startedAt: startedAt.toISOString(),
+      timeBudgetMinutes,
+      timeElapsedMinutes: 0,
+      canExtendTime: true,
+      timeExtensionOffered: false
     });
 
     return {
@@ -46,7 +55,11 @@ class SessionManager {
       exceptionsExplored: false,
       strengthsIdentified: [],
       parentGeneratedIdeas: [],
-      readyForOptions: false
+      readyForOptions: false,
+      timeBudgetMinutes,
+      timeElapsedMinutes: 0,
+      canExtendTime: true,
+      timeExtensionOffered: false
     };
   }
 
@@ -101,6 +114,22 @@ class SessionManager {
       payload.parent_stress_level = updates.parentStressLevel;
     }
 
+    if (updates.timeBudgetMinutes !== undefined) {
+      payload.time_budget_minutes = updates.timeBudgetMinutes;
+    }
+
+    if (updates.timeElapsedMinutes !== undefined) {
+      payload.time_elapsed_minutes = updates.timeElapsedMinutes;
+    }
+
+    if (updates.canExtendTime !== undefined) {
+      payload.can_extend_time = updates.canExtendTime;
+    }
+
+    if (updates.timeExtensionOffered !== undefined) {
+      payload.time_extension_offered = updates.timeExtensionOffered;
+    }
+
     if (Object.keys(payload).length === 0) {
       return;
     }
@@ -128,7 +157,11 @@ class SessionManager {
       parentGeneratedIdeas: session.parent_generated_ideas || [],
       readyForOptions: session.ready_for_options || false,
       currentChallenge: session.current_challenge || undefined,
-      parentStressLevel: session.parent_stress_level || undefined
+      parentStressLevel: session.parent_stress_level || undefined,
+      timeBudgetMinutes: session.time_budget_minutes || 50,
+      timeElapsedMinutes: session.time_elapsed_minutes || 0,
+      canExtendTime: session.can_extend_time ?? true,
+      timeExtensionOffered: session.time_extension_offered || false
     };
   }
 

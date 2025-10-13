@@ -7,15 +7,32 @@ interface CreateSessionInput {
   userId: string;
   crisisLevel: string;
   startedAt: string;
+  timeBudgetMinutes?: number;
+  timeElapsedMinutes?: number;
+  canExtendTime?: boolean;
+  timeExtensionOffered?: boolean;
 }
 
 export const dbChats = {
-  async createSession({ id, userId, crisisLevel, startedAt }: CreateSessionInput) {
+  async createSession({
+    id,
+    userId,
+    crisisLevel,
+    startedAt,
+    timeBudgetMinutes = 50,
+    timeElapsedMinutes = 0,
+    canExtendTime = true,
+    timeExtensionOffered = false
+  }: CreateSessionInput) {
     const { error } = await supabase.from('agent_sessions').insert({
       id,
       user_id: userId,
       crisis_level: crisisLevel,
-      started_at: startedAt
+      started_at: startedAt,
+      time_budget_minutes: timeBudgetMinutes,
+      time_elapsed_minutes: timeElapsedMinutes,
+      can_extend_time: canExtendTime,
+      time_extension_offered: timeExtensionOffered
     });
 
     if (error) {

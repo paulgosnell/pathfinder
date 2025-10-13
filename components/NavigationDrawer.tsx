@@ -1,6 +1,6 @@
 'use client';
 
-import { X, MessageCircle, Mic, History, User, Users, LogOut } from 'lucide-react';
+import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar, TrendingUp, BookOpen, ClipboardList, FileText } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter } from 'next/navigation';
 
@@ -195,18 +195,39 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
 
         {/* Navigation Links */}
         <nav style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
-          <NavLink href="/chat" icon={<MessageCircle size={20} />} onClick={onClose}>
-            Chat Mode
+          <NavLink href="/chat?new=true" icon={<MessageCircle size={20} />} onClick={onClose}>
+            New Chat Session
           </NavLink>
-          <NavLink href="/voice" icon={<Mic size={20} />} onClick={onClose}>
-            Voice Mode
+          <NavLink href="/voice?new=true" icon={<Mic size={20} />} onClick={onClose}>
+            New Voice Session
           </NavLink>
           <NavLink href="/sessions" icon={<History size={20} />} onClick={onClose}>
             Session History
           </NavLink>
+
+          <NavDivider />
+
           <NavLink href="/family" icon={<Users size={20} />} onClick={onClose}>
             My Family
           </NavLink>
+          <NavLink href="/check-ins" icon={<Calendar size={20} />} onClick={onClose}>
+            Daily Check-ins
+          </NavLink>
+          <NavLink href="/progress" icon={<TrendingUp size={20} />} onClick={onClose}>
+            Progress & Insights
+          </NavLink>
+          <NavLink href="/strategies" icon={<BookOpen size={20} />} onClick={onClose}>
+            Strategy Library
+          </NavLink>
+          <NavLink href="/assessments" icon={<ClipboardList size={20} />} onClick={onClose}>
+            Assessments
+          </NavLink>
+          <NavLink href="/reports" icon={<FileText size={20} />} onClick={onClose}>
+            Reports
+          </NavLink>
+
+          <NavDivider />
+
           <NavLink href="/profile" icon={<User size={20} />} onClick={onClose}>
             Profile Settings
           </NavLink>
@@ -309,5 +330,17 @@ function NavLink({ href, icon, children, onClick }: NavLinkProps) {
       {icon}
       <span>{children}</span>
     </a>
+  );
+}
+
+function NavDivider() {
+  return (
+    <div
+      style={{
+        height: '1px',
+        backgroundColor: 'rgba(215, 205, 236, 0.2)',
+        margin: '8px 24px'
+      }}
+    />
   );
 }

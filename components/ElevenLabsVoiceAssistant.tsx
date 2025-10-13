@@ -5,6 +5,7 @@ import { useConversation } from '@elevenlabs/react';
 import { Mic, MessageCircle, Ear, Volume2, Info, AlertCircle } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useSession } from '@/lib/session/session-context';
 
 // Design system colors
 const colors = {
@@ -18,16 +19,34 @@ const colors = {
   accent5: '#F0D9DA',
 };
 
-export function ElevenLabsVoiceAssistant() {
+interface ElevenLabsVoiceAssistantProps {
+  timeBudgetMinutes?: number;
+}
+
+export function ElevenLabsVoiceAssistant({ timeBudgetMinutes }: ElevenLabsVoiceAssistantProps) {
   const { user } = useAuth();
+  const { setCurrentSession } = useSession();
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string>();
 
-  // Generate stable session ID
+  // Generate stable session ID (browser-compatible UUID)
   const sessionIdRef = useRef<string>('');
 
   if (!sessionIdRef.current) {
-    sessionIdRef.current = crypto.randomUUID();
+    // Use crypto.randomUUID if available, otherwise fallback to manual UUID generation
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      sessionIdRef.current = crypto.randomUUID();
+    } else {
+      // Fallback UUID v4 generator for browsers without crypto.randomUUID
+      sessionIdRef.current = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // Update the session context when we generate a new session ID
+    setCurrentSession(sessionIdRef.current, 'voice');
   }
 
   const conversation = useConversation({

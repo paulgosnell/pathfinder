@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabaseAdmin();
 
     // Get executive metrics
-    const { data: sessions } = await supabase.from('agent_sessions').select('id, mode, crisis_level, started_at, ended_at');
+    const { data: sessions } = await supabase.from('agent_sessions').select('id, mode, crisis_level, started_at, ended_at, current_phase, reality_exploration_depth, emotions_reflected, exceptions_explored, parent_generated_ideas, strengths_identified');
     const { data: users } = await supabase.from('users').select('id, created_at');
     const { data: conversations } = await supabase.from('agent_conversations').select('id');
     const { data: performance } = await supabase.from('agent_performance').select('total_cost, total_tokens, response_time_ms, crisis_detected, created_at');
@@ -52,10 +52,10 @@ export async function GET(request: NextRequest) {
         : session.started_at
     })) || [];
 
-    // Get all sessions with message counts
+    // Get all sessions with message counts and coaching state
     const { data: allSessions } = await supabase
       .from('agent_sessions')
-      .select('*, conversations:agent_conversations(id)')
+      .select('id, mode, crisis_level, started_at, ended_at, current_phase, reality_exploration_depth, emotions_reflected, exceptions_explored, parent_generated_ideas, strengths_identified, conversations:agent_conversations(id)')
       .order('started_at', { ascending: false });
 
     const allSessionsFormatted = allSessions?.map(session => ({
@@ -66,11 +66,11 @@ export async function GET(request: NextRequest) {
     // Get session quality metrics
     const total = sessions?.length || 1;
     const reachedOptions = sessions?.filter(s => ['options', 'will', 'closing'].includes(s.current_phase || '')).length || 0;
-    const avgDepth = sessions?.reduce((sum, s) => sum + (s.reality_exploration_depth || 0), 0) / total || 0;
+    const avgDepth = (sessions?.reduce((sum, s) => sum + (s.reality_exploration_depth || 0), 0) || 0) / total || 0;
     const emotionsReflected = sessions?.filter(s => s.emotions_reflected).length || 0;
     const exceptionsExplored = sessions?.filter(s => s.exceptions_explored).length || 0;
-    const avgIdeas = sessions?.reduce((sum, s) => sum + (s.parent_generated_ideas?.length || 0), 0) / total || 0;
-    const avgStrengths = sessions?.reduce((sum, s) => sum + (s.strengths_identified?.length || 0), 0) / total || 0;
+    const avgIdeas = (sessions?.reduce((sum, s) => sum + (s.parent_generated_ideas?.length || 0), 0) || 0) / total || 0;
+    const avgStrengths = (sessions?.reduce((sum, s) => sum + (s.strengths_identified?.length || 0), 0) || 0) / total || 0;
 
     // Get 7-day trends
     const sevenDaysAgo = new Date();

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
+import { SessionProvider } from '@/lib/session/session-context';
 
 export default function ProtectedLayout({
   children,
@@ -14,11 +15,13 @@ export default function ProtectedLayout({
 
   return (
     <ProtectedRoute>
-      <NavigationDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      />
-      {children}
+      <SessionProvider>
+        <NavigationDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+        />
+        {children}
+      </SessionProvider>
     </ProtectedRoute>
   );
 }

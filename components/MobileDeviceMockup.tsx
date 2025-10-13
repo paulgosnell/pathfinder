@@ -19,21 +19,6 @@ export default function MobileDeviceMockup({ children }: MobileDeviceMockupProps
           position: 'relative'
         }}
       >
-        {/* Notch */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '120px',
-            height: '24px',
-            backgroundColor: '#000000',
-            borderRadius: '0 0 16px 16px',
-            zIndex: 10
-          }}
-        />
-
         {/* Screen Container */}
         <div
           style={{

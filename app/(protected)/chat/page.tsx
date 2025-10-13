@@ -4,9 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useSession } from '@/lib/session/session-context';
+import { useSearchParams } from 'next/navigation';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
+import { TimeSelectionCard } from '@/components/TimeSelectionCard';
+import { ContentContainer } from '@/components/layouts/ContentContainer';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -46,7 +50,12 @@ const markdownComponents: Components = {
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const { setCurrentSession } = useSession();
+  const searchParams = useSearchParams();
+  const isNewSession = searchParams.get('new') === 'true';
+  const specificSessionId = searchParams.get('sessionId');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -55,13 +64,78 @@ export default function ChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(true);
   const [sessionId, setSessionId] = useState<string>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleTimeSelected = (minutes: number) => {
+    setTimeBudgetMinutes(minutes);
+  };
+
+  // Load session on mount (specific session, most recent, or new)
+  useEffect(() => {
+    const loadSession = async () => {
+      // If user clicked "New Chat", skip loading previous session
+      if (isNewSession) {
+        setLoadingSession(false);
+        return;
+      }
+
+      try {
+        let response;
+
+        // Load specific session if sessionId provided
+        if (specificSessionId) {
+          response = await fetch(`/api/conversation?sessionId=${specificSessionId}`, {
+            method: 'GET',
+            credentials: 'include'
+          });
+        } else {
+          // Load most recent active session
+          response = await fetch('/api/conversation', {
+            method: 'POST',
+            credentials: 'include'
+          });
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.session && data.messages && data.messages.length > 0) {
+            // Resume existing session
+            setSessionId(data.session.id);
+            setCurrentSession(data.session.id, 'chat');
+            setTimeBudgetMinutes(data.session.timeBudgetMinutes || 50);
+            setMessages(data.messages);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load session:', error);
+        // Continue with new session
+      } finally {
+        setLoadingSession(false);
+      }
+    };
+
+    if (user) {
+      loadSession();
+    }
+  }, [user, isNewSession, specificSessionId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  }, [input]);
 
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || input;
@@ -72,6 +146,11 @@ export default function ChatPage() {
     setInput('');
     setLoading(true);
 
+    // Reset textarea height after sending
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -80,7 +159,8 @@ export default function ChatPage() {
           message: textToSend,
           context: {
             userId: user?.id,
-            sessionId: sessionId
+            sessionId: sessionId,
+            timeBudgetMinutes: timeBudgetMinutes || 50
           }
         })
       });
@@ -93,6 +173,7 @@ export default function ChatPage() {
 
       if (data.sessionId && !sessionId) {
         setSessionId(data.sessionId);
+        setCurrentSession(data.sessionId, 'chat');
       }
 
       const strategyResult = data.toolResults?.find(
@@ -128,6 +209,62 @@ export default function ChatPage() {
     }
   };
 
+  // Show loading while checking for existing session
+  if (loadingSession) {
+    return (
+      <MobileDeviceMockup>
+        <div className="w-full h-full bg-white flex flex-col relative" style={{ overflow: 'hidden' }}>
+          <NavigationDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+          />
+
+          <AppHeader
+            onMenuClick={() => setIsDrawerOpen(true)}
+            title="ADHD Support"
+            subtitle="Your AI parenting coach"
+          />
+
+          <div className="flex-grow overflow-y-auto flex items-center justify-center" style={{ backgroundColor: '#F9F7F3' }}>
+            <div className="text-center">
+              <div className="animate-pulse" style={{ color: '#D7CDEC', fontSize: '48px', marginBottom: '16px' }}>
+                💬
+              </div>
+              <p style={{ color: '#586C8E' }}>Loading your conversation...</p>
+            </div>
+          </div>
+        </div>
+      </MobileDeviceMockup>
+    );
+  }
+
+  // Show time selection screen if time budget not set
+  if (timeBudgetMinutes === null) {
+    return (
+      <MobileDeviceMockup>
+        <div className="w-full h-full bg-white flex flex-col relative" style={{ overflow: 'hidden' }}>
+          <NavigationDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+          />
+
+          <AppHeader
+            onMenuClick={() => setIsDrawerOpen(true)}
+            title="ADHD Support"
+            subtitle="Your AI parenting coach"
+          />
+
+          <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+            <ContentContainer>
+              <TimeSelectionCard onTimeSelected={handleTimeSelected} />
+            </ContentContainer>
+          </div>
+        </div>
+      </MobileDeviceMockup>
+    );
+  }
+
+  // Show chat interface once time is selected
   return (
     <MobileDeviceMockup>
       {/* Main UI Container - mobile sized */}
@@ -270,20 +407,26 @@ export default function ChatPage() {
         }}>
           {/* Input Row */}
           <div className="px-[15px] py-[15px]">
-            <div className="flex items-center" style={{ gap: '10px' }}>
-              <input
-                type="text"
+            <div className="flex items-end" style={{ gap: '10px' }}>
+              <textarea
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Type your message..."
-                className="flex-1 bg-white rounded-full border focus:outline-none focus:ring-2 transition-all font-body"
+                rows={1}
+                className="flex-1 bg-white border focus:outline-none focus:ring-2 transition-all font-body resize-none"
                 style={{
                   color: '#2A3F5A',
                   borderColor: 'rgba(215, 205, 236, 0.2)',
                   boxShadow: 'inset 0 2px 4px rgba(42, 63, 90, 0.03)',
                   fontSize: '16px',
-                  padding: '12px 20px'
+                  padding: '12px 20px',
+                  minHeight: '48px',
+                  maxHeight: '120px',
+                  overflowY: 'auto',
+                  borderRadius: '24px',
+                  lineHeight: '1.5'
                 }}
               />
 

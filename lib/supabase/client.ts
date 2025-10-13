@@ -53,6 +53,11 @@ export interface AgentSession {
   parent_generated_ideas?: string[] | null;
   ready_for_options?: boolean | null;
   mode?: 'chat' | 'voice' | null;
+  // Time tracking columns
+  time_budget_minutes?: number | null;
+  time_elapsed_minutes?: number | null;
+  can_extend_time?: boolean | null;
+  time_extension_offered?: boolean | null;
 }
 
 export interface AgentConversation {

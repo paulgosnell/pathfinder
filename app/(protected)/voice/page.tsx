@@ -43,7 +43,7 @@ export default function VoicePage() {
           <div className="flex-grow overflow-y-auto"
                style={{
                  backgroundColor: '#F9F7F3',
-                 marginTop: '72px'
+                 paddingTop: '72px'
                }}>
             <ContentContainer>
               <TimeSelectionCard onTimeSelected={handleTimeSelected} />
@@ -79,11 +79,11 @@ export default function VoicePage() {
           subtitle="Speak naturally with your coach"
         />
 
-        {/* Voice content - with margin for fixed header */}
+        {/* Voice content - with padding for fixed header */}
         <div style={{
           flex: 1,
           overflow: 'hidden',
-          marginTop: '72px' // Height of fixed header
+          paddingTop: '72px' // Height of fixed header
         }}>
           <ElevenLabsVoiceAssistant timeBudgetMinutes={timeBudgetMinutes} />
         </div>

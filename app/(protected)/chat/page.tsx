@@ -236,7 +236,7 @@ export default function ChatPage() {
           <div className="flex-grow overflow-y-auto flex items-center justify-center"
                style={{
                  backgroundColor: '#F9F7F3',
-                 marginTop: '72px'
+                 paddingTop: '72px'
                }}>
             <div className="text-center">
               <div className="animate-pulse" style={{ color: '#D7CDEC', fontSize: '48px', marginBottom: '16px' }}>
@@ -277,7 +277,7 @@ export default function ChatPage() {
           <div className="flex-grow overflow-y-auto"
                style={{
                  backgroundColor: '#F9F7F3',
-                 marginTop: '72px'
+                 paddingTop: '72px'
                }}>
             <ContentContainer>
               <TimeSelectionCard onTimeSelected={handleTimeSelected} />
@@ -320,8 +320,8 @@ export default function ChatPage() {
           className="flex-grow relative overflow-y-auto"
           style={{
             backgroundColor: '#F9F7F3',
-            marginTop: '72px', // Height of fixed header
-            marginBottom: '88px' // Height of fixed input area
+            paddingTop: '72px', // Height of fixed header
+            paddingBottom: '88px' // Height of fixed input area
           }}
         >
           {/* Noise texture overlay */}

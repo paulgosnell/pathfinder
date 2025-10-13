@@ -1,0 +1,397 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Development Commands
+
+### Core Development
+```bash
+cd adhd-support-agent
+npm install
+npm run dev        # Start development server on localhost:3000
+npm run build      # Build for production
+npm run start      # Start production server
+npm run lint       # Run Next.js linter
+npm test           # Run Jest test suite
+```
+
+### Database Setup
+```bash
+# Setup Supabase database
+# 1. Create new Supabase project
+# 2. Run SQL from supabase-schema.sql in Supabase SQL editor
+# 3. Configure environment variables
+```
+
+### Environment Setup
+Required environment variables (copy from .env.example):
+- `OPENAI_API_KEY`: OpenAI API key for agent processing
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key
+
+## Architecture Overview
+
+This is an AI-powered ADHD parent coaching agent built with Next.js 15, AI SDK v5, and Supabase. The system uses a **coaching-first approach** based on the GROW model and OARS framework from motivational interviewing, helping parents discover their own solutions through facilitative guidance.
+
+### Core Philosophy
+
+**COACHING NOT CONSULTING**: The agent helps parents discover their own solutions rather than dispensing advice. Parents are the experts on their child - the agent facilitates their thinking through deep exploration and reflection.
+
+### Core Components
+
+**Multi-Agent System**
+- `lib/agents/proper-tools-agent.ts`: Main coaching agent using GROW model (Goal, Reality, Options, Will)
+- `lib/agents/crisis-tools-agent.ts`: Crisis detection and emergency response (priority #1)
+- `lib/agents/strategy-agent.ts`: Evidence-based ADHD strategy retrieval
+- Two-tier processing: Crisis check first, then main coaching agent
+
+**Coaching Methodology** (see `docs/COACHING-METHODOLOGY.md`)
+- **OARS Framework**: Open questions, Affirmations, Reflective listening, Summaries
+- **GROW Model**: 60% of session spent in Reality phase (10-15 exchanges minimum)
+- **Solution-Focused**: Explore exceptions, build on strengths, parent-generated ideas
+- **Session Length**: 50-minute conversations, no artificial message limits
+
+**Session Management**
+- `lib/session/manager.ts`: GROW model session state tracking
+- `lib/database/sessions.ts`: Persistent session storage via Supabase
+- Session tracking includes:
+  - Current GROW phase (goal, reality, options, will, closing)
+  - Reality exploration depth (conversation depth counter)
+  - Emotions reflected (validation tracking)
+  - Exceptions explored (solution-focused technique tracking)
+  - Parent-generated ideas (their solutions, not bot's)
+  - Ready for Options flag (only true after 10+ exchanges)
+
+**Data Layer**
+- `lib/data/strategies.ts`: Evidence-based ADHD strategies database
+- `lib/supabase/client.ts`: Supabase client and TypeScript interfaces
+- `supabase-schema.sql`: Complete database schema with RLS policies
+
+**API Architecture**
+- `app/api/chat/route.ts`: Main chat endpoint with crisis-first processing
+- `app/api/waitlist/route.ts`: Waitlist signup endpoint for landing page
+- Crisis agent runs before main agent for safety
+- Reality exploration depth tracking (counts conversation depth)
+- Session state updated after each exchange
+- Minimum 10 exchanges enforced before Options phase
+
+### AI SDK Best Practices Implemented
+
+**Production-Ready Coaching Agent Design**
+- Comprehensive error handling with `onError` callbacks
+- Enhanced coaching-focused system prompt (see `lib/agents/proper-tools-agent.ts:63-227`)
+- GROW model phase tracking and progression rules
+- Token usage monitoring and cost tracking
+- Session pacing: No artificial message limits, end when parent has their own plan
+- Performance metrics tracking with response time monitoring
+
+### Key Features
+
+**Crisis Safety System**
+- Automatic detection of suicidal ideation, violence risk, severe burnout
+- Emergency resource provision (999, Samaritans 116 123, etc.)
+- Immediate intervention protocols for critical situations
+
+**GDPR Compliance**
+- `lib/gdpr/compliance.ts`: Data privacy and deletion utilities
+- Automatic 2-year data retention with scheduled deletion
+- User consent management and data audit trails
+
+**Strategy Database**
+- Evidence-based ADHD parenting strategies
+- Age-appropriate filtering (5-8, 9-12, 13-17)
+- Implementation steps, timeframes, success indicators
+
+### File Structure Patterns
+
+```
+adhd-support-agent/
+├── app/
+│   ├── api/
+│   │   ├── chat/route.ts          # Main chat API endpoint with coaching state tracking
+│   │   └── waitlist/route.ts      # Waitlist signup API endpoint
+│   ├── page.tsx                   # Landing page with email signup
+│   ├── chat/page.tsx              # Chat UI component (protected route)
+│   ├── voice/page.tsx             # Voice mode UI (protected route, ElevenLabs)
+│   └── layout.tsx                 # App layout
+├── lib/
+│   ├── agents/
+│   │   ├── proper-tools-agent.ts  # Main coaching agent (GROW/OARS)
+│   │   ├── crisis-tools-agent.ts  # Crisis detection
+│   │   └── strategy-agent.ts      # Evidence-based strategies
+│   ├── data/                      # Strategy database
+│   ├── database/                  # Supabase integration
+│   ├── session/
+│   │   └── manager.ts             # GROW model session state
+│   ├── gdpr/                      # GDPR compliance
+│   └── monitoring/                # Agent monitoring
+├── components/
+│   └── ElevenLabsVoiceAssistant.tsx  # Voice mode UI component
+├── docs/
+│   ├── COACHING-METHODOLOGY.md    # Full coaching approach guide
+│   ├── technical/                 # Technical specs
+│   ├── architecture/              # System architecture
+│   └── client-updates/            # Progress reports
+├── migrations/
+│   ├── add-coaching-state-columns.sql  # Database migration for GROW model
+│   └── add-waitlist-signups.sql        # Database migration for landing page signups
+├── __tests__/                     # Jest tests
+└── MIGRATION-INSTRUCTIONS.md      # How to apply coaching migration
+```
+
+## Testing Guidelines
+
+- Tests cover agent tool functionality and conversation flows
+- Crisis detection scenarios have dedicated test coverage
+- Strategy retrieval accuracy validation included
+- Run `npm test` for full test suite
+
+## Deployment Notes
+
+- Configured for Vercel deployment (vercel.json included)
+- Environment variables must be set in Vercel dashboard
+- Supabase database must be provisioned before deployment
+- Uses OpenAI GPT-4o-mini for cost efficiency
+
+## Safety and Ethics
+
+This is a **coaching-based therapeutic support tool** with crisis intervention capabilities. The system:
+- Prioritizes safety over conversation flow (crisis detection runs first)
+- Provides immediate emergency resources for critical situations (999, Samaritans 116 123)
+- Maintains GDPR compliance for sensitive health data
+- Includes disclaimer that it's not a replacement for professional care
+- **Coaching approach**: Helps parents discover solutions, doesn't prescribe fixes
+- **Strength-based**: Focuses on what's working, not just what's broken
+- **Validation-first**: Reflects emotions before problem-solving
+
+## Voice Mode (NEW!)
+
+**EXPERIMENTAL FEATURE**: Real-time voice coaching using LiveKit Agents framework.
+
+### Overview
+Voice mode provides an alternative interface for ADHD parent coaching through real-time voice conversations. It uses the same GROW/OARS coaching methodology as text chat but optimized for natural spoken dialogue.
+
+### Architecture
+- **Backend**: Python voice agent (`voice-agent/agent.py`) using LiveKit Agents
+- **Frontend**: React component (`/voice` route) with LiveKit client
+- **Pipeline**: Deepgram STT → OpenAI GPT-4o-mini → OpenAI TTS
+- **Separate from chat**: Independent testing, no shared sessions (for now)
+
+### Setup Voice Mode
+
+#### 1. Install Python Dependencies
+```bash
+cd voice-agent
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+#### 2. Configure Environment Variables
+Add to `.env.local`:
+```bash
+# LiveKit Configuration
+LIVEKIT_API_KEY=your_api_key
+LIVEKIT_API_SECRET=your_api_secret
+NEXT_PUBLIC_LIVEKIT_URL=wss://your-project.livekit.cloud
+
+# Speech Services
+DEEPGRAM_API_KEY=your_deepgram_key  # Optional: for better STT
+```
+
+Copy and configure voice agent env:
+```bash
+cd voice-agent
+cp .env.voice.example .env.voice
+# Edit .env.voice with your API keys
+```
+
+#### 3. Run Voice Agent
+```bash
+cd voice-agent
+python agent.py dev  # Development mode with LiveKit Playground
+# OR
+python agent.py start  # Production mode
+```
+
+#### 4. Access Voice Mode
+- Navigate to `/voice` in your app (requires authentication)
+- Click "Start Voice Session"
+- Allow microphone access
+- Start speaking naturally with the coach
+
+### Key Differences from Chat Mode
+- **Natural conversation**: Spoken dialogue instead of text
+- **Lower latency**: Real-time responses (< 500ms typically)
+- **Voice-optimized prompts**: Adapted for spoken interaction
+- **Concise responses**: 30-60 seconds of speech per turn
+- **Interruption support**: Can interrupt the agent while speaking
+
+### Cost Comparison
+| Mode | Cost per 50-min session |
+|------|------------------------|
+| Text Chat | ~$0.01 |
+| Voice Mode | ~$0.28 |
+
+Voice is 28x more expensive due to STT/TTS processing.
+
+### Documentation
+- Full integration plan: `docs/VOICE-MODE-INTEGRATION-PLAN.md`
+- Voice agent setup: `voice-agent/README.md`
+- Coaching methodology (applies to both): `docs/COACHING-METHODOLOGY.md`
+
+### Status
+- ✅ Backend agent implemented
+- ✅ Frontend UI complete
+- ✅ Navigation integrated
+- ⏳ In testing phase
+- ⏳ Awaiting user feedback
+
+## Voice Mode V2 (ElevenLabs)
+
+**ALTERNATIVE IMPLEMENTATION**: Second voice option using ElevenLabs Conversational AI for A/B testing.
+
+### Overview
+Voice Mode V2 provides an alternative voice interface using ElevenLabs' managed agent platform. Unlike LiveKit (which requires a Python backend), ElevenLabs handles all STT/TTS/LLM processing server-side, making setup simpler.
+
+### Architecture
+- **Backend**: No backend needed - ElevenLabs manages everything
+- **Frontend**: React component (`/voice-v2` route) with `@elevenlabs/react` SDK
+- **Agent Config**: Configured in ElevenLabs dashboard with GROW/OARS prompt
+- **Connection**: WebRTC for low-latency audio streaming
+
+### Setup Voice Mode V2
+
+#### 1. Install Dependencies
+Already installed if you ran `npm install` (package: `@elevenlabs/react`)
+
+#### 2. Configure Environment Variables
+Add to `.env.local`:
+```bash
+# ElevenLabs Configuration
+NEXT_PUBLIC_ELEVENLABS_API_KEY=your_api_key_here
+NEXT_PUBLIC_ELEVENLABS_AGENT_ID=your_agent_id_here
+```
+
+#### 3. Create Agent in ElevenLabs Dashboard
+1. Go to [ElevenLabs Agents Platform](https://elevenlabs.io/app/conversational-ai)
+2. Create new agent
+3. Configure with GROW/OARS coaching prompt (see prompt in `/docs/elevenlabs-prompt.md` or above in this file)
+4. Choose warm, empathetic voice (recommended: natural female voice)
+5. Set response length: Medium (30-40 words)
+6. Enable interruptions
+7. Copy Agent ID to `.env.local`
+
+#### 4. Access Voice Mode V2
+- Navigate to `/voice-v2` in your app (requires authentication)
+- Or use dropdown in chat header: Voice → "ElevenLabs Voice"
+- Click "Start Voice Session"
+- Allow microphone access
+- Start speaking naturally with the coach
+
+### Key Differences from LiveKit
+
+| Feature | LiveKit (`/voice`) | ElevenLabs (`/voice-v2`) |
+|---------|-------------------|--------------------------|
+| **Backend** | Python agent required | Fully managed (no backend) |
+| **Setup Complexity** | High (Python + LiveKit + Deepgram) | Low (just API key + agent ID) |
+| **Voice Quality** | OpenAI TTS | ElevenLabs TTS (more natural) |
+| **Latency** | ~500ms | ~300ms (typically lower) |
+| **Cost** | ~$0.28/50-min session | ~$0.40/50-min session (estimate) |
+| **Customization** | Full control over pipeline | Limited to ElevenLabs config |
+| **Maintenance** | Requires Python agent deployment | Zero maintenance |
+
+### Use Cases for Each
+- **LiveKit**: Better for development/debugging, full control, lower cost
+- **ElevenLabs**: Better for production, simpler deployment, superior voice quality
+
+### Cost Comparison (All Modes)
+| Mode | Cost per 50-min session |
+|------|------------------------|
+| Text Chat | ~$0.01 |
+| Voice Mode (LiveKit) | ~$0.28 |
+| Voice Mode V2 (ElevenLabs) | ~$0.40 |
+
+### Status
+- ✅ Frontend component implemented
+- ✅ Navigation dropdown added
+- ✅ Environment config documented
+- ⏳ Ready for A/B testing
+- ⏳ Awaiting cost/quality comparison
+
+---
+
+## Recent Major Updates
+
+### October 2025: Voice Mode V2 (ElevenLabs)
+**NEW FEATURE**: Added second voice implementation using ElevenLabs for A/B testing.
+
+**What Changed:**
+- New `/voice-v2` route with ElevenLabs Conversational AI
+- `@elevenlabs/react` SDK integration
+- Dropdown navigation to choose between LiveKit and ElevenLabs
+- Zero-backend architecture (ElevenLabs manages everything)
+- Agent configured in ElevenLabs dashboard with GROW/OARS prompt
+
+**Setup Required:**
+- ElevenLabs account (free tier: 15 minutes included)
+- API key and Agent ID
+- See "Voice Mode V2" section above for full setup
+
+### October 2025: Voice Mode Integration (LiveKit)
+**NEW FEATURE**: Added real-time voice coaching mode as experimental alternative to text chat.
+
+**What Changed:**
+- New `/voice` route with LiveKit-powered voice assistant
+- Python voice agent using same GROW/OARS methodology
+- Voice token generation API at `/api/voice-token`
+- Navigation links between chat and voice modes
+- Separate voice agent process (`voice-agent/` directory)
+
+**Setup Required:**
+- LiveKit Cloud account (free tier available)
+- Deepgram API key (free $200 credit)
+- Python 3.9+ installed
+- See "Voice Mode" section above for full setup
+
+### October 2025: Landing Page & Waitlist System
+**NEW FEATURE**: Added public-facing landing page with email signup for early testing and launch notifications.
+
+**What Changed:**
+- New landing page at `/` with hero section, GROW model explanation, and signup form
+- Chat UI moved to `/chat` (protected route)
+- Waitlist signup API endpoint at `/api/waitlist`
+- Supabase table for storing email signups with early tester flag
+- Database migration required (see below)
+
+**Migration Required:**
+```bash
+# Run SQL migration in Supabase SQL Editor
+# File: migrations/add-waitlist-signups.sql
+```
+
+**Features:**
+- Email validation and duplicate detection
+- Early tester opt-in checkbox
+- Success confirmation page
+- Fully responsive design using design system colors
+- RLS policies for data security
+
+### October 2025: Coaching Transformation
+**BREAKING CHANGE**: Transformed from transactional 3-4 question discovery to full 50-minute coaching approach.
+
+**What Changed:**
+- System prompt completely rewritten using OARS framework and GROW model
+- Session state now tracks coaching phases instead of discovery completion
+- Minimum 10 exchanges in Reality phase before offering solutions
+- Removed message count limits - sessions end when parent has their own plan
+- Database migration required (see `MIGRATION-INSTRUCTIONS.md`)
+
+**Migration Required:**
+```bash
+# Run SQL migration in Supabase SQL Editor
+# File: migrations/add-coaching-state-columns.sql
+```
+
+See `docs/COACHING-METHODOLOGY.md` for full coaching approach documentation.

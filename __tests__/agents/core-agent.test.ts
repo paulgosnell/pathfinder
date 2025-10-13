@@ -1,7 +1,7 @@
-import { createADHDSupportAgent } from '@/lib/agents/core-agent';
+import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
 
 describe('ADHD Support Agent', () => {
-  const agent = createADHDSupportAgent();
+  const agent = createProperToolsAgent();
 
   it('should detect morning routine challenges', async () => {
     const result = await agent(

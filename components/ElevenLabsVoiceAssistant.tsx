@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { Mic, MessageCircle, Ear, Volume2, Info, AlertCircle } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { useAuth } from '@/lib/auth/auth-context';
 
 // Design system colors
 const colors = {
@@ -17,48 +18,17 @@ const colors = {
   accent5: '#F0D9DA',
 };
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export function ElevenLabsVoiceAssistant() {
+  const { user } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string>();
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
-  // Generate stable session ID, get real user ID from auth
+  // Generate stable session ID
   const sessionIdRef = useRef<string>('');
-  const userIdRef = useRef<string>('');
 
   if (!sessionIdRef.current) {
     sessionIdRef.current = crypto.randomUUID();
   }
-
-  // Get authenticated user ID
-  useEffect(() => {
-    async function getAuthUser() {
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError || !user) {
-          setError('Please sign in to use voice mode');
-          setIsLoadingAuth(false);
-          return;
-        }
-
-        userIdRef.current = user.id;
-        setIsLoadingAuth(false);
-      } catch (err) {
-        console.error('Failed to get authenticated user:', err);
-        setError('Authentication error. Please try signing in again.');
-        setIsLoadingAuth(false);
-      }
-    }
-
-    getAuthUser();
-  }, []);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -83,7 +53,7 @@ export function ElevenLabsVoiceAssistant() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sessionId: sessionIdRef.current,
-            userId: userIdRef.current,
+            userId: user?.id,
             role: message.source === 'user' ? 'user' : 'assistant',
             content: message.message,
           }),
@@ -120,104 +90,41 @@ export function ElevenLabsVoiceAssistant() {
     setIsConnected(false);
   };
 
-  // Show loading state while checking auth
-  if (isLoadingAuth) {
+  // Show error if connection fails
+  if (error && !error.includes('sign in')) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-5"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div
-          className="w-full max-w-[400px] bg-white rounded-3xl overflow-hidden border flex flex-col p-8"
-          style={{
-            boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
-            borderColor: 'rgba(215, 205, 236, 0.2)'
-          }}
-        >
-          <div className="text-center">
-            <div
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(215, 205, 236, 0.2)' }}
-            >
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  border: '3px solid',
-                  borderColor: colors.accent1,
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }}
-              ></div>
-            </div>
-            <p style={{ color: colors.secondary }}>Loading...</p>
+      <div className="flex items-center justify-center h-full p-8" style={{ backgroundColor: colors.background }}>
+        <div className="text-center">
+          <div
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(230, 168, 151, 0.2)' }}
+          >
+            <AlertCircle size={32} color={colors.accent4} />
           </div>
-        </div>
-      </div>
-    );
-  }
+          <h2
+            className="font-display font-semibold text-xl mb-2"
+            style={{ color: colors.primary }}
+          >
+            Connection Error
+          </h2>
+          <p style={{ color: colors.secondary, marginBottom: '1.5rem' }}>
+            {error}
+          </p>
 
-  if (error) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center p-5"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div
-          className="w-full max-w-[400px] bg-white rounded-3xl overflow-hidden border flex flex-col p-8"
-          style={{
-            boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
-            borderColor: 'rgba(215, 205, 236, 0.2)'
-          }}
-        >
-          <div className="text-center mb-6">
-            <div
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(230, 168, 151, 0.2)' }}
-            >
-              <AlertCircle size={32} color={colors.accent4} />
-            </div>
-            <h2
-              className="font-display font-semibold text-xl mb-2"
-              style={{ color: colors.primary }}
-            >
-              {error.includes('sign in') ? 'Authentication Required' : 'Connection Error'}
-            </h2>
-            <p style={{ color: colors.secondary, marginBottom: '1.5rem' }}>
-              {error}
-            </p>
-          </div>
-
-          {error.includes('sign in') ? (
-            <a
-              href="/chat"
-              className="w-full py-3 px-6 rounded-full font-semibold transition-transform hover:scale-105 text-center block"
-              style={{
-                background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
-                color: colors.primary,
-                boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
-                textDecoration: 'none'
-              }}
-            >
-              Go to Sign In
-            </a>
-          ) : (
-            <button
-              onClick={() => {
-                setError(undefined);
-                startSession();
-              }}
-              className="w-full py-3 px-6 rounded-full font-semibold transition-transform hover:scale-105"
-              style={{
-                background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
-                color: colors.primary,
-                boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
-              }}
-            >
-              Try Again
-            </button>
-          )}
+          <button
+            onClick={() => {
+              setError(undefined);
+              startSession();
+            }}
+            className="py-3 px-6 rounded-full font-semibold transition-transform hover:scale-105"
+            style={{
+              background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+              color: colors.primary,
+              boxShadow: '0 5px 15px rgba(42, 63, 90, 0.08)',
+            }}
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
@@ -226,165 +133,93 @@ export function ElevenLabsVoiceAssistant() {
   if (!isConnected) {
     // Initial state - show "Start Session" button
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-5 sm:p-10"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div
-          className="w-full max-w-[400px] h-[700px] mx-auto bg-white rounded-3xl overflow-hidden border flex flex-col"
+      <div style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '40px 40px',
+        backgroundColor: colors.background
+      }}>
+        {/* Icon Circle with glow effect */}
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{
+            width: '120px',
+            height: '120px',
+            margin: '0 auto 32px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, rgba(215, 205, 236, 0.4), rgba(183, 211, 216, 0.4))',
+            boxShadow: '0 8px 32px rgba(215, 205, 236, 0.3)'
+          }}>
+            <Mic size={56} color={colors.primary} strokeWidth={1.5} />
+          </div>
+
+          <p style={{
+            color: colors.primary,
+            lineHeight: 1.8,
+            letterSpacing: '-0.01em',
+            fontSize: '1.125rem',
+            fontWeight: 500,
+            padding: '0 16px'
+          }}>
+            Ready to talk? I'm here to listen and help.
+          </p>
+        </div>
+
+        {/* Start Button with enhanced styling */}
+        <button
+          onClick={startSession}
+          disabled={conversation.status === 'connecting'}
           style={{
-            boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
-            borderColor: 'rgba(215, 205, 236, 0.2)'
+            width: '100%',
+            padding: '20px 24px',
+            borderRadius: '9999px',
+            fontWeight: 600,
+            fontSize: '1rem',
+            letterSpacing: '-0.01em',
+            border: 'none',
+            cursor: conversation.status === 'connecting' ? 'not-allowed' : 'pointer',
+            background: conversation.status === 'connecting'
+              ? 'rgba(215, 205, 236, 0.5)'
+              : 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+            color: colors.primary,
+            boxShadow: '0 8px 24px rgba(183, 211, 216, 0.3)',
+            opacity: conversation.status === 'connecting' ? 0.5 : 1,
+            marginBottom: '16px'
           }}
         >
-          {/* Header - matching chat page */}
-          <div
-            className="relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7))',
-              padding: '16px 24px',
-              minHeight: '72px',
-              boxShadow: '0 2px 8px rgba(42, 63, 90, 0.06)'
-            }}
-          >
-            <div className="relative z-10" style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '10px'
-            }}>
-              <div>
-                <h1
-                  className="font-display font-semibold m-0"
-                  style={{
-                    color: colors.primary,
-                    fontSize: '20px',
-                    lineHeight: 1.05,
-                    letterSpacing: '0'
-                  }}
-                >
-                  Voice Coaching
-                </h1>
-                <p
-                  className="text-sm"
-                  style={{
-                    color: colors.secondary,
-                    fontSize: '13px',
-                    margin: '2px 0 0 0'
-                  }}
-                >
-                  Speak naturally with your coach
-                </p>
-              </div>
-
-              {/* Chat Button */}
-              <a
-                href="/chat"
-                className="inline-flex items-center gap-2 text-xs rounded-full border transition-all hover:scale-105"
-                style={{
-                  color: colors.secondary,
-                  borderColor: 'rgba(215, 205, 236, 0.3)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                  textDecoration: 'none',
-                  padding: '10px 16px'
-                }}
-              >
-                <MessageCircle size={16} />
-                <span>Chat</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Content Area */}
-          <div style={{
-            flexGrow: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            padding: '40px 40px',
-            overflow: 'auto'
-          }}>
-            {/* Icon Circle with glow effect */}
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <div style={{
-                width: '120px',
-                height: '120px',
-                margin: '0 auto 32px',
+          {conversation.status === 'connecting' ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <span style={{
+                display: 'inline-block',
+                width: '16px',
+                height: '16px',
+                border: '2px solid currentColor',
+                borderTopColor: 'transparent',
                 borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, rgba(215, 205, 236, 0.4), rgba(183, 211, 216, 0.4))',
-                boxShadow: '0 8px 32px rgba(215, 205, 236, 0.3)'
-              }}>
-                <Mic size={56} color={colors.primary} strokeWidth={1.5} />
-              </div>
+                animation: 'spin 1s linear infinite'
+              }}></span>
+              Connecting...
+            </span>
+          ) : (
+            'Start Voice Session'
+          )}
+        </button>
 
-              <p style={{
-                color: colors.primary,
-                lineHeight: 1.8,
-                letterSpacing: '-0.01em',
-                fontSize: '1.125rem',
-                fontWeight: 500,
-                padding: '0 16px'
-              }}>
-                Ready to talk? I'm here to listen and help.
-              </p>
-            </div>
-
-            {/* Start Button with enhanced styling */}
-            <button
-              onClick={startSession}
-              disabled={conversation.status === 'connecting'}
-              style={{
-                width: '100%',
-                padding: '20px 24px',
-                borderRadius: '9999px',
-                fontWeight: 600,
-                fontSize: '1rem',
-                letterSpacing: '-0.01em',
-                border: 'none',
-                cursor: conversation.status === 'connecting' ? 'not-allowed' : 'pointer',
-                background: conversation.status === 'connecting'
-                  ? 'rgba(215, 205, 236, 0.5)'
-                  : 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
-                color: colors.primary,
-                boxShadow: '0 8px 24px rgba(183, 211, 216, 0.3)',
-                opacity: conversation.status === 'connecting' ? 0.5 : 1,
-                marginBottom: '16px'
-              }}
-            >
-              {conversation.status === 'connecting' ? (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <span style={{
-                    display: 'inline-block',
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid currentColor',
-                    borderTopColor: 'transparent',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }}></span>
-                  Connecting...
-                </span>
-              ) : (
-                'Start Voice Session'
-              )}
-            </button>
-
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              fontSize: '0.75rem',
-              color: colors.secondary,
-              opacity: 0.6
-            }}>
-              <Info size={14} />
-              <span>Make sure your microphone is enabled</span>
-            </div>
-          </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          fontSize: '0.75rem',
+          color: colors.secondary,
+          opacity: 0.6
+        }}>
+          <Info size={14} />
+          <span>Make sure your microphone is enabled</span>
         </div>
       </div>
     );
@@ -392,24 +227,10 @@ export function ElevenLabsVoiceAssistant() {
 
   // Active session
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-5"
-      style={{ backgroundColor: colors.background }}
-    >
-      <div
-        className="w-full max-w-[400px] bg-white rounded-3xl overflow-hidden border flex flex-col"
-        style={{
-          boxShadow: '0 5px 20px rgba(42, 63, 90, 0.1)',
-          borderColor: 'rgba(215, 205, 236, 0.2)',
-          height: '700px'
-        }}
-      >
-        <VoiceAssistantUI
-          conversation={conversation}
-          onEndSession={endSession}
-        />
-      </div>
-    </div>
+    <VoiceAssistantUI
+      conversation={conversation}
+      onEndSession={endSession}
+    />
   );
 }
 
@@ -441,53 +262,15 @@ function VoiceAssistantUI({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
+      {/* Status Info at Top */}
       <div style={{
-        padding: '24px',
-        background: 'linear-gradient(to right, rgba(227, 234, 221, 0.7), rgba(215, 205, 236, 0.7))',
-        boxShadow: '0 2px 8px rgba(42, 63, 90, 0.06)'
+        padding: '16px 24px',
+        borderBottom: '1px solid rgba(215, 205, 236, 0.1)',
+        backgroundColor: 'rgba(227, 234, 221, 0.2)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div>
-            <h2 style={{
-              fontFamily: "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif",
-              fontWeight: 600,
-              fontSize: '20px',
-              color: colors.primary,
-              margin: 0,
-              marginBottom: '4px'
-            }}>
-              Voice Session Active
-            </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <p style={{ fontSize: '14px', color: colors.secondary, margin: 0 }}>
-                {stateInfo.text}
-              </p>
-            </div>
-          </div>
-
-          <a
-            href="/chat"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '12px',
-              padding: '10px 16px',
-              borderRadius: '9999px',
-              border: '1px solid rgba(215, 205, 236, 0.3)',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              color: colors.secondary,
-              textDecoration: 'none',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <MessageCircle size={16} />
-            <span>Chat</span>
-          </a>
-        </div>
+        <p style={{ fontSize: '14px', color: colors.secondary, margin: 0, textAlign: 'center' }}>
+          {stateInfo.text}
+        </p>
       </div>
 
       {/* Visualizer Area */}

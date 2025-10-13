@@ -116,22 +116,8 @@ class PerformanceTracker {
       timestamp: errorEntry.timestamp
     });
 
-    // Try to persist to database using service role (bypasses RLS)
-    try {
-      const { createServiceClient } = await import('@/lib/supabase/service-client');
-      const supabase = createServiceClient();
-      
-      await supabase.from('agent_errors').insert({
-        session_id: sessionId,
-        user_id: userId,
-        agent_type: agentType,
-        error_message: error.message,
-        error_context: context,
-        created_at: errorEntry.timestamp
-      });
-    } catch (dbError) {
-      console.warn('⚠️ Could not persist error to database:', (dbError as Error).message);
-    }
+    // Note: agent_errors table was removed in cleanup migration (Oct 2025)
+    // Error tracking now done via console logging only
   }
 
   /**

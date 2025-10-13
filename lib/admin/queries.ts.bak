@@ -1,0 +1,350 @@
+import { supabase } from '@/lib/supabase/client';
+
+/**
+ * Executive Overview Metrics
+ */
+export async function getExecutiveMetrics() {
+  try {
+    // Get all-time stats
+    const { data: sessions } = await supabase
+      .from('agent_sessions')
+      .select('id, mode, crisis_level, started_at, ended_at');
+
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, created_at');
+
+    const { data: conversations } = await supabase
+      .from('agent_conversations')
+      .select('id');
+
+    const { data: performance } = await supabase
+      .from('agent_performance')
+      .select('total_cost, total_tokens, response_time_ms, crisis_detected');
+
+    // Get today's stats
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const { data: todayPerformance } = await supabase
+      .from('agent_performance')
+      .select('*')
+      .gte('created_at', today.toISOString());
+
+    const totalCost = performance?.reduce((sum, p) => sum + (Number(p.total_cost) || 0), 0) || 0;
+    const avgResponseTime = performance?.length
+      ? performance.reduce((sum, p) => sum + p.response_time_ms, 0) / performance.length
+      : 0;
+    const crisisCount = performance?.filter(p => p.crisis_detected).length || 0;
+
+    // Calculate active sessions (no ended_at)
+    const activeSessions = sessions?.filter(s => !s.ended_at).length || 0;
+
+    // Mode split
+    const chatSessions = sessions?.filter(s => s.mode === 'chat').length || 0;
+    const voiceSessions = sessions?.filter(s => s.mode === 'voice').length || 0;
+
+    return {
+      activeSessions,
+      totalUsers: users?.length || 0,
+      totalConversations: conversations?.length || 0,
+      totalCost: totalCost.toFixed(4),
+      crisisAlerts: crisisCount,
+      avgResponseTime: Math.round(avgResponseTime),
+      chatSessionsPercent: sessions?.length ? Math.round((chatSessions / sessions.length) * 100) : 0,
+      voiceSessionsPercent: sessions?.length ? Math.round((voiceSessions / sessions.length) * 100) : 0,
+      todayStats: {
+        sessions: todayPerformance?.length || 0,
+        tokens: todayPerformance?.reduce((sum, p) => sum + p.total_tokens, 0) || 0,
+        cost: todayPerformance?.reduce((sum, p) => sum + (Number(p.total_cost) || 0), 0).toFixed(4) || '0.0000',
+        avgResponseTime: todayPerformance?.length
+          ? Math.round(todayPerformance.reduce((sum, p) => sum + p.response_time_ms, 0) / todayPerformance.length)
+          : 0,
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching executive metrics:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get active sessions with details for Live Coaching Monitor
+ */
+export async function getActiveSessions() {
+  try {
+    const { data, error } = await supabase
+      .from('agent_sessions')
+      .select(`
+        *,
+        user:users!agent_sessions_user_id_fkey(id),
+        conversations:agent_conversations(id, created_at)
+      `)
+      .is('ended_at', null)
+      .order('started_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Calculate derived fields
+    return data?.map(session => {
+      const messageCount = session.conversations?.length || 0;
+      const duration = session.started_at
+        ? Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000 / 60)
+        : 0;
+      const lastActivity = session.conversations?.length
+        ? session.conversations[session.conversations.length - 1].created_at
+        : session.started_at;
+
+      return {
+        ...session,
+        messageCount,
+        duration,
+        lastActivity,
+      };
+    }) || [];
+  } catch (error) {
+    console.error('Error fetching active sessions:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get detailed session information including full conversation
+ */
+export async function getSessionDetails(sessionId: string) {
+  try {
+    const { data: session, error: sessionError } = await supabase
+      .from('agent_sessions')
+      .select(`
+        *,
+        user:users!agent_sessions_user_id_fkey(id),
+        user_profile:user_profiles!user_profiles_user_id_fkey(*)
+      `)
+      .eq('id', sessionId)
+      .single();
+
+    if (sessionError) throw sessionError;
+
+    const { data: conversations, error: convError } = await supabase
+      .from('agent_conversations')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: true });
+
+    if (convError) throw convError;
+
+    const { data: performance, error: perfError } = await supabase
+      .from('agent_performance')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: true });
+
+    if (perfError) throw perfError;
+
+    return {
+      session,
+      conversations: conversations || [],
+      performance: performance || [],
+    };
+  } catch (error) {
+    console.error('Error fetching session details:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all sessions with filters
+ */
+export async function getSessions(filters?: {
+  startDate?: Date;
+  endDate?: Date;
+  mode?: 'chat' | 'voice';
+  phase?: string;
+  crisisLevel?: string;
+  userId?: string;
+}) {
+  try {
+    let query = supabase
+      .from('agent_sessions')
+      .select(`
+        *,
+        user:users!agent_sessions_user_id_fkey(id),
+        conversations:agent_conversations(id)
+      `)
+      .order('started_at', { ascending: false });
+
+    if (filters?.startDate) {
+      query = query.gte('started_at', filters.startDate.toISOString());
+    }
+    if (filters?.endDate) {
+      query = query.lte('started_at', filters.endDate.toISOString());
+    }
+    if (filters?.mode) {
+      query = query.eq('mode', filters.mode);
+    }
+    if (filters?.phase) {
+      query = query.eq('current_phase', filters.phase);
+    }
+    if (filters?.crisisLevel) {
+      query = query.eq('crisis_level', filters.crisisLevel);
+    }
+    if (filters?.userId) {
+      query = query.eq('user_id', filters.userId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return data?.map(session => ({
+      ...session,
+      messageCount: session.conversations?.length || 0,
+    })) || [];
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get session quality metrics
+ */
+export async function getSessionQualityMetrics() {
+  try {
+    const { data: sessions } = await supabase
+      .from('agent_sessions')
+      .select('*');
+
+    if (!sessions) return null;
+
+    const total = sessions.length;
+    const reachedOptions = sessions.filter(s =>
+      ['options', 'will', 'closing'].includes(s.current_phase || '')
+    ).length;
+    const avgDepth = sessions.reduce((sum, s) => sum + (s.reality_exploration_depth || 0), 0) / total;
+    const emotionsReflected = sessions.filter(s => s.emotions_reflected).length;
+    const exceptionsExplored = sessions.filter(s => s.exceptions_explored).length;
+    const avgIdeas = sessions.reduce((sum, s) => sum + (s.parent_generated_ideas?.length || 0), 0) / total;
+    const avgStrengths = sessions.reduce((sum, s) => sum + (s.strengths_identified?.length || 0), 0) / total;
+
+    return {
+      totalSessions: total,
+      reachedOptionsPercent: Math.round((reachedOptions / total) * 100),
+      avgRealityDepth: avgDepth.toFixed(1),
+      emotionsReflectedPercent: Math.round((emotionsReflected / total) * 100),
+      exceptionsExploredPercent: Math.round((exceptionsExplored / total) * 100),
+      avgParentIdeas: avgIdeas.toFixed(1),
+      avgStrengthsIdentified: avgStrengths.toFixed(1),
+    };
+  } catch (error) {
+    console.error('Error fetching quality metrics:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all users with their metadata
+ */
+export async function getAllUsers() {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        *,
+        profile:user_profiles(*),
+        sessions:agent_sessions(id, started_at),
+        performance:agent_performance(total_cost)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data?.map(user => ({
+      ...user,
+      sessionCount: user.sessions?.length || 0,
+      totalCost: user.performance?.reduce((sum, p) => sum + (Number(p.total_cost) || 0), 0) || 0,
+      lastActive: user.sessions?.[0]?.started_at,
+    })) || [];
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get waitlist signups
+ */
+export async function getWaitlistSignups() {
+  try {
+    const { data, error } = await supabase
+      .from('waitlist_signups')
+      .select('*')
+      .order('signup_date', { ascending: false });
+
+    if (error) throw error;
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching waitlist:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get 7-day trend data
+ */
+export async function getSevenDayTrends() {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { data, error } = await supabase
+      .from('agent_performance')
+      .select('*')
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    // Group by day
+    const dayMap = new Map<string, any>();
+
+    data?.forEach(record => {
+      const day = new Date(record.created_at).toISOString().split('T')[0];
+
+      if (!dayMap.has(day)) {
+        dayMap.set(day, {
+          date: day,
+          apiCalls: 0,
+          totalTokens: 0,
+          totalCost: 0,
+          avgResponseTime: 0,
+          crisisCount: 0,
+          responseTimes: [],
+        });
+      }
+
+      const dayData = dayMap.get(day);
+      dayData.apiCalls++;
+      dayData.totalTokens += record.total_tokens;
+      dayData.totalCost += Number(record.total_cost) || 0;
+      dayData.responseTimes.push(record.response_time_ms);
+      if (record.crisis_detected) dayData.crisisCount++;
+    });
+
+    // Calculate averages
+    const trends = Array.from(dayMap.values()).map(day => ({
+      date: day.date,
+      apiCalls: day.apiCalls,
+      totalTokens: day.totalTokens,
+      totalCost: day.totalCost.toFixed(4),
+      avgResponseTime: Math.round(day.responseTimes.reduce((a: number, b: number) => a + b, 0) / day.responseTimes.length),
+      crisisCount: day.crisisCount,
+    }));
+
+    return trends;
+  } catch (error) {
+    console.error('Error fetching trends:', error);
+    throw error;
+  }
+}

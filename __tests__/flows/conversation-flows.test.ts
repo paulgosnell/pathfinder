@@ -1,8 +1,8 @@
-import { createADHDSupportAgent } from '@/lib/agents/core-agent';
+import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
 
 describe('Conversation Flows', () => {
   it('should handle complete morning routine conversation', async () => {
-    const agent = createADHDSupportAgent();
+    const agent = createProperToolsAgent();
     const context = { 
       userId: 'test-user', 
       sessionId: 'test-session',

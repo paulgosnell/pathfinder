@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Quicksand, Inter } from 'next/font/google'
+import { Suspense } from 'react'
 import './globals.css'
 import { Providers } from './providers'
+import AnalyticsTracker from '@/components/AnalyticsTracker'
 
 // Import Quicksand font for headings
 const quicksand = Quicksand({ 
@@ -38,6 +40,9 @@ export default function RootLayout({
       </head>
       <body className="font-body bg-cream text-gray-800">
         <Providers>
+          <Suspense fallback={null}>
+            <AnalyticsTracker />
+          </Suspense>
           {children}
         </Providers>
       </body>

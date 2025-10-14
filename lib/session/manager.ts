@@ -3,6 +3,7 @@ import { dbChats } from '@/lib/database/chats';
 export interface SessionState {
   id: string;
   userId: string;
+  sessionType: string;                  // Session type (discovery, quick-tip, update, strategy, crisis, coaching)
   therapeuticGoal?: string;
   strategiesDiscussed: string[];
   crisisLevel: string;
@@ -26,7 +27,7 @@ export interface SessionState {
 }
 
 class SessionManager {
-  async createSession(userId: string, timeBudgetMinutes: number = 50): Promise<SessionState> {
+  async createSession(userId: string, timeBudgetMinutes: number = 50, sessionType: string = 'coaching'): Promise<SessionState> {
     const sessionId = crypto.randomUUID();
     const startedAt = new Date();
 
@@ -35,6 +36,7 @@ class SessionManager {
       userId,
       crisisLevel: 'none',
       startedAt: startedAt.toISOString(),
+      sessionType,
       timeBudgetMinutes,
       timeElapsedMinutes: 0,
       canExtendTime: true,
@@ -44,6 +46,7 @@ class SessionManager {
     return {
       id: sessionId,
       userId,
+      sessionType,
       strategiesDiscussed: [],
       crisisLevel: 'none',
       therapeuticGoal: undefined,
@@ -144,6 +147,7 @@ class SessionManager {
     return {
       id: session.id,
       userId: session.user_id,
+      sessionType: session.session_type || 'coaching',
       therapeuticGoal: session.therapeutic_goal || undefined,
       strategiesDiscussed: session.strategies_discussed || [],
       crisisLevel: session.crisis_level || 'none',

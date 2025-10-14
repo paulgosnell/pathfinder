@@ -58,6 +58,7 @@ export default function ChatPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
   const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(50);
+  const [discoveryCompleted, setDiscoveryCompleted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -127,6 +128,29 @@ export default function ChatPage() {
       loadSession();
     }
   }, [user, isNewSession, specificSessionId]);
+
+  // Load user profile to check discovery status
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const profile = await response.json();
+          setDiscoveryCompleted(profile.discovery_completed || false);
+        }
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -285,7 +309,7 @@ export default function ChatPage() {
                  paddingTop: '72px'
                }}>
             <ContentContainer>
-              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={false} />
+              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={discoveryCompleted} />
             </ContentContainer>
           </div>
         </div>

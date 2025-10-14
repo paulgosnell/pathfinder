@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth/auth-context';
 import { ElevenLabsVoiceAssistant } from '@/components/ElevenLabsVoiceAssistant';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
@@ -10,14 +11,39 @@ import { ContentContainer } from '@/components/layouts/ContentContainer';
 import type { SessionType } from '@/lib/config/session-types';
 
 export default function VoicePage() {
+  const { user } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
   const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(50);
+  const [discoveryCompleted, setDiscoveryCompleted] = useState(false);
 
   const handleTypeSelected = (type: SessionType, suggestedTime: number) => {
     setSessionType(type);
     setTimeBudgetMinutes(suggestedTime);
   };
+
+  // Load user profile to check discovery status
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const profile = await response.json();
+          setDiscoveryCompleted(profile.discovery_completed || false);
+        }
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [user]);
 
   // Show session type selection screen if type not set
   if (sessionType === null) {
@@ -49,7 +75,7 @@ export default function VoicePage() {
                  paddingTop: '72px'
                }}>
             <ContentContainer>
-              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={false} />
+              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={discoveryCompleted} />
             </ContentContainer>
           </div>
         </div>

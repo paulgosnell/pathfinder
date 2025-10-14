@@ -7,6 +7,7 @@ interface CreateSessionInput {
   userId: string;
   crisisLevel: string;
   startedAt: string;
+  sessionType?: string;
   timeBudgetMinutes?: number;
   timeElapsedMinutes?: number;
   canExtendTime?: boolean;
@@ -19,6 +20,7 @@ export const dbChats = {
     userId,
     crisisLevel,
     startedAt,
+    sessionType = 'coaching',
     timeBudgetMinutes = 50,
     timeElapsedMinutes = 0,
     canExtendTime = true,
@@ -29,6 +31,7 @@ export const dbChats = {
       user_id: userId,
       crisis_level: crisisLevel,
       started_at: startedAt,
+      session_type: sessionType,
       time_budget_minutes: timeBudgetMinutes,
       time_elapsed_minutes: timeElapsedMinutes,
       can_extend_time: canExtendTime,

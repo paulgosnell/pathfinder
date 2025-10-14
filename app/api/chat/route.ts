@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createCrisisToolsAgent } from '@/lib/agents/crisis-tools-agent';
 import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
+import { createDiscoveryAgent } from '@/lib/agents/discovery-agent';
 import { sessionManager } from '@/lib/session/manager';
 import { performanceTracker } from '@/lib/monitoring/performance-tracker';
 import { createServerClient } from '@/lib/supabase/server-client';
@@ -118,11 +119,12 @@ export async function POST(req: NextRequest) {
       throw new Error(`User creation failed: ${userError.message}`);
     }
 
-    // Get or create session (with time budget if provided)
+    // Get or create session (with time budget and session type if provided)
     let session = sessionId ? await sessionManager.getSession(sessionId) : null;
     if (!session) {
       const timeBudgetMinutes = context?.timeBudgetMinutes || 50;
-      session = await sessionManager.createSession(userId, timeBudgetMinutes);
+      const sessionType = context?.sessionType || 'coaching';
+      session = await sessionManager.createSession(userId, timeBudgetMinutes, sessionType);
       sessionId = session.id;
     }
 
@@ -218,41 +220,81 @@ export async function POST(req: NextRequest) {
       console.log(`   Sample: ${conversationHistory[0].role}: ${conversationHistory[0].content.substring(0, 50)}...`);
     }
 
-    // STEP 4: Run main coaching agent
-    console.log('🤖 Running ADHD coaching agent...');
+    // STEP 4: Route to appropriate agent based on session type
+    console.log(`🤖 Running agent for session type: ${session.sessionType}...`);
 
-    const therapeuticAgent = createProperToolsAgent();
-    console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history`);
+    let agentResult: any;
 
     // Calculate Reality phase depth (non-crisis messages in current session)
     const realityDepth = conversationHistory?.filter(m =>
       m.role === 'assistant' && !m.content.includes('999') && !m.content.includes('crisis')
     ).length || 0;
 
-    const agentResult = await therapeuticAgent(message, {
-      userId: userId,
-      sessionId: session.id,
-      conversationHistory: conversationHistory || [],
-      userProfile: userProfile ? {
-        childAgeRange: userProfile.child_age_range,
-        commonTriggers: userProfile.common_triggers || [],
-        triedSolutions: userProfile.tried_solutions || [],
-        successfulStrategies: userProfile.successful_strategies || [],
-        failedStrategies: userProfile.failed_strategies || [],
-        parentStressLevel: userProfile.parent_stress_level,
-      } : undefined,
-      // Add coaching state with time tracking
-      sessionState: {
-        currentPhase: session.currentPhase || 'goal',
-        realityExplorationDepth: realityDepth,
-        emotionsReflected: session.emotionsReflected || false,
-        exceptionsExplored: session.exceptionsExplored || false,
-        readyForOptions: session.readyForOptions || false,
-        timeBudgetMinutes: session.timeBudgetMinutes,
-        timeElapsedMinutes: session.timeElapsedMinutes,
-        timeExtensionOffered: session.timeExtensionOffered
-      }
-    });
+    if (session.sessionType === 'discovery') {
+      // Route to Discovery Agent
+      console.log('   🧭 Using Discovery Agent for onboarding');
+      const discoveryAgent = createDiscoveryAgent();
+
+      // Calculate discovery progress
+      const exchangeCount = conversationHistory?.filter(m => m.role === 'assistant').length || 0;
+      const hasChildBasics = conversationHistory?.some(m =>
+        m.role === 'assistant' && (m.content.toLowerCase().includes('name') || m.content.toLowerCase().includes('age'))
+      ) || false;
+      const hasDiagnosis = conversationHistory?.some(m =>
+        m.role === 'assistant' && m.content.toLowerCase().includes('diagnos')
+      ) || false;
+      const hasChallenges = conversationHistory?.some(m =>
+        m.role === 'assistant' && m.content.toLowerCase().includes('challenge')
+      ) || false;
+      const hasContext = conversationHistory?.some(m =>
+        m.role === 'assistant' && (m.content.toLowerCase().includes('family') || m.content.toLowerCase().includes('school'))
+      ) || false;
+      const readyToComplete = exchangeCount >= 8 && hasChildBasics && hasDiagnosis && hasChallenges && hasContext;
+
+      agentResult = await discoveryAgent(message, {
+        userId,
+        sessionId: session.id,
+        conversationHistory: conversationHistory || [],
+        discoveryProgress: {
+          exchangeCount,
+          hasChildBasics,
+          hasDiagnosis,
+          hasChallenges,
+          hasContext,
+          readyToComplete
+        }
+      });
+    } else {
+      // Route to Standard Coaching Agent (for all other session types)
+      console.log(`   🧠 Using Standard Coaching Agent (${session.sessionType})`);
+      const therapeuticAgent = createProperToolsAgent();
+      console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history`);
+
+      agentResult = await therapeuticAgent(message, {
+        userId: userId,
+        sessionId: session.id,
+        conversationHistory: conversationHistory || [],
+        userProfile: userProfile ? {
+          childAgeRange: userProfile.child_age_range,
+          commonTriggers: userProfile.common_triggers || [],
+          triedSolutions: userProfile.tried_solutions || [],
+          successfulStrategies: userProfile.successful_strategies || [],
+          failedStrategies: userProfile.failed_strategies || [],
+          parentStressLevel: userProfile.parent_stress_level,
+        } : undefined,
+        // Add coaching state with time tracking
+        sessionState: {
+          currentPhase: session.currentPhase || 'goal',
+          realityExplorationDepth: realityDepth,
+          emotionsReflected: session.emotionsReflected || false,
+          exceptionsExplored: session.exceptionsExplored || false,
+          readyForOptions: session.readyForOptions || false,
+          timeBudgetMinutes: session.timeBudgetMinutes,
+          timeElapsedMinutes: session.timeElapsedMinutes,
+          timeExtensionOffered: session.timeExtensionOffered
+        }
+      });
+    }
 
     console.log(`   Agent result received: ${agentResult ? 'success' : 'failed'}`);
     if (agentResult?.text) {

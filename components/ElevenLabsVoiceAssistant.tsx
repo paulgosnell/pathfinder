@@ -19,11 +19,14 @@ const colors = {
   accent5: '#F0D9DA',
 };
 
+import type { SessionType } from '@/lib/config/session-types';
+
 interface ElevenLabsVoiceAssistantProps {
+  sessionType?: SessionType | null;
   timeBudgetMinutes?: number;
 }
 
-export function ElevenLabsVoiceAssistant({ timeBudgetMinutes }: ElevenLabsVoiceAssistantProps) {
+export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: ElevenLabsVoiceAssistantProps) {
   const { user } = useAuth();
   const { setCurrentSession } = useSession();
   const [isConnected, setIsConnected] = useState(false);
@@ -99,6 +102,7 @@ export function ElevenLabsVoiceAssistant({ timeBudgetMinutes }: ElevenLabsVoiceA
         connectionType: 'webrtc',
         dynamicVariables: {
           time_budget_minutes: timeBudgetMinutes || 50,
+          session_type: sessionType || 'coaching',
         },
       });
     } catch (err) {

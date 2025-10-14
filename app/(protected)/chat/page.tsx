@@ -9,8 +9,9 @@ import { useSearchParams } from 'next/navigation';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
-import { TimeSelectionCard } from '@/components/TimeSelectionCard';
+import { SessionTypeCard } from '@/components/SessionTypeCard';
 import { ContentContainer } from '@/components/layouts/ContentContainer';
+import type { SessionType } from '@/lib/config/session-types';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -55,7 +56,8 @@ export default function ChatPage() {
   const isNewSession = searchParams.get('new') === 'true';
   const specificSessionId = searchParams.get('sessionId');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number | null>(null);
+  const [sessionType, setSessionType] = useState<SessionType | null>(null);
+  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(50);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -70,8 +72,9 @@ export default function ChatPage() {
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleTimeSelected = (minutes: number) => {
-    setTimeBudgetMinutes(minutes);
+  const handleTypeSelected = (type: SessionType, suggestedTime: number) => {
+    setSessionType(type);
+    setTimeBudgetMinutes(suggestedTime);
   };
 
   // Load session on mount (specific session, most recent, or new)
@@ -107,6 +110,7 @@ export default function ChatPage() {
             // Resume existing session
             setSessionId(data.session.id);
             setCurrentSession(data.session.id, 'chat');
+            setSessionType((data.session.sessionType as SessionType) || 'coaching');
             setTimeBudgetMinutes(data.session.timeBudgetMinutes || 50);
             setMessages(data.messages);
           }
@@ -160,6 +164,7 @@ export default function ChatPage() {
           context: {
             userId: user?.id,
             sessionId: sessionId,
+            sessionType: sessionType || 'coaching',
             timeBudgetMinutes: timeBudgetMinutes || 50
           }
         })
@@ -250,8 +255,8 @@ export default function ChatPage() {
     );
   }
 
-  // Show time selection screen if time budget not set
-  if (timeBudgetMinutes === null) {
+  // Show session type selection screen if type not set
+  if (sessionType === null) {
     return (
       <MobileDeviceMockup>
         <div className="w-full h-full bg-white flex flex-col"
@@ -280,7 +285,7 @@ export default function ChatPage() {
                  paddingTop: '72px'
                }}>
             <ContentContainer>
-              <TimeSelectionCard onTimeSelected={handleTimeSelected} />
+              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={false} />
             </ContentContainer>
           </div>
         </div>

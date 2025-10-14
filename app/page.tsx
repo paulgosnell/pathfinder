@@ -258,31 +258,13 @@ export default function LandingPage() {
           <p style={{
             fontSize: 'clamp(1.125rem, 2vw, 1.5rem)',
             color: '#586C8E',
-            marginBottom: '2rem',
+            marginBottom: '3rem',
             lineHeight: 1.6,
             maxWidth: '48rem',
-            margin: '0 auto 2rem'
+            margin: '0 auto 3rem'
           }}>
-            AI-powered coaching that helps parents of ADHD children discover their own solutions through guided, therapeutic conversations.
+            AI-powered coach for parents of ADHD children that is here to listen and help.
           </p>
-
-          {/* Key differentiator */}
-          <div style={{
-            display: 'inline-block',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '1rem',
-            marginBottom: '3rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-            border: '1px solid rgba(215, 205, 236, 0.2)'
-          }}>
-            <p style={{
-              fontSize: '1rem',
-              color: '#2A3F5A',
-              margin: 0
-            }}>
-              <strong style={{ fontFamily: 'Quicksand, sans-serif' }}>Not a chatbot.</strong> A 50-minute coaching session using the proven GROW model.
-            </p>
-          </div>
 
           {/* CTA Buttons */}
           <div style={{
@@ -293,7 +275,7 @@ export default function LandingPage() {
             marginBottom: '2rem'
           }}>
             <a
-              href="#early-access"
+              href="/auth/register"
               style={{
                 padding: '1rem 2rem',
                 borderRadius: '9999px',
@@ -310,11 +292,11 @@ export default function LandingPage() {
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              Join Early Testing →
+              Sign Up
             </a>
 
             <a
-              href="#early-access"
+              href="/auth/login"
               style={{
                 padding: '1rem 2rem',
                 borderRadius: '9999px',
@@ -332,7 +314,7 @@ export default function LandingPage() {
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              Notify Me at Launch
+              Log In
             </a>
           </div>
 

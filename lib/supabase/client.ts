@@ -58,6 +58,8 @@ export interface AgentSession {
   time_elapsed_minutes?: number | null;
   can_extend_time?: boolean | null;
   time_extension_offered?: boolean | null;
+  // Session type column
+  session_type?: 'discovery' | 'quick-tip' | 'update' | 'strategy' | 'crisis' | 'coaching' | null;
 }
 
 export interface AgentConversation {
@@ -104,6 +106,16 @@ export interface UserProfile {
   last_updated?: string | null;
   created_at?: string | null;
   instance_id?: string | null;
+  // Discovery call fields
+  discovery_completed?: boolean | null;
+  discovery_completed_at?: string | null;
+  diagnosis_status?: string | null;  // 'diagnosed', 'in-process', 'suspected', 'not-diagnosed'
+  diagnosis_details?: string | null;
+  main_challenges?: string[] | null;
+  family_context?: string | null;
+  school_context?: string | null;
+  medication_status?: string | null;
+  support_network?: string[] | null;
 }
 
 export interface User {

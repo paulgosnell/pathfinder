@@ -5,19 +5,22 @@ import { ElevenLabsVoiceAssistant } from '@/components/ElevenLabsVoiceAssistant'
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
-import { TimeSelectionCard } from '@/components/TimeSelectionCard';
+import { SessionTypeCard } from '@/components/SessionTypeCard';
 import { ContentContainer } from '@/components/layouts/ContentContainer';
+import type { SessionType } from '@/lib/config/session-types';
 
 export default function VoicePage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number | null>(null);
+  const [sessionType, setSessionType] = useState<SessionType | null>(null);
+  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(50);
 
-  const handleTimeSelected = (minutes: number) => {
-    setTimeBudgetMinutes(minutes);
+  const handleTypeSelected = (type: SessionType, suggestedTime: number) => {
+    setSessionType(type);
+    setTimeBudgetMinutes(suggestedTime);
   };
 
-  // Show time selection screen if time budget not set
-  if (timeBudgetMinutes === null) {
+  // Show session type selection screen if type not set
+  if (sessionType === null) {
     return (
       <MobileDeviceMockup>
         <div className="w-full h-full bg-white flex flex-col"
@@ -46,7 +49,7 @@ export default function VoicePage() {
                  paddingTop: '72px'
                }}>
             <ContentContainer>
-              <TimeSelectionCard onTimeSelected={handleTimeSelected} />
+              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={false} />
             </ContentContainer>
           </div>
         </div>
@@ -85,7 +88,7 @@ export default function VoicePage() {
           overflow: 'hidden',
           paddingTop: '72px' // Height of fixed header
         }}>
-          <ElevenLabsVoiceAssistant timeBudgetMinutes={timeBudgetMinutes} />
+          <ElevenLabsVoiceAssistant sessionType={sessionType} timeBudgetMinutes={timeBudgetMinutes} />
         </div>
       </div>
     </MobileDeviceMockup>

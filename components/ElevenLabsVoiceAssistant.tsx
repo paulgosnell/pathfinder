@@ -97,6 +97,9 @@ export function ElevenLabsVoiceAssistant({ timeBudgetMinutes }: ElevenLabsVoiceA
       await conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
         connectionType: 'webrtc',
+        dynamicVariables: {
+          time_budget_minutes: timeBudgetMinutes || 50,
+        },
       });
     } catch (err) {
       console.error('Failed to start voice session:', err);

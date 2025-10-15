@@ -292,7 +292,7 @@ export default function ChatPage() {
           ></div>
 
           {/* Messages - with proper padding and margin */}
-          <div className="relative z-10 flex flex-col px-4 py-6" style={{ gap: '20px' }}>
+          <div className="relative z-10 flex flex-col px-4" style={{ gap: '20px', paddingTop: '24px', paddingBottom: '24px' }}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} style={{ paddingLeft: '8px', paddingRight: '8px' }}>
                 <div className="max-w-[80%]">

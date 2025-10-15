@@ -24,9 +24,13 @@ export default function CoachingBookingModal({ isOpen, onClose }: CoachingBookin
       // Start coaching session immediately
       setLoading(true);
 
-      // Navigate to chat with coaching mode parameter
-      router.push(`/chat?new=true&mode=coaching&time=${timeBudget}`);
+      // Close modal first
       onClose();
+
+      // Small delay to ensure modal closes smoothly, then navigate
+      setTimeout(() => {
+        router.push(`/chat?new=true&mode=coaching&time=${timeBudget}`);
+      }, 100);
     } else {
       // Schedule for later - would integrate with calendar here
       alert('Calendar integration coming soon! For now, please use "Start Now".');

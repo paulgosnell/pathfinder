@@ -119,12 +119,13 @@ export async function POST(req: NextRequest) {
       throw new Error(`User creation failed: ${userError.message}`);
     }
 
-    // Get or create session (with time budget and session type if provided)
+    // Get or create session
     let session = sessionId ? await sessionManager.getSession(sessionId) : null;
     if (!session) {
-      const timeBudgetMinutes = context?.timeBudgetMinutes || 50;
-      const sessionType = context?.sessionType || 'coaching';
-      session = await sessionManager.createSession(userId, timeBudgetMinutes, sessionType);
+      // Default to check-in mode (casual conversation)
+      const interactionMode = context?.interactionMode || 'check-in';
+      const timeBudgetMinutes = context?.timeBudgetMinutes;
+      session = await sessionManager.createSession(userId, interactionMode, timeBudgetMinutes);
       sessionId = session.id;
     }
 
@@ -273,6 +274,7 @@ export async function POST(req: NextRequest) {
       agentResult = await therapeuticAgent(message, {
         userId: userId,
         sessionId: session.id,
+        interactionMode: session.interactionMode, // NEW: Pass interaction mode to determine prompt
         conversationHistory: conversationHistory || [],
         userProfile: userProfile ? {
           childAgeRange: userProfile.child_age_range,
@@ -282,8 +284,8 @@ export async function POST(req: NextRequest) {
           failedStrategies: userProfile.failed_strategies || [],
           parentStressLevel: userProfile.parent_stress_level,
         } : undefined,
-        // Add coaching state with time tracking
-        sessionState: {
+        // Add coaching state with time tracking (only used in coaching mode)
+        sessionState: session.interactionMode === 'coaching' ? {
           currentPhase: session.currentPhase || 'goal',
           realityExplorationDepth: realityDepth,
           emotionsReflected: session.emotionsReflected || false,
@@ -292,7 +294,7 @@ export async function POST(req: NextRequest) {
           timeBudgetMinutes: session.timeBudgetMinutes,
           timeElapsedMinutes: session.timeElapsedMinutes,
           timeExtensionOffered: session.timeExtensionOffered
-        }
+        } : undefined
       });
     }
 

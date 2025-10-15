@@ -8,6 +8,9 @@ interface CreateSessionInput {
   crisisLevel: string;
   startedAt: string;
   sessionType?: string;
+  interactionMode?: 'check-in' | 'coaching';
+  status?: 'active' | 'complete' | 'scheduled';
+  scheduledFor?: string;
   timeBudgetMinutes?: number;
   timeElapsedMinutes?: number;
   canExtendTime?: boolean;
@@ -21,6 +24,9 @@ export const dbChats = {
     crisisLevel,
     startedAt,
     sessionType = 'coaching',
+    interactionMode = 'check-in',
+    status = 'active',
+    scheduledFor,
     timeBudgetMinutes = 50,
     timeElapsedMinutes = 0,
     canExtendTime = true,
@@ -32,6 +38,9 @@ export const dbChats = {
       crisis_level: crisisLevel,
       started_at: startedAt,
       session_type: sessionType,
+      interaction_mode: interactionMode,
+      status,
+      scheduled_for: scheduledFor,
       time_budget_minutes: timeBudgetMinutes,
       time_elapsed_minutes: timeElapsedMinutes,
       can_extend_time: canExtendTime,

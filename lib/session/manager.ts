@@ -4,12 +4,15 @@ export interface SessionState {
   id: string;
   userId: string;
   sessionType: string;                  // Session type (discovery, quick-tip, update, strategy, crisis, coaching)
+  interactionMode: 'check-in' | 'coaching';  // NEW: Interaction mode (check-in = casual, coaching = GROW)
+  status: 'active' | 'complete' | 'scheduled';  // NEW: Session status
+  scheduledFor?: Date;                  // NEW: For scheduled coaching sessions
   therapeuticGoal?: string;
   strategiesDiscussed: string[];
   crisisLevel: string;
   startedAt: Date;
   lastActivity: Date;
-  // Coaching phases - track where we are in GROW model
+  // Coaching phases - track where we are in GROW model (only used in coaching mode)
   currentPhase: 'goal' | 'reality' | 'options' | 'will' | 'closing';
   realityExplorationDepth: number;      // How many exchanges in Reality phase
   emotionsReflected: boolean;           // Have we validated feelings?
@@ -27,17 +30,29 @@ export interface SessionState {
 }
 
 class SessionManager {
-  async createSession(userId: string, timeBudgetMinutes: number = 50, sessionType: string = 'coaching'): Promise<SessionState> {
+  async createSession(
+    userId: string,
+    interactionMode: 'check-in' | 'coaching' = 'check-in',  // Default to check-in mode
+    timeBudgetMinutes?: number,
+    scheduledFor?: Date
+  ): Promise<SessionState> {
     const sessionId = crypto.randomUUID();
-    const startedAt = new Date();
+    const startedAt = scheduledFor || new Date();
+
+    // Default time budgets based on interaction mode
+    const defaultTimeBudget = interactionMode === 'coaching' ? 30 : 15;
+    const finalTimeBudget = timeBudgetMinutes || defaultTimeBudget;
 
     await dbChats.createSession({
       id: sessionId,
       userId,
       crisisLevel: 'none',
       startedAt: startedAt.toISOString(),
-      sessionType,
-      timeBudgetMinutes,
+      sessionType: interactionMode === 'coaching' ? 'coaching' : 'quick-tip',
+      interactionMode,
+      status: scheduledFor ? 'scheduled' : 'active',
+      scheduledFor: scheduledFor?.toISOString(),
+      timeBudgetMinutes: finalTimeBudget,
       timeElapsedMinutes: 0,
       canExtendTime: true,
       timeExtensionOffered: false
@@ -46,7 +61,10 @@ class SessionManager {
     return {
       id: sessionId,
       userId,
-      sessionType,
+      sessionType: interactionMode === 'coaching' ? 'coaching' : 'quick-tip',
+      interactionMode,
+      status: scheduledFor ? 'scheduled' : 'active',
+      scheduledFor,
       strategiesDiscussed: [],
       crisisLevel: 'none',
       therapeuticGoal: undefined,
@@ -59,7 +77,7 @@ class SessionManager {
       strengthsIdentified: [],
       parentGeneratedIdeas: [],
       readyForOptions: false,
-      timeBudgetMinutes,
+      timeBudgetMinutes: finalTimeBudget,
       timeElapsedMinutes: 0,
       canExtendTime: true,
       timeExtensionOffered: false
@@ -79,6 +97,18 @@ class SessionManager {
 
     if (updates.crisisLevel !== undefined) {
       payload.crisis_level = updates.crisisLevel;
+    }
+
+    if (updates.interactionMode !== undefined) {
+      payload.interaction_mode = updates.interactionMode;
+    }
+
+    if (updates.status !== undefined) {
+      payload.status = updates.status;
+    }
+
+    if (updates.scheduledFor !== undefined) {
+      payload.scheduled_for = updates.scheduledFor.toISOString();
     }
 
     if (updates.currentPhase !== undefined) {
@@ -148,6 +178,9 @@ class SessionManager {
       id: session.id,
       userId: session.user_id,
       sessionType: session.session_type || 'coaching',
+      interactionMode: session.interaction_mode || 'check-in',
+      status: session.status || 'active',
+      scheduledFor: session.scheduled_for ? new Date(session.scheduled_for) : undefined,
       therapeuticGoal: session.therapeutic_goal || undefined,
       strategiesDiscussed: session.strategies_discussed || [],
       crisisLevel: session.crisis_level || 'none',

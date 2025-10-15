@@ -9,9 +9,6 @@ import { useSearchParams } from 'next/navigation';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
-import { SessionTypeCard } from '@/components/SessionTypeCard';
-import { ContentContainer } from '@/components/layouts/ContentContainer';
-import type { SessionType } from '@/lib/config/session-types';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -55,14 +52,15 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const isNewSession = searchParams.get('new') === 'true';
   const specificSessionId = searchParams.get('sessionId');
+  const coachingMode = searchParams.get('mode') === 'coaching'; // NEW: Check if coaching mode
+  const timeBudget = searchParams.get('time') ? parseInt(searchParams.get('time')!) : undefined;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [sessionType, setSessionType] = useState<SessionType | null>(null);
-  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(50);
-  const [discoveryCompleted, setDiscoveryCompleted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hello! I'm here to help you with ADHD parenting challenges. What's on your mind today?"
+      content: coachingMode
+        ? "I'm glad you've set aside time for this. What would make this coaching session useful for you today?"
+        : "How are you doing today?"
     }
   ]);
   const [input, setInput] = useState('');
@@ -72,11 +70,6 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const handleTypeSelected = (type: SessionType, suggestedTime: number) => {
-    setSessionType(type);
-    setTimeBudgetMinutes(suggestedTime);
-  };
 
   // Load session on mount (specific session, most recent, or new)
   useEffect(() => {
@@ -111,8 +104,6 @@ export default function ChatPage() {
             // Resume existing session
             setSessionId(data.session.id);
             setCurrentSession(data.session.id, 'chat');
-            setSessionType((data.session.sessionType as SessionType) || 'coaching');
-            setTimeBudgetMinutes(data.session.timeBudgetMinutes || 50);
             setMessages(data.messages);
           }
         }
@@ -128,29 +119,6 @@ export default function ChatPage() {
       loadSession();
     }
   }, [user, isNewSession, specificSessionId]);
-
-  // Load user profile to check discovery status
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      if (!user) return;
-
-      try {
-        const response = await fetch('/api/profile', {
-          method: 'GET',
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          const profile = await response.json();
-          setDiscoveryCompleted(profile.discovery_completed || false);
-        }
-      } catch (error) {
-        console.error('Failed to load user profile:', error);
-      }
-    };
-
-    loadUserProfile();
-  }, [user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -188,8 +156,8 @@ export default function ChatPage() {
           context: {
             userId: user?.id,
             sessionId: sessionId,
-            sessionType: sessionType || 'coaching',
-            timeBudgetMinutes: timeBudgetMinutes || 50
+            interactionMode: coachingMode ? 'coaching' : 'check-in',
+            timeBudgetMinutes: timeBudget
           }
         })
       });
@@ -279,45 +247,7 @@ export default function ChatPage() {
     );
   }
 
-  // Show session type selection screen if type not set
-  if (sessionType === null) {
-    return (
-      <MobileDeviceMockup>
-        <div className="w-full h-full bg-white flex flex-col"
-             style={{
-               position: 'fixed',
-               top: 0,
-               left: 0,
-               right: 0,
-               bottom: 0,
-               overflow: 'hidden'
-             }}>
-          <NavigationDrawer
-            isOpen={isDrawerOpen}
-            onClose={() => setIsDrawerOpen(false)}
-          />
-
-          <AppHeader
-            onMenuClick={() => setIsDrawerOpen(true)}
-            title="ADHD Support"
-            subtitle="Your AI parenting coach"
-          />
-
-          <div className="flex-grow overflow-y-auto"
-               style={{
-                 backgroundColor: '#F9F7F3',
-                 paddingTop: '72px'
-               }}>
-            <ContentContainer>
-              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={discoveryCompleted} />
-            </ContentContainer>
-          </div>
-        </div>
-      </MobileDeviceMockup>
-    );
-  }
-
-  // Show chat interface once time is selected
+  // Show chat interface
   return (
     <MobileDeviceMockup>
       {/* Main UI Container - mobile sized */}

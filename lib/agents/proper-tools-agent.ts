@@ -1,9 +1,11 @@
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { CHECK_IN_PROMPT } from './check-in-prompt';
 
 export interface AgentContext {
   userId: string;
   sessionId: string;
+  interactionMode?: 'check-in' | 'coaching'; // NEW: Determines system prompt
   conversationHistory?: Array<{ role: string; content: string }>;
   userProfile?: {
     childAgeRange?: string;
@@ -13,7 +15,7 @@ export interface AgentContext {
     failedStrategies?: string[];
     parentStressLevel?: string;
   };
-  // Coaching state from GROW model
+  // Coaching state from GROW model (only used in coaching mode)
   sessionState?: {
     currentPhase: 'goal' | 'reality' | 'options' | 'will' | 'closing';
     realityExplorationDepth: number;
@@ -26,44 +28,18 @@ export interface AgentContext {
   };
 }
 
-export const createProperToolsAgent = () => {
-  return async (message: string, context: AgentContext) => {
-    // Build messages array from conversation history
-    const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
-    
-    // Add conversation history
-    if (context.conversationHistory && context.conversationHistory.length > 0) {
-      for (const msg of context.conversationHistory) {
-        if (msg.role === 'user' || msg.role === 'assistant') {
-          messages.push({
-            role: msg.role as 'user' | 'assistant',
-            content: msg.content
-          });
-        }
-      }
-    }
-    
-    // Add current user message
-    messages.push({
-      role: 'user',
-      content: message
-    });
+/**
+ * Generate check-in mode system prompt (casual conversation)
+ */
+function getCheckInPrompt(context: AgentContext): string {
+  return CHECK_IN_PROMPT;
+}
 
-    // Debug logging
-    console.log(`Sending ${messages.length} messages to AI (including current)`);
-    if (messages.length > 1) {
-      console.log(`History: ${messages.length - 1} previous messages`);
-      console.log(`Context passed: ${context.conversationHistory?.length || 0} messages from DB`);
-    } else {
-      console.log(`No conversation history found`);
-    }
-
-    // Generate response using AI SDK
-    const result = await generateText({
-      model: openai('gpt-4o-mini'),
-      temperature: 0.7,
-      
-      system: `You are an ADHD parent coach. Your role is to help parents discover their own solutions through facilitative guidance, NOT to dispense advice.
+/**
+ * Generate coaching mode system prompt (full GROW model)
+ */
+function getCoachingPrompt(context: AgentContext): string {
+  return `You are an ADHD parent coach. Your role is to help parents discover their own solutions through facilitative guidance, NOT to dispense advice.
 
 CORE PHILOSOPHY - COACHING NOT CONSULTING:
 - Coaches help parents discover their own solutions
@@ -154,8 +130,6 @@ CONVERSATION PACING - CRITICAL RULES:
 
 2. SESSION LENGTH (TIME-ADAPTIVE COACHING):
    - Adapt your depth and pacing to the parent's available time
-   - 5-minute sessions: Quick goal clarification + 1-2 key questions + simple next step
-   - 15-minute sessions: Brief Reality exploration (5-7 exchanges) + focused Options
    - 30-minute sessions: Moderate Reality depth (8-12 exchanges) + Options + Will
    - 50-minute sessions: Full GROW model with deep Reality exploration (10-15+ exchanges)
    - End when parent has THEIR OWN plan, not when timer expires
@@ -163,8 +137,6 @@ CONVERSATION PACING - CRITICAL RULES:
 
 3. PHASE PROGRESSION:
    - ADAPT DEPTH TO TIME BUDGET (see time budget in session state)
-   - 5 mins: Goal → 1-2 Reality questions → Quick next step
-   - 15 mins: Goal → 5-7 Reality exchanges → Options (if ready)
    - 30+ mins: Full GROW with minimum 10 exchanges in Reality
    - Can't move to Options until: emotions reflected AND exceptions explored AND parent feels heard
    - No automatic progression based only on conversation length
@@ -241,15 +213,59 @@ TIME TRACKING (CRITICAL - ADAPT YOUR COACHING DEPTH):
 - Extension offered: ${context.sessionState.timeExtensionOffered ? 'Yes' : 'Not yet'}
 
 PACING GUIDANCE FOR ${context.sessionState.timeBudgetMinutes}-MINUTE SESSION:
-${context.sessionState.timeBudgetMinutes === 5 ? '- Quick session: 1-2 key questions, simple next step, no deep exploration' : ''}
-${context.sessionState.timeBudgetMinutes === 15 ? '- Brief session: 5-7 Reality exchanges, focused Options if ready' : ''}
 ${context.sessionState.timeBudgetMinutes === 30 ? '- Moderate session: 8-12 Reality exchanges, moderate depth' : ''}
 ${context.sessionState.timeBudgetMinutes === 50 ? '- Full session: 10-15+ Reality exchanges, deep exploration' : ''}
 
 ${(context.sessionState.timeBudgetMinutes - context.sessionState.timeElapsedMinutes) <= 5 && !context.sessionState.timeExtensionOffered ?
 '⚠️ APPROACHING TIME LIMIT: Consider using requestTimeExtension tool if parent seems engaged and needs more time' : ''}
-` : ''}`,
+` : ''}`;
+}
 
+export const createProperToolsAgent = () => {
+  return async (message: string, context: AgentContext) => {
+    // Build messages array from conversation history
+    const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+    
+    // Add conversation history
+    if (context.conversationHistory && context.conversationHistory.length > 0) {
+      for (const msg of context.conversationHistory) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          messages.push({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content
+          });
+        }
+      }
+    }
+    
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: message
+    });
+
+    // Debug logging
+    const interactionMode = context.interactionMode || 'check-in';
+    console.log(`Interaction mode: ${interactionMode}`);
+    console.log(`Sending ${messages.length} messages to AI (including current)`);
+    if (messages.length > 1) {
+      console.log(`History: ${messages.length - 1} previous messages`);
+      console.log(`Context passed: ${context.conversationHistory?.length || 0} messages from DB`);
+    } else {
+      console.log(`No conversation history found`);
+    }
+
+    // Select system prompt based on interaction mode
+    const systemPrompt = interactionMode === 'coaching'
+      ? getCoachingPrompt(context)
+      : getCheckInPrompt(context);
+
+    // Generate response using AI SDK
+    const result = await generateText({
+      model: openai('gpt-4o-mini'),
+      temperature: 0.7,
+
+      system: systemPrompt,
       messages: messages,
     });
 

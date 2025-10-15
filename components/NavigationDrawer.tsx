@@ -1,8 +1,10 @@
 'use client';
 
-import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar, TrendingUp, BookOpen, ClipboardList, FileText } from 'lucide-react';
+import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar as CalendarIcon, TrendingUp, BookOpen, ClipboardList, FileText, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import CoachingBookingModal from './CoachingBookingModal';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -12,10 +14,15 @@ interface NavigationDrawerProps {
 export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/auth/login');
+  };
+
+  const handleBookCoaching = () => {
+    setShowBookingModal(true);
   };
 
   // Get user initials for avatar placeholder
@@ -195,11 +202,46 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
 
         {/* Navigation Links */}
         <nav style={{ flex: 1, padding: '16px 0', overflowY: 'auto' }}>
+          {/* Book Coaching Session - Highlighted */}
+          <div style={{ padding: '0 16px 16px 16px' }}>
+            <button
+              onClick={handleBookCoaching}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+                color: '#2A3F5A',
+                fontSize: '15px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 8px rgba(215, 205, 236, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(215, 205, 236, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(215, 205, 236, 0.3)';
+              }}
+            >
+              <Sparkles size={20} />
+              Book Coaching Session
+            </button>
+          </div>
+
           <NavLink href="/chat?new=true" icon={<MessageCircle size={20} />} onClick={onClose}>
-            New Chat Session
+            Quick Chat
           </NavLink>
           <NavLink href="/voice?new=true" icon={<Mic size={20} />} onClick={onClose}>
-            New Voice Session
+            Voice Check-in
           </NavLink>
           <NavLink href="/sessions" icon={<History size={20} />} onClick={onClose}>
             Session History
@@ -210,7 +252,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           <NavLink href="/family" icon={<Users size={20} />} onClick={onClose}>
             My Family
           </NavLink>
-          <NavLink href="/check-ins" icon={<Calendar size={20} />} onClick={onClose}>
+          <NavLink href="/check-ins" icon={<CalendarIcon size={20} />} onClick={onClose}>
             Daily Check-ins
           </NavLink>
           <NavLink href="/progress" icon={<TrendingUp size={20} />} onClick={onClose}>
@@ -288,6 +330,12 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           </p>
         </div>
       </div>
+
+      {/* Coaching Booking Modal */}
+      <CoachingBookingModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+      />
     </>
   );
 }

@@ -9,6 +9,7 @@ interface ContentContainerProps {
 /**
  * Standard content container for all mobile screens
  * Provides consistent padding and spacing
+ * Automatically accounts for fixed header (72px + 24px = 96px top padding)
  */
 export function ContentContainer({ children, padding = 'standard' }: ContentContainerProps) {
   const paddingValue = padding === 'large' ? SPACING.contentPaddingLarge : SPACING.contentPadding;
@@ -17,6 +18,7 @@ export function ContentContainer({ children, padding = 'standard' }: ContentCont
     <div
       style={{
         padding: paddingValue,
+        paddingTop: SPACING.headerPaddingTop,
         display: 'flex',
         flexDirection: 'column',
         gap: SPACING.cardGap,

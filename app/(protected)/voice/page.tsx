@@ -9,6 +9,7 @@ import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { SessionTypeCard } from '@/components/SessionTypeCard';
 import { ContentContainer } from '@/components/layouts/ContentContainer';
 import type { SessionType } from '@/lib/config/session-types';
+import { SPACING } from '@/lib/styles/spacing';
 
 export default function VoicePage() {
   const { user } = useAuth();
@@ -72,7 +73,7 @@ export default function VoicePage() {
           <div className="flex-grow overflow-y-auto"
                style={{
                  backgroundColor: '#F9F7F3',
-                 paddingTop: '72px'
+                 paddingTop: SPACING.headerHeight
                }}>
             <ContentContainer>
               <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={discoveryCompleted} />
@@ -112,7 +113,7 @@ export default function VoicePage() {
         <div style={{
           flex: 1,
           overflow: 'hidden',
-          paddingTop: '72px' // Height of fixed header
+          paddingTop: SPACING.headerHeight
         }}>
           <ElevenLabsVoiceAssistant sessionType={sessionType} timeBudgetMinutes={timeBudgetMinutes} />
         </div>

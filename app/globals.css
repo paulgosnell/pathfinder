@@ -28,6 +28,16 @@
   }
 }
 
+/* Wavy dot animation for typing indicator */
+@keyframes wave {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-8px);
+  }
+}
+
 /* Respect user preferences for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

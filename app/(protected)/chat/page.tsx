@@ -367,9 +367,9 @@ export default function ChatPage() {
               </div>
             ))}
 
-            {/* Typing indicator */}
+            {/* Typing indicator - wavy dots only */}
               {loading && (
-              <div className="flex justify-start">
+              <div className="flex justify-start" style={{ paddingLeft: '8px', paddingRight: '8px' }}>
                 <div
                   style={{
                     backgroundColor: '#E3EADD',
@@ -380,13 +380,10 @@ export default function ChatPage() {
                     margin: '4px 0'
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 rounded-full opacity-70 animate-[pulseDot_1.5s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC' }}></div>
-                      <div className="w-2 h-2 rounded-full opacity-70 animate-[pulseDot_1.5s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC', animationDelay: '0.15s' }}></div>
-                      <div className="w-2 h-2 rounded-full opacity-70 animate-[pulseDot_1.5s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC', animationDelay: '0.3s' }}></div>
-                    </div>
-                    <span className="text-sm" style={{ color: '#586C8E' }}>Thinking...</span>
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full opacity-70 animate-[wave_1.4s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC' }}></div>
+                    <div className="w-2 h-2 rounded-full opacity-70 animate-[wave_1.4s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC', animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 rounded-full opacity-70 animate-[wave_1.4s_ease-in-out_infinite]" style={{ backgroundColor: '#D7CDEC', animationDelay: '0.4s' }}></div>
                   </div>
                 </div>
               </div>

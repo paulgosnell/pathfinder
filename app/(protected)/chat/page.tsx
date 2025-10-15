@@ -234,7 +234,7 @@ export default function ChatPage() {
           <div className="flex-grow overflow-y-auto flex items-center justify-center"
                style={{
                  backgroundColor: '#F9F7F3',
-                 marginTop: SPACING.headerHeight
+                 marginTop: SPACING.contentTopMargin
                }}>
             <div className="text-center">
               <div className="animate-pulse" style={{ color: '#D7CDEC', fontSize: '48px', marginBottom: '16px' }}>
@@ -280,7 +280,7 @@ export default function ChatPage() {
           className="flex-grow relative overflow-y-auto"
           style={{
             backgroundColor: '#F9F7F3',
-            marginTop: SPACING.headerHeight,
+            marginTop: SPACING.contentTopMargin,
             paddingBottom: '88px' // Height of fixed input area
           }}
         >

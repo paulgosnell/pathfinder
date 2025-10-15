@@ -73,7 +73,7 @@ export default function VoicePage() {
           <div className="flex-grow overflow-y-auto"
                style={{
                  backgroundColor: '#F9F7F3',
-                 marginTop: SPACING.headerHeight
+                 marginTop: SPACING.contentTopMargin
                }}>
             <ContentContainer>
               <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={discoveryCompleted} />
@@ -113,7 +113,7 @@ export default function VoicePage() {
         <div style={{
           flex: 1,
           overflow: 'hidden',
-          marginTop: SPACING.headerHeight
+          marginTop: SPACING.contentTopMargin
         }}>
           <ElevenLabsVoiceAssistant sessionType={sessionType} timeBudgetMinutes={timeBudgetMinutes} />
         </div>

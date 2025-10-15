@@ -36,7 +36,7 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/atkinson-hyperlegible@1.0.2/stylesheet.min.css"
         />
       </head>
-      <body className="font-body bg-cream text-gray-800">
+      <body className="font-body bg-cream text-gray-800" style={{ margin: 0, padding: 0 }}>
         <Providers>
           {children}
         </Providers>

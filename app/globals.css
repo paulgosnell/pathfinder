@@ -6,15 +6,19 @@
   html {
     color: #2A3F5A;
     font-size: 16px;
+    margin: 0;
+    padding: 0;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Quicksand', var(--font-quicksand), ui-sans-serif, system-ui, sans-serif;
   }
-  
+
   body {
     font-family: 'Atkinson Hyperlegible', var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     line-height: 1.5;
+    margin: 0;
+    padding: 0;
   }
 }
 

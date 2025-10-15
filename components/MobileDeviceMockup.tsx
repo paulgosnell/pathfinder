@@ -94,7 +94,14 @@ export default function MobileDeviceMockup({ children }: MobileDeviceMockupProps
       </div>
 
       {/* Mobile/Tablet: Render children directly without device frame */}
-      <div className="lg:hidden min-h-screen" style={{ backgroundColor: '#F9F7F3' }}>
+      <div className="lg:hidden min-h-screen" style={{
+        backgroundColor: '#ffffff',
+        margin: 0,
+        padding: 0,
+        width: '100%',
+        height: '100vh',
+        overflow: 'hidden'
+      }}>
         {children}
       </div>
     </>

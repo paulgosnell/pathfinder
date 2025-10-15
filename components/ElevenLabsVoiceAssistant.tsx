@@ -20,6 +20,7 @@ const colors = {
 };
 
 import type { SessionType } from '@/lib/config/session-types';
+import { getVoiceSystemPrompt, getVoiceFirstMessage } from '@/lib/agents/voice-prompts';
 
 interface ElevenLabsVoiceAssistantProps {
   sessionType?: SessionType | null;
@@ -94,15 +95,35 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
       // Request microphone permission first
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
+      // Get session type (default to coaching if not set)
+      const mode = sessionType || 'coaching';
+      const timeBudget = timeBudgetMinutes || 50;
+
+      // Get voice-optimized prompts for this session type
+      const systemPrompt = getVoiceSystemPrompt(mode, timeBudget);
+      const firstMessage = getVoiceFirstMessage(mode);
+
       // Start conversation with ElevenLabs agent
-      // Note: Not using custom workletPaths to avoid CSP issues with blob: URLs
-      // The CSP now allows worker-src 'self' blob: to support this
+      // Using overrides to control prompts from code (not dashboard)
       await conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
         connectionType: 'webrtc',
+
+        // Override system prompt and first message based on session type
+        overrides: {
+          agent: {
+            prompt: {
+              prompt: systemPrompt,
+            },
+            firstMessage: firstMessage,
+            language: 'en',
+          },
+        },
+
+        // Also pass dynamic variables for backwards compatibility
         dynamicVariables: {
-          time_budget_minutes: timeBudgetMinutes || 50,
-          session_type: sessionType || 'coaching',
+          time_budget_minutes: timeBudget,
+          session_type: mode,
         },
       });
     } catch (err) {

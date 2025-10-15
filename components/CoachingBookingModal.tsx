@@ -27,9 +27,10 @@ export default function CoachingBookingModal({ isOpen, onClose }: CoachingBookin
       // Close modal first
       onClose();
 
-      // Small delay to ensure modal closes smoothly, then navigate
+      // Use window.location.href for hard navigation to force page re-mount
+      // This ensures the URL params are picked up even if already on /chat
       setTimeout(() => {
-        router.push(`/chat?new=true&mode=coaching&time=${timeBudget}`);
+        window.location.href = `/chat?new=true&mode=coaching&time=${timeBudget}`;
       }, 100);
     } else {
       // Schedule for later - would integrate with calendar here

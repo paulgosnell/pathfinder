@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, Target, TrendingUp, Clock, AlertCircle, CheckCircle2, Lightbulb, Calendar, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageCircle, Target, TrendingUp, Clock, AlertCircle, CheckCircle2, Lightbulb, Calendar, List, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
@@ -21,6 +21,7 @@ interface Session {
   strategies_discussed: string[];
   started_at: string;
   ended_at: string | null;
+  interaction_mode: 'check-in' | 'coaching';
 }
 
 export default function SessionHistoryPage() {
@@ -370,6 +371,26 @@ function SessionTimelineItem({ session, isFirst, isLast }: { session: Session; i
             </span>
           )}
         </div>
+
+        {/* Session Type Badge */}
+        {session.interaction_mode === 'coaching' && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: '12px',
+            fontSize: '11px',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+            color: '#2A3F5A',
+            letterSpacing: '0.05em',
+            marginBottom: '12px'
+          }}>
+            <Sparkles size={14} />
+            COACHING SESSION
+          </div>
+        )}
 
         {/* Goal */}
         {session.therapeutic_goal && (
@@ -854,6 +875,24 @@ function SessionCalendarItem({ session }: { session: Session }) {
           </span>
         )}
       </div>
+
+      {session.interaction_mode === 'coaching' && (
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          padding: '4px 8px',
+          borderRadius: '6px',
+          fontSize: '10px',
+          fontWeight: 600,
+          background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+          color: '#2A3F5A',
+          marginBottom: '8px'
+        }}>
+          <Sparkles size={12} />
+          COACHING
+        </div>
+      )}
 
       {session.therapeutic_goal && (
         <p style={{

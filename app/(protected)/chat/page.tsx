@@ -6,7 +6,6 @@ import remarkGfm from 'remark-gfm';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useSession } from '@/lib/session/session-context';
 import { useSearchParams } from 'next/navigation';
-import { SessionTypeCard } from '@/components/SessionTypeCard';
 import { type SessionType } from '@/lib/config/session-types';
 import { createBrowserClient } from '@/lib/supabase/client';
 import AppHeader from '@/components/AppHeader';
@@ -63,9 +62,7 @@ export default function ChatPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [loadingSession, setLoadingSession] = useState(true);
   const [sessionId, setSessionId] = useState<string>();
-  const [sessionType, setSessionType] = useState<SessionType | null>(urlSessionType);
-  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number | undefined>(timeBudget);
-  const [needsSessionType, setNeedsSessionType] = useState(false);
+  const [sessionType, setSessionType] = useState<SessionType>('check-in'); // Default to check-in
   const [userProfile, setUserProfile] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -91,9 +88,14 @@ export default function ChatPage() {
 
         setUserProfile(profile);
 
-        // If user clicked "New Chat", show session type selector
+        // If user clicked "New Chat", start fresh with initial message
         if (isNewSession) {
-          setNeedsSessionType(true);
+          setMessages([
+            {
+              role: 'assistant',
+              content: "How are you doing today?"
+            }
+          ]);
           setLoadingSession(false);
           return;
         }
@@ -149,11 +151,22 @@ export default function ChatPage() {
           }
         }
 
-        // No existing session - show session type selector
-        setNeedsSessionType(true);
+        // No existing session - start fresh with check-in message
+        setMessages([
+          {
+            role: 'assistant',
+            content: "How are you doing today?"
+          }
+        ]);
       } catch (error) {
         console.error('Failed to load session:', error);
-        setNeedsSessionType(true);
+        // On error, still start with check-in message
+        setMessages([
+          {
+            role: 'assistant',
+            content: "How are you doing today?"
+          }
+        ]);
       } finally {
         setLoadingSession(false);
       }
@@ -163,30 +176,6 @@ export default function ChatPage() {
       loadSession();
     }
   }, [user, isNewSession, specificSessionId]);
-
-  // Handler for session type selection
-  const handleSessionTypeSelected = (type: SessionType, suggestedTime: number) => {
-    setSessionType(type);
-    setTimeBudgetMinutes(suggestedTime);
-    setNeedsSessionType(false);
-
-    // Set initial message based on session type
-    const initialMessages: Record<SessionType, string> = {
-      'discovery': "I'm so glad you're here. Let's take a few minutes to understand your situation. Tell me about your child - what's their name and age?",
-      'quick-tip': "How are you doing today?",
-      'update': "How have things been going since we last talked?",
-      'strategy': "What specific challenge would you like to tackle today?",
-      'crisis': "I'm here with you. What's happening right now?",
-      'coaching': "I'm glad you've set aside time for this. What would make this coaching session useful for you today?",
-    };
-
-    setMessages([
-      {
-        role: 'assistant',
-        content: initialMessages[type] || "How are you doing today?"
-      }
-    ]);
-  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -224,9 +213,9 @@ export default function ChatPage() {
           context: {
             userId: user?.id,
             sessionId: sessionId,
-            sessionType: sessionType || 'quick-tip',
-            interactionMode: sessionType === 'coaching' ? 'coaching' : 'check-in',
-            timeBudgetMinutes: timeBudgetMinutes || timeBudget
+            sessionType: sessionType,
+            interactionMode: 'check-in', // Always check-in mode by default
+            timeBudgetMinutes: 15 // Default 15 min check-in
           }
         })
       });
@@ -309,47 +298,6 @@ export default function ChatPage() {
                 💬
               </div>
               <p style={{ color: '#586C8E' }}>Loading your conversation...</p>
-            </div>
-          </div>
-        </div>
-      </MobileDeviceMockup>
-    );
-  }
-
-  // Show session type selector before starting new chat
-  if (needsSessionType) {
-    return (
-      <MobileDeviceMockup>
-        <div className="w-full h-full bg-white flex flex-col"
-             style={{
-               position: 'fixed',
-               top: 0,
-               left: 0,
-               right: 0,
-               bottom: 0,
-               overflow: 'hidden'
-             }}>
-          <NavigationDrawer
-            isOpen={isDrawerOpen}
-            onClose={() => setIsDrawerOpen(false)}
-          />
-
-          <AppHeader
-            onMenuClick={() => setIsDrawerOpen(true)}
-            title="ADHD Support"
-            subtitle="Your AI parenting coach"
-          />
-
-          <div className="flex-grow overflow-y-auto flex items-center justify-center p-4"
-               style={{
-                 backgroundColor: '#F9F7F3',
-                 marginTop: SPACING.contentTopMargin
-               }}>
-            <div style={{ maxWidth: '500px', width: '100%' }}>
-              <SessionTypeCard
-                onTypeSelected={handleSessionTypeSelected}
-                discoveryCompleted={userProfile?.discovery_completed || false}
-              />
             </div>
           </div>
         </div>

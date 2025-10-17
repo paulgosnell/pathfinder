@@ -70,6 +70,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -111,6 +112,12 @@ export default function ChatPage() {
               setCurrentSession(data.session.id, 'chat');
               setMessages(data.messages);
               setSessionType(data.session.session_type);
+
+              // Show discovery banner if not completed
+              if (profile && !profile.discovery_completed) {
+                setShowDiscoveryBanner(true);
+              }
+
               setLoadingSession(false);
               return;
             }
@@ -131,6 +138,12 @@ export default function ChatPage() {
             setCurrentSession(data.session.id, 'chat');
             setMessages(data.messages);
             setSessionType(data.session.session_type);
+
+            // Show discovery banner if not completed
+            if (profile && !profile.discovery_completed) {
+              setShowDiscoveryBanner(true);
+            }
+
             setLoadingSession(false);
             return;
           }
@@ -387,6 +400,85 @@ export default function ChatPage() {
               backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='a' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath filter='url(%23a)' opacity='.05' d='M0 0h200v200H0z'/%3E%3C/svg%3E\")"
             }}
           ></div>
+
+          {/* Discovery Banner (if not completed) */}
+          {showDiscoveryBanner && !userProfile?.discovery_completed && (
+            <div className="relative z-10 px-4 pt-4">
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '16px',
+                  background: 'rgba(240, 217, 218, 0.15)',
+                  border: '2px solid rgba(240, 217, 218, 0.4)',
+                  position: 'relative'
+                }}
+              >
+                {/* Close button */}
+                <button
+                  onClick={() => setShowDiscoveryBanner(false)}
+                  aria-label="Dismiss banner"
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: 'rgba(42, 63, 90, 0.1)',
+                    color: '#2A3F5A',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    lineHeight: '1'
+                  }}
+                >
+                  ✕
+                </button>
+
+                <p
+                  style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    color: '#2A3F5A',
+                    paddingRight: '24px',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  💡 First time here?
+                </p>
+                <p
+                  style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '14px',
+                    color: '#5A6B7D',
+                    lineHeight: '1.5'
+                  }}
+                >
+                  Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support.
+                </p>
+                <a
+                  href="/chat?new=true&sessionType=discovery"
+                  style={{
+                    display: 'inline-block',
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(to right, #F0D9DA, #E3BFBF)',
+                    color: '#2A3F5A',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 5px rgba(42, 63, 90, 0.1)'
+                  }}
+                >
+                  Start Discovery Session
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Messages - with proper padding and margin */}
           <div className="relative z-10 flex flex-col px-4" style={{ gap: '20px', paddingTop: '24px', paddingBottom: '24px' }}>

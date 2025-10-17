@@ -7,7 +7,6 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { useSession } from '@/lib/session/session-context';
 import { useSearchParams } from 'next/navigation';
 import { type SessionType } from '@/lib/config/session-types';
-import { createBrowserClient } from '@/lib/supabase/client';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
@@ -71,22 +70,12 @@ export default function ChatPage() {
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load session and user profile on mount
+  // Load session on mount
   useEffect(() => {
     const loadSession = async () => {
       if (!user) return;
 
       try {
-        // Load user profile first
-        const supabase = createBrowserClient();
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        setUserProfile(profile);
-
         // If user clicked "New Chat", start fresh with initial message
         if (isNewSession) {
           setMessages([
@@ -113,12 +102,6 @@ export default function ChatPage() {
               setCurrentSession(data.session.id, 'chat');
               setMessages(data.messages);
               setSessionType(data.session.session_type);
-
-              // Show discovery banner if not completed
-              if (profile && !profile.discovery_completed) {
-                setShowDiscoveryBanner(true);
-              }
-
               setLoadingSession(false);
               return;
             }
@@ -139,12 +122,6 @@ export default function ChatPage() {
             setCurrentSession(data.session.id, 'chat');
             setMessages(data.messages);
             setSessionType(data.session.session_type);
-
-            // Show discovery banner if not completed
-            if (profile && !profile.discovery_completed) {
-              setShowDiscoveryBanner(true);
-            }
-
             setLoadingSession(false);
             return;
           }
@@ -349,13 +326,11 @@ export default function ChatPage() {
           ></div>
 
           {/* Discovery Banner */}
-          {showDiscoveryBanner && (
-            <div className="relative z-10 px-4 pt-4">
-              <DiscoveryBanner
-                contextMessage="Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support."
-              />
-            </div>
-          )}
+          <div className="relative z-10 px-4 pt-4">
+            <DiscoveryBanner
+              contextMessage="Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support."
+            />
+          </div>
 
           {/* Messages - with proper padding and margin */}
           <div className="relative z-10 flex flex-col px-4" style={{ gap: '20px', paddingTop: '24px', paddingBottom: '24px' }}>

@@ -1,7 +1,8 @@
 /**
  * Session Type Configuration
  *
- * Defines the 6 session types and their characteristics:
+ * Defines the 7 session types and their characteristics:
+ * - Check-in: Default casual conversation (5-15 mins, no GROW structure)
  * - Discovery: Initial onboarding to gather profile data
  * - Quick Tip: Fast advice (1-2 exchanges)
  * - Update: Progress check-in (5-7 exchanges)
@@ -10,7 +11,7 @@
  * - Coaching: Full GROW model exploration (10-15+ exchanges)
  */
 
-export type SessionType = 'discovery' | 'quick-tip' | 'update' | 'strategy' | 'crisis' | 'coaching';
+export type SessionType = 'check-in' | 'discovery' | 'quick-tip' | 'update' | 'strategy' | 'crisis' | 'coaching';
 
 export interface SessionTypeConfig {
   id: SessionType;
@@ -25,6 +26,17 @@ export interface SessionTypeConfig {
 }
 
 export const SESSION_TYPE_CONFIG: Record<SessionType, SessionTypeConfig> = {
+  'check-in': {
+    id: 'check-in',
+    title: 'Check-in',
+    shortTitle: 'Check-in',
+    description: 'How are you doing today?',
+    icon: 'MessageCircle',  // Lucide icon
+    color: '#B7D3D8',  // Soft blue
+    minExchanges: 0,  // No minimum, natural conversation
+    suggestedTimeMinutes: 15,  // 5-15 mins casual chat
+    showForFirstTime: false,  // Default mode, not shown in selector
+  },
   'discovery': {
     id: 'discovery',
     title: 'Discovery call',

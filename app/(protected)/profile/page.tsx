@@ -11,6 +11,7 @@ import { Card } from '@/components/layouts/Card';
 import { FormField } from '@/components/layouts/FormField';
 import { Button } from '@/components/layouts/Button';
 import { Alert } from '@/components/layouts/Alert';
+import { DiscoveryBanner } from '@/components/DiscoveryBanner';
 
 interface UserProfile {
   parent_name: string | null;
@@ -127,6 +128,11 @@ export default function ProfilePage() {
               </div>
             ) : (
               <>
+                {/* Discovery Banner */}
+                <DiscoveryBanner
+                  contextMessage="Start with a Discovery session to automatically populate your profile with information about you and your family."
+                />
+
                 {/* Success Message */}
                 {success && (
                   <Alert type="success">

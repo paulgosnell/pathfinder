@@ -11,6 +11,7 @@ import { createBrowserClient } from '@/lib/supabase/client';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
+import { DiscoveryBanner } from '@/components/DiscoveryBanner';
 import { SPACING } from '@/lib/styles/spacing';
 
 interface Message {
@@ -63,11 +64,9 @@ export default function ChatPage() {
   const [loadingSession, setLoadingSession] = useState(true);
   const [sessionId, setSessionId] = useState<string>();
   const [sessionType, setSessionType] = useState<SessionType>('check-in'); // Default to check-in
-  const [userProfile, setUserProfile] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -349,82 +348,12 @@ export default function ChatPage() {
             }}
           ></div>
 
-          {/* Discovery Banner (if not completed) */}
-          {showDiscoveryBanner && !userProfile?.discovery_completed && (
+          {/* Discovery Banner */}
+          {showDiscoveryBanner && (
             <div className="relative z-10 px-4 pt-4">
-              <div
-                style={{
-                  padding: '16px',
-                  borderRadius: '16px',
-                  background: 'rgba(240, 217, 218, 0.15)',
-                  border: '2px solid rgba(240, 217, 218, 0.4)',
-                  position: 'relative'
-                }}
-              >
-                {/* Close button */}
-                <button
-                  onClick={() => setShowDiscoveryBanner(false)}
-                  aria-label="Dismiss banner"
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: 'rgba(42, 63, 90, 0.1)',
-                    color: '#2A3F5A',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '16px',
-                    lineHeight: '1'
-                  }}
-                >
-                  ✕
-                </button>
-
-                <p
-                  style={{
-                    margin: '0 0 12px 0',
-                    fontSize: '15px',
-                    fontWeight: 600,
-                    color: '#2A3F5A',
-                    paddingRight: '24px',
-                    lineHeight: '1.4'
-                  }}
-                >
-                  💡 First time here?
-                </p>
-                <p
-                  style={{
-                    margin: '0 0 12px 0',
-                    fontSize: '14px',
-                    color: '#5A6B7D',
-                    lineHeight: '1.5'
-                  }}
-                >
-                  Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support.
-                </p>
-                <a
-                  href="/chat?new=true&sessionType=discovery"
-                  style={{
-                    display: 'inline-block',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(to right, #F0D9DA, #E3BFBF)',
-                    color: '#2A3F5A',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    boxShadow: '0 2px 5px rgba(42, 63, 90, 0.1)'
-                  }}
-                >
-                  Start Discovery Session
-                </a>
-              </div>
+              <DiscoveryBanner
+                contextMessage="Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support."
+              />
             </div>
           )}
 

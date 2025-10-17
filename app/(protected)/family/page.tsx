@@ -6,6 +6,7 @@ import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { ContentContainer } from '@/components/layouts/ContentContainer';
 import { Card } from '@/components/layouts/Card';
+import { DiscoveryBanner } from '@/components/DiscoveryBanner';
 
 export default function FamilyPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -29,6 +30,11 @@ export default function FamilyPage() {
         {/* Content Area */}
         <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
           <ContentContainer>
+
+            {/* Discovery Banner */}
+            <DiscoveryBanner
+              contextMessage="Complete a Discovery session to share details about your child, their challenges, and what you've already tried."
+            />
 
             {/* Coming Soon Card */}
             <Card title="Coming Soon" padding="large">

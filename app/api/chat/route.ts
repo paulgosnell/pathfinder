@@ -125,7 +125,8 @@ export async function POST(req: NextRequest) {
       // Default to check-in mode (casual conversation)
       const interactionMode = context?.interactionMode || 'check-in';
       const timeBudgetMinutes = context?.timeBudgetMinutes;
-      session = await sessionManager.createSession(userId, interactionMode, timeBudgetMinutes);
+      const sessionType = context?.sessionType;  // NEW: explicit session type from frontend
+      session = await sessionManager.createSession(userId, interactionMode, timeBudgetMinutes, undefined, sessionType);
       sessionId = session.id;
     }
 

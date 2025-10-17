@@ -7,6 +7,29 @@ Comprehensive feature development plan for the ADHD Parent Coaching Agent.
 
 ---
 
+## ✅ October 2025 Status Update
+
+**Major Milestones Achieved:**
+- ✅ **Voice Mode (ElevenLabs)** - Production-ready voice coaching with runtime prompt control
+- ✅ **Session Type Selection** - 6 distinct session types (discovery, quick-tip, update, strategy, crisis, coaching)
+- ✅ **User Profiles Database** - Comprehensive schema for storing learned context
+- ✅ **Landing Page & Waitlist** - Public signup system for early testers
+- ✅ **Unified Storage** - Voice and chat transcripts in same database tables
+- ✅ **Database Cleanup** - Removed 5 unused tables from incomplete features
+
+**What Changed Since Planning:**
+- **LiveKit removed** - ElevenLabs chosen as single voice platform (superior quality, zero backend)
+- **Session types expanded** - From 2 types (quick/deep) to 6 types with distinct purposes
+- **Voice transcript persistence** - Built and working (was listed as "Future Enhancement")
+
+**Current Focus:**
+- Discovery session UI flow
+- Profile auto-injection into agent prompts
+- Memory buckets and layered summaries
+- Enhanced session closure with follow-ups
+
+---
+
 ## 🎯 Core Principles
 
 All features should:
@@ -22,41 +45,50 @@ All features should:
 
 ### 1. Session Experience & Pacing
 
-#### 1.1 Time Available Prompt
+#### 1.1 Session Type Selection ✅
 **Priority:** High
-**Status:** Planned
-**Effort:** 3-4 days
+**Status:** ✅ COMPLETE
+**Completed:** October 2025
 
 **User Story:**
-Parents need different depths of engagement depending on their available time.
+Parents need different depths of engagement depending on their available time and needs.
 
-**Implementation:**
-- Add session type selector at conversation start
-  - "Quick help (≈5 min)" - Focused problem-solving
-  - "Deep session (≈50 min)" - Full GROW model coaching
-- Adjust pacing rules based on selection:
-  - **Quick**: 2-3 Reality exchanges before Options
-  - **Deep**: 10-15 Reality exchanges (current behavior)
-- Store selection in session metadata
-- Update agent prompts with time-awareness context
+**Implemented Features:**
+- ✅ **Six session types** with distinct purposes and pacing
+- ✅ Session type selector UI (`SessionTypeCard` component)
+- ✅ Dynamic pacing rules based on session type
+- ✅ Time budget tracking in database
+- ✅ Session type stored in `agent_sessions.session_type` column
 
-**Technical Details:**
-```typescript
-// Add to session creation
-interface SessionMetadata {
-  sessionType: 'quick' | 'deep';
-  estimatedDuration: number; // minutes
-  startedAt: Date;
-}
+**Six Session Types (from `lib/config/session-types.ts`):**
+1. **Discovery** (10 min, 8-10 exchanges) - Initial onboarding for new users
+2. **Quick Tip** (5 min, 1-2 exchanges) - Fast brainstorming for immediate issues
+3. **Update** (15 min, 5-7 exchanges) - Progress check-in on previous plans
+4. **Strategy** (30 min, 8-12 exchanges) - Deep dive on specific issue
+5. **Crisis** (15 min, immediate) - Emergency support with crisis detection
+6. **Coaching** (50 min, 10-15+ exchanges) - Full GROW model exploration
 
-// Update GROW phase progression rules
-const minRealityExchanges = sessionType === 'quick' ? 2 : 10;
+**Database Schema:**
+```sql
+-- In agent_sessions table (already implemented)
+session_type TEXT DEFAULT 'coaching'
+  CHECK (session_type IN ('discovery', 'quick-tip', 'update', 'strategy', 'crisis', 'coaching')),
+time_budget_minutes INTEGER DEFAULT 50,
+time_elapsed_minutes INTEGER DEFAULT 0,
+can_extend_time BOOLEAN DEFAULT true,
+time_extension_offered BOOLEAN DEFAULT false
 ```
 
+**Technical Implementation:**
+- Config file: `lib/config/session-types.ts`
+- UI component: `components/SessionTypeCard.tsx`
+- Minimum exchanges enforced per type in GROW model logic
+- Voice and chat modes both use session type selection
+
 **Success Metrics:**
-- Session completion rate by type
-- User satisfaction per type
-- Actual vs. estimated duration
+- Session type distribution across users
+- Completion rates by type
+- User satisfaction by type
 
 ---
 
@@ -103,55 +135,77 @@ CREATE TABLE session_follow_ups (
 
 ### 2. User Profile & Context Management
 
-#### 2.1 Improved Intake Questions
+#### 2.1 User Profiles & Discovery Phase ✅
 **Priority:** High
-**Status:** Planned
-**Effort:** 4-5 days
+**Status:** ✅ COMPLETE (Database schema implemented)
+**Completed:** October 2025
 
 **User Story:**
-Returning users shouldn't be re-asked known information, and new users need smooth onboarding.
+Returning users shouldn't be re-asked known information, and new users need smooth onboarding through discovery sessions.
 
-**Implementation:**
-- First session intake:
-  - Child's name
-  - Age and school stage
-  - Primary concerns/challenges
-- Persist to user profile table
-- Auto-inject context in future sessions
-- Add "update details" flow accessible from settings
-- Guardrails to avoid re-asking:
-  - Check profile completeness before intake
-  - Only ask for missing data
-  - Offer profile review every 3 months
+**Implemented Features:**
+- ✅ **User profiles table** with comprehensive context storage
+- ✅ **Discovery session type** for initial onboarding (10 min, 8-10 exchanges)
+- ✅ **Discovery completion tracking** (`discovery_completed` flag)
+- ✅ Database schema for storing learned context about families
 
-**Database Schema:**
+**Database Schema (Implemented):**
 ```sql
+-- user_profiles table (8 rows in production)
 CREATE TABLE user_profiles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) UNIQUE,
-  children JSONB[], -- array of child objects
-  primary_concerns TEXT[],
-  profile_completed_at TIMESTAMPTZ,
-  last_updated TIMESTAMPTZ DEFAULT NOW(),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
 
--- Child object structure
-{
-  "name": "Alex",
-  "age": 9,
-  "school_stage": "primary",
-  "adhd_type": "combined",
-  "diagnosis_date": "2023-05",
-  "key_challenges": ["morning routine", "homework resistance"],
-  "strengths": ["creative", "empathetic"]
-}
+  -- Discovery data
+  discovery_completed BOOLEAN DEFAULT false,
+  discovery_completed_at TIMESTAMPTZ,
+  parent_name TEXT,
+  relationship_to_child TEXT,
+  parent_age_range TEXT,
+
+  -- Child context
+  child_age_range TEXT,
+  diagnosis_status TEXT,
+  diagnosis_details TEXT,
+
+  -- Challenges & patterns
+  main_challenges TEXT[],
+  common_triggers TEXT[],
+  behavioral_patterns JSONB DEFAULT '{}',
+
+  -- Support & context
+  family_context TEXT,
+  school_context TEXT,
+  medication_status TEXT,
+  support_network TEXT[],
+  support_system_strength TEXT,
+
+  -- Strategy tracking
+  tried_solutions TEXT[],
+  successful_strategies TEXT[],
+  failed_strategies TEXT[],
+
+  -- Session personalization
+  parent_stress_level TEXT DEFAULT 'unknown',
+  communication_preferences JSONB DEFAULT '{}',
+  home_constraints TEXT[],
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  last_updated TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
+**TODO (UI Implementation):**
+- [ ] Discovery session UI flow (questions and profile building)
+- [ ] Profile viewing/editing in settings
+- [ ] Auto-inject profile context into agent prompts
+- [ ] Profile review reminders (every 3 months)
+
 **Success Metrics:**
-- Profile completion rate
-- Reduction in re-asked questions
-- Session personalization effectiveness
+- Profile completion rate (currently manual)
+- Discovery session completion rate
+- Context relevance in follow-up sessions
 
 ---
 
@@ -311,40 +365,43 @@ PREFER:
 
 ### 4. Voice Mode Integration ✅
 
-#### 4.1 Dual Voice Mode Implementation (A/B Testing)
+#### 4.1 Voice Mode Implementation (ElevenLabs)
 **Priority:** High
 **Status:** ✅ COMPLETE
 **Completed:** October 2025
 
 **Implemented Features:**
-- ✅ **TWO voice implementations** for A/B testing quality/cost
-- ✅ Dropdown navigation in `/chat` header to switch between modes
-- ✅ Both modes use GROW/OARS coaching methodology
+- ✅ **ElevenLabs Conversational AI** - Selected as production voice platform
+- ✅ Session type selection UI (check-in vs coaching modes)
+- ✅ GROW/OARS coaching methodology via runtime prompt overrides
 - ✅ Protected routes with authentication
-- ✅ Audio visualization and control UI
+- ✅ Audio visualization and control UI with Lucide icons
 - ✅ Natural conversation with interruption support
+- ✅ **Transcript persistence to Supabase** - All voice conversations saved to database
+- ✅ **Unified conversation storage** - Voice and chat sessions stored together with `mode` field
 
-**Voice Mode 1: LiveKit (`/voice`)**
-- **STT**: Deepgram (nova-2-general)
-- **LLM**: OpenAI GPT-4o-mini
-- **TTS**: OpenAI TTS (voice: "nova")
-- **Backend**: Python LiveKit agent (`voice-agent/agent.py`)
-- **Frontend**: `app/voice/page.tsx` + `components/VoiceAssistant.tsx`
-- **API**: `/app/api/voice-token/route.ts`
-- **Cost**: ~$0.10-0.20 per 50-min session
-
-**Voice Mode 2: ElevenLabs (`/voice-v2`)**
+**Voice Mode: ElevenLabs (`/voice`)**
 - **Platform**: ElevenLabs Conversational AI Agents API
-- **Agent ID**: `agent_2901k71gtfhmeex8rkxqwtnybhr4`
-- **SDK**: `@elevenlabs/react`
-- **Frontend**: `app/voice-v2/page.tsx` + `components/ElevenLabsVoiceAssistant.tsx`
-- **Voice Quality**: Higher naturalness, more expressive
+- **Agent ID**: Configured via `NEXT_PUBLIC_ELEVENLABS_AGENT_ID`
+- **SDK**: `@elevenlabs/react` v0.7.1
+- **Frontend**: `app/(protected)/voice/page.tsx` + `components/ElevenLabsVoiceAssistant.tsx`
+- **Prompts**: Controlled from code via runtime overrides (`lib/agents/voice-prompts.ts`)
+- **API**: `/api/voice-transcript/route.ts` for real-time transcript saving
+- **Voice Quality**: High naturalness, expressive, low latency (~300ms)
 - **Cost**: ~$0.25-0.35 per 50-min session (premium quality)
 
-**A/B Testing Framework:**
-- Users can choose between "LiveKit Voice" or "ElevenLabs Voice" via dropdown
-- Both use same coaching prompts for fair comparison
-- Track metrics: quality ratings, completion rates, cost per session
+**Two Session Types:**
+1. **Check-in mode**: Casual 5-15 min supportive conversations (no GROW structure)
+2. **Coaching mode**: Full GROW model sessions with deep exploration (30-50 min)
+
+**Technical Implementation:**
+- Runtime prompt overrides (system prompt + first message controlled from code, not dashboard)
+- Session type selection UI with `SessionTypeCard` component
+- Real-time transcript persistence via `onMessage` callback
+- Database: Same tables as text chat (`agent_sessions`, `agent_conversations`)
+- Mode tracking: `mode='voice'` column in database
+
+**Note:** LiveKit implementation was removed in October 2025. ElevenLabs chosen for superior voice quality and zero backend maintenance.
 
 #### 4.2 Voice Mode Enhancements (Future)
 **Priority:** Medium
@@ -352,13 +409,10 @@ PREFER:
 **Effort:** 2-3 weeks
 
 **Remaining Enhancements:**
-- [ ] Session transcript persistence to Supabase
-- [ ] Unified session history (voice + chat combined view)
 - [ ] In-app modality switching (start in chat, switch to voice mid-session)
 - [ ] Voice session summaries and follow-ups
 - [ ] Regional accent/voice options
 - [ ] Session state sync between voice and chat modalities
-- [ ] Voice-optimized coaching prompts (shorter responses)
 
 **Success Metrics (To Track):**
 - Voice session completion rate
@@ -755,14 +809,13 @@ npm run test:a11y
 
 **Developer README Updates:**
 - Environment variables:
-  - OpenAI/Gemini API keys
-  - 11Labs credentials
-  - LiveKit configuration
+  - OpenAI API keys
+  - ElevenLabs credentials (removed LiveKit)
 - Feature flags:
   - Voice mode enabled
   - Waitlist mode
   - Crisis detection level
-- Bucket/tag taxonomy
+- Session type taxonomy
 - Contribution guidelines
 
 **Files to Update:**
@@ -775,13 +828,13 @@ npm run test:a11y
 
 ## 🗓️ Implementation Timeline
 
-### Phase 1: Foundation (Weeks 1-4)
+### Phase 1: Foundation (Weeks 1-4) ✅ COMPLETE
 **Goal:** Core UX improvements and data infrastructure
 
-- [x] Landing page & waitlist (COMPLETE)
-- [ ] Time available prompt (session types)
-- [ ] Improved intake questions
-- [ ] User profile enrichment
+- [x] Landing page & waitlist (COMPLETE - October 2025)
+- [x] Session type selection (COMPLETE - October 2025)
+- [x] User profile database schema (COMPLETE - October 2025)
+- [ ] Discovery session UI implementation (TODO)
 - [ ] Natural tone refinement (initial pass)
 - [ ] QA checklist implementation
 
@@ -803,14 +856,15 @@ npm run test:a11y
 - [ ] Strategy effectiveness tracking
 - [ ] Podcast/book ingestion pipeline (stubs)
 
-### Phase 4: Voice & Modality (Weeks 13-16)
+### Phase 4: Voice & Modality (Weeks 13-16) ✅ COMPLETE
 **Goal:** Unified voice/chat experience
 
 - [x] Voice mode implementation (COMPLETE - October 2025)
-- [ ] Voice session transcript persistence
-- [ ] Session state sync across modalities
-- [ ] In-app modality switching
-- [ ] Unified session history (voice + chat)
+- [x] Voice session transcript persistence (COMPLETE - October 2025)
+- [x] Unified session storage (COMPLETE - voice + chat in same tables)
+- [x] Session type selection for voice (COMPLETE - check-in vs coaching)
+- [ ] Session state sync across modalities (TODO)
+- [ ] In-app modality switching (TODO)
 
 ### Phase 5: Analytics & Scale (Weeks 17-20)
 **Goal:** Data-driven optimization and monitoring

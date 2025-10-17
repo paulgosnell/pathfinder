@@ -34,7 +34,8 @@ class SessionManager {
     userId: string,
     interactionMode: 'check-in' | 'coaching' = 'check-in',  // Default to check-in mode
     timeBudgetMinutes?: number,
-    scheduledFor?: Date
+    scheduledFor?: Date,
+    sessionType?: string  // NEW: explicit session type (discovery, quick-tip, etc.)
   ): Promise<SessionState> {
     const sessionId = crypto.randomUUID();
     const startedAt = scheduledFor || new Date();
@@ -43,12 +44,15 @@ class SessionManager {
     const defaultTimeBudget = interactionMode === 'coaching' ? 30 : 15;
     const finalTimeBudget = timeBudgetMinutes || defaultTimeBudget;
 
+    // Use explicit session type if provided, otherwise infer from interaction mode
+    const finalSessionType = sessionType || (interactionMode === 'coaching' ? 'coaching' : 'quick-tip');
+
     await dbChats.createSession({
       id: sessionId,
       userId,
       crisisLevel: 'none',
       startedAt: startedAt.toISOString(),
-      sessionType: interactionMode === 'coaching' ? 'coaching' : 'quick-tip',
+      sessionType: finalSessionType,
       interactionMode,
       status: scheduledFor ? 'scheduled' : 'active',
       scheduledFor: scheduledFor?.toISOString(),
@@ -61,7 +65,7 @@ class SessionManager {
     return {
       id: sessionId,
       userId,
-      sessionType: interactionMode === 'coaching' ? 'coaching' : 'quick-tip',
+      sessionType: finalSessionType,
       interactionMode,
       status: scheduledFor ? 'scheduled' : 'active',
       scheduledFor,

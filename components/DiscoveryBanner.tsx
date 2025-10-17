@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth/auth-context';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { BORDER_RADIUS } from '@/lib/styles/spacing';
 
@@ -22,21 +23,22 @@ interface DiscoveryBannerProps {
  * - Family page (always shown if not completed)
  */
 export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
+  const { user } = useAuth(); // Use auth context instead of creating new client
   const [discoveryCompleted, setDiscoveryCompleted] = useState<boolean | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const checkDiscoveryStatus = async () => {
       console.log('[DiscoveryBanner] Starting discovery status check...');
+      console.log('[DiscoveryBanner] Got user from context:', user ? 'YES' : 'NO', user?.id);
+
+      if (!user) {
+        console.log('[DiscoveryBanner] No user in context, exiting early');
+        return;
+      }
+
       try {
         const supabase = createBrowserClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log('[DiscoveryBanner] Got user:', user ? 'YES' : 'NO', user?.id);
-
-        if (!user) {
-          console.log('[DiscoveryBanner] No user found, exiting early');
-          return;
-        }
 
         const { data: profile, error } = await supabase
           .from('user_profiles')
@@ -62,7 +64,7 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
     };
 
     checkDiscoveryStatus();
-  }, []);
+  }, [user]); // Re-run when user becomes available
 
   // Don't show if discovery is completed or still loading
   if (discoveryCompleted === null || discoveryCompleted === true || dismissed) {

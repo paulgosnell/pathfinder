@@ -27,17 +27,24 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
 
   useEffect(() => {
     const checkDiscoveryStatus = async () => {
+      console.log('[DiscoveryBanner] Starting discovery status check...');
       try {
         const supabase = createBrowserClient();
         const { data: { user } } = await supabase.auth.getUser();
+        console.log('[DiscoveryBanner] Got user:', user ? 'YES' : 'NO', user?.id);
 
-        if (!user) return;
+        if (!user) {
+          console.log('[DiscoveryBanner] No user found, exiting early');
+          return;
+        }
 
         const { data: profile, error } = await supabase
           .from('user_profiles')
           .select('discovery_completed')
           .eq('user_id', user.id)
           .single();
+
+        console.log('[DiscoveryBanner] Query result:', { profile, error });
 
         // If no profile exists yet, or discovery_completed is null/false, show the banner
         if (error || !profile || !profile.discovery_completed) {

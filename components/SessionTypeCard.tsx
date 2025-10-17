@@ -195,25 +195,6 @@ export function SessionTypeCard({ onTypeSelected, discoveryCompleted = false }: 
                   </div>
                 </div>
 
-                {/* Time Badge */}
-                <div
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    background: 'rgba(215, 205, 236, 0.2)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#586C8E',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {config.suggestedTimeMinutes === 5 && '~5 mins'}
-                  {config.suggestedTimeMinutes === 10 && '~10 mins'}
-                  {config.suggestedTimeMinutes === 15 && '~15 mins'}
-                  {config.suggestedTimeMinutes === 30 && '~30 mins'}
-                  {config.suggestedTimeMinutes === 50 && '~50 mins'}
-                </div>
-
                 {/* Selection Indicator */}
                 {selectedType === typeId && (
                   <div
@@ -262,7 +243,7 @@ export function SessionTypeCard({ onTypeSelected, discoveryCompleted = false }: 
             lineHeight: '1.4',
           }}
         >
-          Session length is approximate - we'll work at your pace
+          We'll work at your pace - take as long as you need
         </p>
       </div>
     </Card>

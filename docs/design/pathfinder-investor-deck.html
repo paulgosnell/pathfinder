@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder - Investor Pitch Deck</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            background-color: #E8F5F0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Quicksand', sans-serif;
+            color: #2A3F5A;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 42px;
+        }
+
+        .slide {
+            width: 960px;
+            min-height: 540px;
+            height: auto;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(42, 63, 90, 0.15);
+            overflow: visible;
+            position: relative;
+            page-break-after: always;
+        }
+
+        .slide-note {
+            max-width: 960px;
+            margin: 10px auto 60px;
+            padding: 15px;
+            background: #F9F7F3;
+            border-left: 4px solid #7B68EE;
+            font-size: 14px;
+            color: #586C8E;
+        }
+
+        /* Brand accent bar */
+        .accent-bar {
+            width: 60px;
+            height: 4px;
+            background: #7B68EE;
+            margin-bottom: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .slide {
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
+            }
+            .slide-note {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pathfinder - Investor Pitch Deck</h1>
+        <p style="text-align: center; color: #586C8E; margin-bottom: 60px; font-size: 18px;">Redesigned with design system - Use as reference for Google Slides</p>
+
+        <!-- SLIDE 1: TITLE SLIDE -->
+        <div class="slide" style="background: linear-gradient(135deg, #E8F5F0 0%, #E6E6FA 50%, #B4E4E0 100%); display: flex; align-items: center; position: relative; overflow: hidden;">
+            <!-- Background pattern -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.08;">
+                <svg width="100%" height="100%">
+                    <defs>
+                        <pattern id="dots-title" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <circle cx="20" cy="20" r="2" fill="#2A3F5A"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#dots-title)"/>
+                </svg>
+            </div>
+
+            <!-- Abstract shape top right -->
+            <svg style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; opacity: 0.15;" viewBox="0 0 200 200">
+                <path fill="#7B68EE" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,89.9,-16.3,88.6,-0.7C87.3,14.8,82.2,29.7,74.1,43.1C66.1,56.5,55.1,68.5,41.9,74.7C28.7,80.9,14.4,81.3,-0.3,81.9C-14.9,82.4,-29.8,83.1,-43.2,77.2C-56.5,71.2,-68.3,58.7,-76.9,44.3C-85.6,29.8,-91.1,14.9,-91.6,-0.3C-92.2,-15.5,-87.8,-31.1,-79.4,-43.9C-70.9,-56.7,-58.4,-66.9,-44.5,-74.3C-30.5,-81.8,-15.3,-86.6,-0.1,-86.5C15.2,-86.4,30.5,-83.5,44.7,-76.4Z" transform="translate(100 100)"/>
+            </svg>
+
+            <!-- Left side - Image placeholder -->
+            <div style="flex: 1; padding: 60px; position: relative; z-index: 1;">
+                <div style="width: 100%; height: 380px; background: linear-gradient(135deg, rgba(123, 104, 238, 0.1), rgba(180, 228, 224, 0.1)); border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 2px dashed #7B68EE;">
+                    <div style="text-align: center; color: #586C8E;">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <p style="margin-top: 15px; font-size: 14px;">Insert diverse families illustration</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side - Content -->
+            <div style="flex: 1; padding: 60px; position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 30px;"></div>
+                <h1 style="font-family: 'Quicksand', sans-serif; font-size: 56px; color: #2A3F5A; margin-bottom: 0; font-weight: 700; line-height: 1.1;">Pathfinder</h1>
+                <p style="font-size: 17px; color: #586C8E; line-height: 1.7; margin-top: 30px;">
+                    Pathfinder's mission is to help families of neurodivergent children with continuous, compassionate support from the first concern through diagnosis and beyond. We combine empathetic, human-like AI with gold-standard coaching insights so that no parent feels alone and every child's unique strengths are nurtured and celebrated to help them build agency, resilience and happiness.
+                </p>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Gradient background (mint → lavender → teal). Left side for family illustration. Right side with brand accent bar, large Pathfinder title (Quicksand 56px), and mission statement. Abstract organic shape top right. Dot pattern overlay at 8% opacity.
+        </div>
+
+        <!-- SLIDE 2: THE PROBLEM -->
+        <div class="slide" style="background: #F9F7F3; padding: 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 15px; font-weight: 700;">The problem</h2>
+            <p style="font-size: 16px; color: #586C8E; margin-bottom: 35px; line-height: 1.6;">
+                The neurodevelopmental pathway is characterised by delay, disconnection, and unmet need. More than 400,000 children in England are waiting for assessment, while nearly one million are already in contact with services in the UK and at least 10 million in the US. Families report feeling unheard and not equipped to support their children.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px;">
+                <!-- Children Need -->
+                <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.08); border-top: 4px solid #B4E4E0;">
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2A3F5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">Children need</h3>
+                    <ul style="list-style: none; padding: 0; font-size: 14px; color: #586C8E; line-height: 1.8;">
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Safe, supportive ways to be understood while waiting for or living with a diagnosis.
+                        </li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Consistency between school and home.
+                        </li>
+                        <li style="padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Strategies that help with daily challenges like homework, transitions, and emotional regulation.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Parents Need -->
+                <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.08); border-top: 4px solid #E6E6FA;">
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #E6E6FA, #7B68EE); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2A3F5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">Parents need</h3>
+                    <ul style="list-style: none; padding: 0; font-size: 14px; color: #586C8E; line-height: 1.8;">
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Trusted, empathetic guidance rather than impersonal forms or static apps.
+                        </li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Continuity of support: a tool that remembers their child's story.
+                        </li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Practical, personalised strategies that make daily life more manageable.
+                        </li>
+                        <li style="padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Confidence and wellbeing support for themselves.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Teachers Need -->
+                <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.08); border-top: 4px solid #FFD4A3;">
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #FFD4A3, #7B68EE); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2A3F5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">Teachers need</h3>
+                    <ul style="list-style: none; padding: 0; font-size: 14px; color: #586C8E; line-height: 1.8;">
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Simple, quick ways to contribute observations without excessive paperwork.
+                        </li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Practical classroom strategies they can apply immediately.
+                        </li>
+                        <li style="padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                            Evidence to support SEN and EHCP / IEP processes.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Three-column grid with white cards. Each card has colored top border (teal, lavender, peach) and gradient icon box. Lucide icons: Users for children, User for parents, GraduationCap for teachers. Purple bullets for list items.
+        </div>
+
+        <!-- SLIDE 3: THE SOLUTION -->
+        <div class="slide" style="background: #F9F7F3; padding: 60px;">
+            <div style="display: flex; gap: 50px;">
+                <!-- Left side - Description -->
+                <div style="flex: 1;">
+                    <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">The solution</h2>
+                    <p style="font-size: 18px; color: #586C8E; line-height: 1.7; margin-bottom: 30px;">
+                        Pathfinder is an empathetic, AI-enabled coach for families of neurodivergent children. This means families feeling heard and being supported with personalised strategies. Pathfinder simplifies complex journeys by bringing together parents, schools, and clinicians into one trusted platform.
+                    </p>
+                </div>
+
+                <!-- Right side - Features & Benefits -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Feature 1 -->
+                    <div style="display: flex; gap: 15px;">
+                        <div style="min-width: 40px; height: 40px; background: linear-gradient(135deg, #7B68EE, #B4E4E0); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                                Pathfinder converses in a warm, understanding tone, uses reflective listening and adjusts its approach to match the needs of parents whether they need a quick tip or an in depth coaching session.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div style="display: flex; gap: 15px;">
+                        <div style="min-width: 40px; height: 40px; background: linear-gradient(135deg, #E6E6FA, #7B68EE); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                                Pathfinder remembers prior interactions and refers back to past conversations when the parent returns
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div style="display: flex; gap: 15px;">
+                        <div style="min-width: 40px; height: 40px; background: linear-gradient(135deg, #B4E4E0, #FFD4A3); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                                It collects structured details, stores them securely with parent consent, and explicitly requests consent while meeting GDPR standards and providing escalation pathways for safeguarding concerns
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div style="display: flex; gap: 15px;">
+                        <div style="min-width: 40px; height: 40px; background: linear-gradient(135deg, #FFD4A3, #E6E6FA); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                                The platform is initially designed to handle ADHD, expanding rapidly to autism, ODD and other conditions.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Split layout. Left: Title and description. Right: Four features with gradient icon boxes (MessageCircle, Globe, Lock, Layers). Each feature has compact text. Different gradient for each icon box progressing through color palette.
+        </div>
+
+        <!-- SLIDE 4: KANJO HEALTH -->
+        <div class="slide" style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 60px; display: flex; gap: 60px; align-items: center;">
+            <!-- Left side - Logos -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 50px; align-items: center;">
+                <div style="width: 60px; height: 4px; background: #7B68EE; position: absolute; top: 60px; left: 60px;"></div>
+                <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; font-weight: 700; position: absolute; top: 80px; left: 60px;">Kanjo Health</h2>
+
+                <div style="margin-top: 100px; text-align: center;">
+                    <div style="width: 320px; height: 140px; background: #1A2332; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.2);">
+                        <div style="color: white; text-align: center;">
+                            <div style="font-size: 48px; font-weight: 700; margin-bottom: 10px;">kanjo</div>
+                            <div style="font-size: 13px; opacity: 0.8;">Remodelling mental health</div>
+                            <div style="font-size: 12px; opacity: 0.7;">The first pre-diagnostic insight platform</div>
+                        </div>
+                    </div>
+                </div>
+
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#7B68EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+
+                <div style="text-align: center;">
+                    <div style="width: 320px; height: 100px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.1); padding: 20px;">
+                        <div style="color: #2A3F5A; font-size: 32px; font-weight: 700;">MAYO CLINIC<br/>PLATFORM</div>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
+                        <div style="padding: 8px 16px; background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.08);">
+                            <span style="font-size: 11px; color: #586C8E;">Entrepreneur First</span>
+                        </div>
+                        <div style="padding: 8px 16px; background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.08);">
+                            <span style="font-size: 11px; color: #586C8E;">Innovate UK</span>
+                        </div>
+                        <div style="padding: 8px 16px; background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.08);">
+                            <span style="font-size: 11px; color: #586C8E;">Big Health Ventures</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side - Content -->
+            <div style="flex: 1;">
+                <div style="background: white; padding: 35px; border-radius: 16px; box-shadow: 0 4px 20px rgba(42, 63, 90, 0.1);">
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 20px; font-weight: 600;">Pathfinder is acquiring the business and assets of Kanjo Health.</h3>
+                    <ul style="list-style: none; padding: 0; font-size: 15px; color: #586C8E; line-height: 2;">
+                        <li style="margin-bottom: 12px; padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            Founder leaving to pursue athletic career
+                        </li>
+                        <li style="margin-bottom: 12px; padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            Experienced technical co-founder and team remaining
+                        </li>
+                        <li style="margin-bottom: 12px; padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            Significant IP and knowhow
+                        </li>
+                        <li style="margin-bottom: 12px; padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            Deep understanding of neurodiversity provision
+                        </li>
+                        <li style="margin-bottom: 12px; padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            Real world delivery of multi-disciplinary care model
+                        </li>
+                        <li style="margin-bottom: 12px; padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            £1 million raised / £6.5 million valuation at last round
+                        </li>
+                        <li style="padding-left: 25px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #7B68EE; font-size: 18px;">✓</span>
+                            Starting programme with Mayo Clinic accelerator to use patient data to develop proprietary model for risk factors, phenotypes and co-morbidities
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Left side shows acquisition flow with Kanjo logo → down arrow → Mayo Clinic logo plus partner badges. Right side has white card with key acquisition details and checkmarks. Gradient background.
+        </div>
+
+        <!-- SLIDE 5: TEAM -->
+        <div class="slide" style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(180, 228, 224, 0.15) 100%); padding: 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 50px; font-weight: 700;">Team</h2>
+
+            <div style="display: flex; justify-content: center; gap: 50px;">
+                <!-- Rupert Morley -->
+                <div style="text-align: center; max-width: 240px;">
+                    <div style="width: 160px; height: 160px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; overflow: hidden;">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #7B68EE; margin-bottom: 8px; font-weight: 600;">Rupert Morley</h3>
+                    <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                        Rupert has led businesses across multiple sectors. He was CEO of Hamptons International, Propertyfinder.co.uk, and Sterling Relocation. Rupert currently chairs Pershing Square Holdings and serves as a trustee of Comic Relief and the Kennedy Memorial Trust. He has a degree in economics from Cambridge and an MBA from Harvard Business School.
+                    </p>
+                </div>
+
+                <!-- Edmund Sonuga-Barke -->
+                <div style="text-align: center; max-width: 240px;">
+                    <div style="width: 160px; height: 160px; background: linear-gradient(135deg, #E6E6FA, #B4E4E0); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; overflow: hidden;">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #7B68EE; margin-bottom: 8px; font-weight: 600;">Professor Edmund Sonuga-Barke</h3>
+                    <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                        Edmund is Professor of Developmental Psychology, Psychiatry & Neuroscience at King's College London. He is a Fellow of the British Academy, a Fellow of the Academy of Medical Sciences, and Editor-in-Chief of the Journal of Child Psychology & Psychiatry.
+                    </p>
+                </div>
+
+                <!-- Deepthi Uppala -->
+                <div style="text-align: center; max-width: 240px;">
+                    <div style="width: 160px; height: 160px; background: linear-gradient(135deg, #FFD4A3, #E6E6FA); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; overflow: hidden;">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #7B68EE; margin-bottom: 8px; font-weight: 600;">Deepthi Uppala</h3>
+                    <p style="font-size: 13px; color: #586C8E; line-height: 1.6;">
+                        Deepthi has been CTO of Kanjo Health for two years. She previously worked at Microsoft for nine years, most recently as Senior Research Product Manager in the research accelerator and three years for Intel. Deepthi has an MS in Engineering from Carnegie Mellon and an MBA from Wharton.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Three team members with gradient circular photo placeholders (use actual photos). Different gradient for each (teal→purple, lavender→teal, peach→lavender). Names in purple Quicksand. User icon placeholder. White borders on circles.
+        </div>
+
+        <!-- SLIDE 6: PRODUCT - COACH -->
+        <div class="slide" style="background: #F9F7F3; padding: 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 15px; font-weight: 700;">Product - Coach</h2>
+            <p style="font-size: 16px; color: #586C8E; margin-bottom: 40px;">
+                Pathfinder engages families through a simple, empathetic chat interface that collects information and coordinates inputs.
+            </p>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <!-- Step 1 -->
+                <div style="flex: 1; text-align: center;">
+                    <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.1); border: 4px solid white; position: relative; z-index: 2;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; margin-bottom: 10px; font-weight: 600;">Step 1</h3>
+                    <p style="font-size: 14px; color: #586C8E; line-height: 1.5;">Parent engages with AI chatbot, providing family context and sharing strengths and challenges</p>
+                </div>
+
+                <!-- Arrow -->
+                <div style="flex: 0 0 50px; text-align: center; margin-bottom: 80px;">
+                    <svg width="40" height="24" viewBox="0 0 50 24">
+                        <path d="M0 12 L35 12 M35 12 L25 6 M35 12 L25 18" stroke="#7B68EE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+
+                <!-- Step 2 -->
+                <div style="flex: 1; text-align: center;">
+                    <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #E6E6FA, #B4E4E0); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.1); border: 4px solid white; position: relative; z-index: 2;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; margin-bottom: 10px; font-weight: 600;">Step 2</h3>
+                    <p style="font-size: 14px; color: #586C8E; line-height: 1.5;">Chatbot offers empathetic guidance while capturing structured data</p>
+                </div>
+
+                <!-- Arrow -->
+                <div style="flex: 0 0 50px; text-align: center; margin-bottom: 80px;">
+                    <svg width="40" height="24" viewBox="0 0 50 24">
+                        <path d="M0 12 L35 12 M35 12 L25 6 M35 12 L25 18" stroke="#7B68EE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+
+                <!-- Step 3 -->
+                <div style="flex: 1; text-align: center;">
+                    <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #FFD4A3, #E6E6FA); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.1); border: 4px solid white; position: relative; z-index: 2;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; margin-bottom: 10px; font-weight: 600;">Step 3</h3>
+                    <p style="font-size: 14px; color: #586C8E; line-height: 1.5;">Teachers & clinicians add insights to build a shared profile</p>
+                </div>
+
+                <!-- Arrow -->
+                <div style="flex: 0 0 50px; text-align: center; margin-bottom: 80px;">
+                    <svg width="40" height="24" viewBox="0 0 50 24">
+                        <path d="M0 12 L35 12 M35 12 L25 6 M35 12 L25 18" stroke="#7B68EE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+
+                <!-- Step 4 -->
+                <div style="flex: 1; text-align: center;">
+                    <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.1); border: 4px solid white; position: relative; z-index: 2;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; margin-bottom: 10px; font-weight: 600;">Step 4</h3>
+                    <p style="font-size: 14px; color: #586C8E; line-height: 1.5;">Profile generates personalised strategies & referral-ready reports</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Four-step horizontal process flow with gradient circles connected by purple arrows. Icons: User, MessageCircle, Users, Activity. Different gradient for each step. White borders on circles. Can replace circles with actual product screenshots.
+        </div>
+
+        <!-- SLIDE 7: ROADMAP -->
+        <div class="slide" style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 15px; font-weight: 700;">Roadmap</h2>
+            <p style="font-size: 16px; color: #586C8E; margin-bottom: 45px; max-width: 650px;">
+                Pathfinder evolves in three clear stages from an ADHD wellness coach for parents to a platform covering a broader range of conditions and then to a regulated medical device that links parents to teachers and clinicians. At each stage, the company will develop its own proprietary data sets and algorithms.
+            </p>
+
+            <div style="position: relative;">
+                <!-- Timeline line -->
+                <div style="position: absolute; top: 80px; left: 100px; right: 100px; height: 3px; background: linear-gradient(to right, #B4E4E0, #7B68EE, #E6E6FA); border-radius: 2px; z-index: 1;"></div>
+
+                <div style="display: flex; justify-content: space-between; position: relative; z-index: 2;">
+                    <!-- Year 1 -->
+                    <div style="flex: 1; text-align: center;">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.15); border: 5px solid white;">
+                            <span style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: white; font-weight: 700;">Y1</span>
+                        </div>
+                        <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Pathfinder Coach</h3>
+                        <p style="font-size: 13px; color: #586C8E; line-height: 1.6; padding: 0 10px;">
+                            Direct-to-consumer wellness tool providing practical, personalised coaching while building a living family profile.
+                        </p>
+                    </div>
+
+                    <!-- Year 2 -->
+                    <div style="flex: 1; text-align: center;">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.15); border: 5px solid white;">
+                            <span style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: white; font-weight: 700;">Y2</span>
+                        </div>
+                        <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Pathfinder Platform</h3>
+                        <p style="font-size: 13px; color: #586C8E; line-height: 1.6; padding: 0 10px;">
+                            Expands across conditions, brings schools into ecosystem creating continuity between home and classroom.
+                        </p>
+                    </div>
+
+                    <!-- Year 3 -->
+                    <div style="flex: 1; text-align: center;">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #E6E6FA, #FFD4A3); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.15); border: 5px solid white;">
+                            <span style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: white; font-weight: 700;">Y3</span>
+                        </div>
+                        <h3 style="font-family: 'Quicksand', sans-serif; font-size: 22px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Pathfinder System</h3>
+                        <p style="font-size: 13px; color: #586C8E; line-height: 1.6; padding: 0 10px;">
+                            Regulated medical device (UKCA Class IIa) embedded into NHS workflows as multi-condition diagnostic and support system.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Three milestones with gradient circles connected by horizontal gradient line. Each circle shows year (Y1, Y2, Y3). Different gradient for each phase. Phase name below in Quicksand. Brief description under each. White borders on circles.
+        </div>
+
+        <!-- SLIDE 8: COMPETITIVE MOATS -->
+        <div class="slide" style="background: #F9F7F3; padding: 60px;">
+            <div style="display: flex; gap: 60px;">
+                <!-- Left side -->
+                <div style="flex: 1;">
+                    <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Competitive Moats</h2>
+                    <p style="font-size: 18px; color: #586C8E; line-height: 1.7;">
+                        The business will develop a number of competitive moats. Some will be in operation from the start and others will develop over time.
+                    </p>
+                </div>
+
+                <!-- Right side - Moats -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 18px;">
+                    <!-- Moat 1 -->
+                    <div style="display: flex; gap: 15px; align-items: start;">
+                        <div style="min-width: 44px; height: 44px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.1);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.6;">
+                                Proprietary agent design that makes parents feel heard and empowered. It meets them where they are, learns about the specific situation of their family and uses empathetic coaching tailored for their mood and availability.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Moat 2 -->
+                    <div style="display: flex; gap: 15px; align-items: start;">
+                        <div style="min-width: 44px; height: 44px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.1);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.6;">
+                                Stickiness of parents having shared information about the child and family over a period of time.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Moat 3 -->
+                    <div style="display: flex; gap: 15px; align-items: start;">
+                        <div style="min-width: 44px; height: 44px; background: linear-gradient(135deg, #E6E6FA, #FFD4A3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.1);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.6;">
+                                Proprietary data model for risk factors, phenotypes and co-morbidities.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Moat 4 -->
+                    <div style="display: flex; gap: 15px; align-items: start;">
+                        <div style="min-width: 44px; height: 44px; background: linear-gradient(135deg, #FFD4A3, #B4E4E0); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.1);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.6;">
+                                Integration of interfaces with parents, schools, children, clinicians and other professionals.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Moat 5 -->
+                    <div style="display: flex; gap: 15px; align-items: start;">
+                        <div style="min-width: 44px; height: 44px; background: linear-gradient(135deg, #B4E4E0, #E6E6FA); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(42, 63, 90, 0.1);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.6;">
+                                Flywheel from collection of behavioural data from users to continuously improve delivery of personalised strategies.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> REPLACED yellow stars with gradient circular badges containing Lucide icons: MessageCircle, Globe, Database, Network, TrendingUp. Each badge has different gradient. Left side has title and description. Right side lists 5 moats with icon badges.
+        </div>
+
+        <!-- SLIDE 9: MARKET -->
+        <div class="slide" style="background: #F9F7F3; padding: 60px;">
+            <div style="display: flex; gap: 50px;">
+                <!-- Left side -->
+                <div style="flex: 1;">
+                    <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Market</h2>
+                    <p style="font-size: 17px; color: #586C8E; line-height: 1.7; margin-bottom: 40px;">
+                        The UK market for serving neurodivergent children and their families is large and growing at the same time as there is a serious shortage of resources to address these needs.
+                    </p>
+
+                    <!-- UK Market Stats -->
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.08); margin-bottom: 20px;">
+                        <h3 style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">UK Market</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 14px; color: #586C8E; line-height: 2;">
+                            <li style="padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                                ~1.9m pupils with SEN across the UK
+                            </li>
+                            <li style="padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                                ~473k children on ND waiting lists
+                            </li>
+                            <li style="padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                                ~960k under-18s in contact with NHS mental health/LD/autism services each year
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- UK Assumptions -->
+                    <div style="background: linear-gradient(135deg, rgba(180, 228, 224, 0.2), rgba(230, 230, 250, 0.2)); padding: 25px; border-radius: 12px;">
+                        <h3 style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">UK Assumptions</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 14px; color: #586C8E; line-height: 2;">
+                            <li style="padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                                Coach adoption: ~20–30% of SEN families
+                            </li>
+                            <li style="padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                                Platform adoption: ~10–15% of SEN families
+                            </li>
+                            <li style="padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #7B68EE;">•</span>
+                                System adoption: 50–70% of NHS cohort
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right side - TAM Chart -->
+                <div style="flex: 1;">
+                    <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 25px; font-weight: 600; text-align: center;">UK TAM by Product</h3>
+                    <svg width="380" height="320" viewBox="0 0 380 320">
+                        <!-- Y-axis -->
+                        <text x="30" y="40" font-size="12" fill="#586C8E" text-anchor="end">£150m</text>
+                        <text x="30" y="115" font-size="12" fill="#586C8E" text-anchor="end">£100m</text>
+                        <text x="30" y="190" font-size="12" fill="#586C8E" text-anchor="end">£50m</text>
+                        <text x="30" y="265" font-size="12" fill="#586C8E" text-anchor="end">£0</text>
+
+                        <!-- Grid lines -->
+                        <line x1="45" y1="265" x2="360" y2="265" stroke="#E6E6FA" stroke-width="1"/>
+                        <line x1="45" y1="190" x2="360" y2="190" stroke="#E6E6FA" stroke-width="1" opacity="0.5"/>
+                        <line x1="45" y1="115" x2="360" y2="115" stroke="#E6E6FA" stroke-width="1" opacity="0.5"/>
+                        <line x1="45" y1="40" x2="360" y2="40" stroke="#E6E6FA" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Bars -->
+                        <!-- Coach: £120m -->
+                        <rect x="80" y="85" width="70" height="180" fill="url(#grad1)" rx="4"/>
+                        <text x="115" y="75" font-size="16" fill="#2A3F5A" text-anchor="middle" font-weight="700">£120m</text>
+                        <text x="115" y="285" font-size="14" fill="#2A3F5A" text-anchor="middle" font-weight="600">Coach</text>
+                        <text x="115" y="300" font-size="11" fill="#586C8E" text-anchor="middle">400-600k families</text>
+
+                        <!-- Platform: £125m -->
+                        <rect x="165" y="81" width="70" height="184" fill="url(#grad2)" rx="4"/>
+                        <text x="200" y="71" font-size="16" fill="#2A3F5A" text-anchor="middle" font-weight="700">£125m</text>
+                        <text x="200" y="285" font-size="14" fill="#2A3F5A" text-anchor="middle" font-weight="600">Platform</text>
+                        <text x="200" y="300" font-size="11" fill="#586C8E" text-anchor="middle">190-285k families</text>
+
+                        <!-- System: £140m -->
+                        <rect x="250" y="72" width="70" height="193" fill="url(#grad3)" rx="4"/>
+                        <text x="285" y="62" font-size="16" fill="#2A3F5A" text-anchor="middle" font-weight="700">£140m</text>
+                        <text x="285" y="285" font-size="14" fill="#2A3F5A" text-anchor="middle" font-weight="600">System</text>
+                        <text x="285" y="300" font-size="11" fill="#586C8E" text-anchor="middle">480-670k patients</text>
+
+                        <!-- Gradients -->
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#B4E4E0;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:0.8" />
+                            </linearGradient>
+                            <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#E6E6FA;stop-opacity:0.8" />
+                            </linearGradient>
+                            <linearGradient id="grad3" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E6E6FA;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FFD4A3;stop-opacity:0.8" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> NEW bar chart visualization showing TAM by product tier. Three gradient bars (teal→purple, purple→lavender, lavender→peach) with values and user counts. Left side has UK market stats and assumptions in white/gradient cards.
+        </div>
+
+        <!-- SLIDE 10: PRODUCT PATH (PRICING) -->
+        <div class="slide" style="background: linear-gradient(135deg, #F9F7F3 0%, rgba(230, 230, 250, 0.3) 100%); padding: 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 15px; font-weight: 700;">Product Path</h2>
+            <p style="font-size: 17px; color: #586C8E; line-height: 1.7; max-width: 700px; margin-bottom: 50px;">
+                Pathfinder grows through a staged subscription and enterprise model. Families pay monthly for the Coach and Platform tools, while schools and clinics unlock additional features through institutional subscriptions. This blend of direct-to-consumer, education, and healthcare contracts creates recurring revenues with strong margins, expanding from early family subscriptions into large institutional budgets.
+            </p>
+
+            <div style="display: flex; justify-content: center; align-items: center; gap: 40px; position: relative;">
+                <!-- Coach -->
+                <div style="text-align: center;">
+                    <div style="width: 160px; height: 160px; background: linear-gradient(135deg, #6366F1, #8B5CF6); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(123, 104, 238, 0.3); margin-bottom: 20px;">
+                        <span style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: white; font-weight: 700;">Coach</span>
+                    </div>
+                    <p style="font-size: 14px; color: #586C8E; margin-bottom: 5px; font-weight: 600;">Direct to Consumer</p>
+                    <p style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; font-weight: 700;">£20–£30/month</p>
+                </div>
+
+                <!-- Arrow -->
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#7B68EE" stroke-width="2" opacity="0.5">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+
+                <!-- Platform -->
+                <div style="text-align: center;">
+                    <div style="width: 190px; height: 190px; background: linear-gradient(135deg, #10B981, #3B82F6); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                        <span style="font-family: 'Quicksand', sans-serif; font-size: 30px; color: white; font-weight: 700;">Platform</span>
+                    </div>
+                    <p style="font-size: 14px; color: #586C8E; margin-bottom: 5px; font-weight: 600;">Direct to Consumer</p>
+                    <p style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; font-weight: 700;">£15–£25/month</p>
+                </div>
+
+                <!-- Arrow -->
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#7B68EE" stroke-width="2" opacity="0.5">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+
+                <!-- System -->
+                <div style="text-align: center;">
+                    <div style="width: 220px; height: 220px; background: linear-gradient(135deg, #A78BFA, #C4B5FD); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(167, 139, 250, 0.3); margin-bottom: 20px;">
+                        <span style="font-family: 'Quicksand', sans-serif; font-size: 32px; color: white; font-weight: 700;">System</span>
+                    </div>
+                    <p style="font-size: 14px; color: #586C8E; margin-bottom: 5px; font-weight: 600;">NHS / Insurance</p>
+                    <p style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; font-weight: 700;">£25–£50/month</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Three growing circles showing product evolution. Coach (smallest, blue gradient), Platform (medium, teal gradient), System (largest, lavender gradient). Arrows between them. Pricing below each. Shows progression and scale increase.
+        </div>
+
+        <!-- SLIDE 11: FINANCIAL FORECAST -->
+        <div class="slide" style="background: #F9F7F3; padding: 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 40px; font-weight: 700;">3-year financial forecast</h2>
+
+            <div style="display: flex; gap: 50px;">
+                <!-- Left side - Chart -->
+                <div style="flex: 1;">
+                    <svg width="420" height="280" viewBox="0 0 420 280">
+                        <!-- Grid -->
+                        <line x1="50" y1="230" x2="400" y2="230" stroke="#E6E6FA" stroke-width="1.5"/>
+                        <line x1="50" y1="170" x2="400" y2="170" stroke="#E6E6FA" stroke-width="1" opacity="0.5"/>
+                        <line x1="50" y1="110" x2="400" y2="110" stroke="#E6E6FA" stroke-width="1" opacity="0.5"/>
+                        <line x1="50" y1="50" x2="400" y2="50" stroke="#E6E6FA" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Y-axis labels -->
+                        <text x="35" y="235" font-size="11" fill="#586C8E" text-anchor="end">£0</text>
+                        <text x="35" y="175" font-size="11" fill="#586C8E" text-anchor="end">£400k</text>
+                        <text x="35" y="115" font-size="11" fill="#586C8E" text-anchor="end">£800k</text>
+                        <text x="35" y="55" font-size="11" fill="#586C8E" text-anchor="end">£1.2M</text>
+
+                        <!-- Area fill -->
+                        <defs>
+                            <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:0.4" />
+                                <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:0.05" />
+                            </linearGradient>
+                        </defs>
+                        <polygon points="80,230 170,210 260,160 350,70 350,230 80,230" fill="url(#areaGrad)"/>
+
+                        <!-- Line -->
+                        <polyline points="80,230 170,210 260,160 350,70" fill="none" stroke="#7B68EE" stroke-width="3" stroke-linecap="round"/>
+
+                        <!-- Data points -->
+                        <circle cx="80" cy="230" r="6" fill="#B4E4E0"/>
+                        <circle cx="170" cy="210" r="6" fill="#7B68EE"/>
+                        <circle cx="260" cy="160" r="6" fill="#7B68EE"/>
+                        <circle cx="350" cy="70" r="7" fill="#E6E6FA" stroke="#7B68EE" stroke-width="2"/>
+
+                        <!-- X-axis labels -->
+                        <text x="80" y="255" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="600">2026</text>
+                        <text x="170" y="255" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="600">2027</text>
+                        <text x="260" y="255" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="600">2027</text>
+                        <text x="350" y="255" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="600">2028</text>
+
+                        <!-- Value labels on points -->
+                        <text x="80" y="220" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="700">£200k</text>
+                        <text x="170" y="200" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="700">£350k</text>
+                        <text x="260" y="150" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="700">£750k</text>
+                        <text x="350" y="60" font-size="13" fill="#2A3F5A" text-anchor="middle" font-weight="700">£1.2M</text>
+                    </svg>
+                </div>
+
+                <!-- Right side - Key Points -->
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(42, 63, 90, 0.08);">
+                        <p style="font-size: 15px; color: #586C8E; line-height: 1.8; margin-bottom: 25px;">
+                            Revenue ramps from <strong style="color: #2A3F5A;">£200k in 2026</strong> up to <strong style="color: #2A3F5A;">£1.2M in 2028</strong>. The high costs in the first two years reflect investment necessary to lay the groundwork for the projected revenue growth reaching <strong style="color: #2A3F5A;">EBITDA break‑even in 2028</strong>.
+                        </p>
+                        <div style="background: linear-gradient(135deg, rgba(123, 104, 238, 0.1), rgba(180, 228, 224, 0.1)); padding: 20px; border-radius: 12px; border-left: 4px solid #7B68EE;">
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.7; margin-bottom: 12px;">
+                                <strong style="color: #2A3F5A;">Cumulative net loss over three years: £600k</strong>
+                            </p>
+                            <p style="font-size: 14px; color: #586C8E; line-height: 1.7;">
+                                Pathfinder seeks to raise <strong style="color: #7B68EE;">£300k now under SEIS/EIS</strong> (pending HMRC's approval). Additional capital will be required as the company scales, but early momentum is designed to validate the product and pave the way for larger raises.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> CRITICAL ADDITION: Area chart showing revenue growth from £200k to £1.2M. Purple gradient fill under line. Data points as circles. Right side explains financials and funding need in white card with highlighted section. This was missing from original deck!
+        </div>
+
+        <!-- SLIDE 12: COMPETITION -->
+        <div class="slide" style="background: #F9F7F3; padding: 50px 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 15px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 40px; color: #2A3F5A; margin-bottom: 10px; font-weight: 700;">Competition</h2>
+            <p style="font-size: 15px; color: #586C8E; margin-bottom: 25px;">
+                Other players are attempting to address this huge issue in different ways. None offers the unique AI native approach of Pathfinder across multiple conditions.
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(42, 63, 90, 0.08);">
+                <thead>
+                    <tr style="background: linear-gradient(to right, #B4E4E0, #7B68EE);">
+                        <th style="padding: 15px 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 15px; color: white; font-weight: 600;">Competitor Category</th>
+                        <th style="padding: 15px 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 15px; color: white; font-weight: 600;">Examples</th>
+                        <th style="padding: 15px 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 15px; color: white; font-weight: 600; background: rgba(255, 255, 255, 0.15);">Pathfinder Differentiation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid rgba(230, 230, 250, 0.3);">
+                        <td style="padding: 13px 18px; font-size: 13px; color: #2A3F5A; font-weight: 600;">AI Chatbots & Pre-Diagnostic Guides</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #586C8E;">Assembly (UK) – "screen, support, signpost, and triage" families on waiting lists</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #2A3F5A; background: rgba(180, 228, 224, 0.08); font-weight: 500;">Pathfinder uniquely blends empathetic conversation with structured data capture</td>
+                    </tr>
+                    <tr style="background: rgba(230, 230, 250, 0.05); border-bottom: 1px solid rgba(230, 230, 250, 0.3);">
+                        <td style="padding: 13px 18px; font-size: 13px; color: #2A3F5A; font-weight: 600;">Digital Parent Coaching Apps</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #586C8E;">hiToco® - evidence-based ADHD parent training, Milo, Inflow, Triple P</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #2A3F5A; background: rgba(180, 228, 224, 0.08); font-weight: 500;">These offer static lessons, whereas Pathfinder provides real-time adaptive coaching via chatbot</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(230, 230, 250, 0.3);">
+                        <td style="padding: 13px 18px; font-size: 13px; color: #2A3F5A; font-weight: 600;">Peer Support Platforms & Charities</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #586C8E;">Wunder (US), Understood.org, ADHD Foundation, ADDISS (UK), ADHD Support Australia</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #2A3F5A; background: rgba(180, 228, 224, 0.08); font-weight: 500;">Pathfinder provides proactive, personalised support with memory</td>
+                    </tr>
+                    <tr style="background: rgba(230, 230, 250, 0.05);">
+                        <td style="padding: 13px 18px; font-size: 13px; color: #2A3F5A; font-weight: 600;">Child-Focused Behaviour & Education Tools</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #586C8E;">Brain in Hand, Goally, ClassDojo, Moshi</td>
+                        <td style="padding: 13px 18px; font-size: 12px; color: #2A3F5A; background: rgba(180, 228, 224, 0.08); font-weight: 500;">Pathfinder Coach is parent-first, equipping families with strategies</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Competitive comparison table with gradient header (teal→purple). Pathfinder column has light teal background to stand out. Alternating row colors for readability. Compact text sizing to fit all content.
+        </div>
+
+        <!-- SLIDE 13: USE OF FUNDS -->
+        <div class="slide" style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 60px;">
+            <div style="display: flex; gap: 50px;">
+                <!-- Left side -->
+                <div style="flex: 1;">
+                    <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 20px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 44px; color: #2A3F5A; margin-bottom: 30px; font-weight: 700;">Use of Funds</h2>
+
+                    <div style="background: linear-gradient(135deg, #7B68EE, #A78BFA); padding: 35px; border-radius: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 6px 20px rgba(123, 104, 238, 0.25);">
+                        <p style="font-size: 16px; color: rgba(255, 255, 255, 0.9); margin-bottom: 8px; font-weight: 600;">Raising</p>
+                        <div style="font-family: 'Quicksand', sans-serif; font-size: 56px; color: white; font-weight: 700; margin-bottom: 8px;">£600k</div>
+                        <p style="font-size: 14px; color: rgba(255, 255, 255, 0.85);">SEIS/EIS<br/>(pending HMRC approval)</p>
+                    </div>
+
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.08);">
+                        <div style="margin-bottom: 18px;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 16px; color: #2A3F5A; margin-bottom: 8px; font-weight: 600;">Product development & R&D — £140,000</h3>
+                            <p style="font-size: 12px; color: #586C8E; line-height: 1.5;">Recruitment of engineers, designers and a product manager to accelerate development, with a small reserve for advisory expertise.</p>
+                        </div>
+                        <div style="margin-bottom: 18px;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 16px; color: #2A3F5A; margin-bottom: 8px; font-weight: 600;">Regulatory & compliance — £25,000</h3>
+                            <p style="font-size: 12px; color: #586C8E; line-height: 1.5;">Covers safeguarding, privacy audits, data security, and early engagement with regulators to ensure that Pathfinder meets UKCA standards.</p>
+                        </div>
+                        <div style="margin-bottom: 18px;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 16px; color: #2A3F5A; margin-bottom: 8px; font-weight: 600;">Go‑to‑market & marketing — £100,000</h3>
+                            <p style="font-size: 12px; color: #586C8E; line-height: 1.5;">Funds early pilots with parent communities and schools, marketing campaigns, and supporting materials to drive initial adoption.</p>
+                        </div>
+                        <div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 16px; color: #2A3F5A; margin-bottom: 8px; font-weight: 600;">Operations, finance & legal — £35,000</h3>
+                            <p style="font-size: 12px; color: #586C8E; line-height: 1.5;">Takes care of routine operations, accounting, and legal expenses such as IP assignments, contracts and company filings.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right side - Pie chart -->
+                <div style="flex: 0 0 380px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="380" height="380" viewBox="0 0 200 200">
+                        <!-- Pie chart centered -->
+                        <!-- Product development 46.7% -->
+                        <path d="M 100 100 L 100 30 A 70 70 0 0 1 167.4 76.5 Z" fill="#7B68EE" opacity="0.9"/>
+                        <text x="120" y="60" font-size="10" fill="white" font-weight="600">Product</text>
+                        <text x="110" y="72" font-size="10" fill="white" font-weight="600">development</text>
+                        <text x="120" y="84" font-size="9" fill="white">46.7%</text>
+
+                        <!-- Marketing 33.3% -->
+                        <path d="M 100 100 L 167.4 76.5 A 70 70 0 0 1 139.5 156.7 Z" fill="#B4E4E0" opacity="0.9"/>
+                        <text x="140" y="118" font-size="10" fill="#2A3F5A" font-weight="600">Marketing</text>
+                        <text x="145" y="130" font-size="9" fill="#2A3F5A">33.3%</text>
+
+                        <!-- Operations 11.7% -->
+                        <path d="M 100 100 L 139.5 156.7 A 70 70 0 0 1 72.2 164.7 Z" fill="#FFD4A3" opacity="0.9"/>
+                        <text x="95" y="155" font-size="9" fill="#2A3F5A" font-weight="600">Operations</text>
+                        <text x="100" y="165" font-size="8" fill="#2A3F5A">11.7%</text>
+
+                        <!-- Regulatory 8.3% -->
+                        <path d="M 100 100 L 72.2 164.7 A 70 70 0 0 1 100 30 Z" fill="#E6E6FA" opacity="0.9"/>
+                        <text x="58" y="110" font-size="9" fill="#2A3F5A" font-weight="600">Regulatory</text>
+                        <text x="65" y="120" font-size="8" fill="#2A3F5A">8.3%</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Left side shows £600k raise amount in gradient purple card, then breakdown in white card. Right side has pie chart with four segments (purple, teal, peach, lavender) showing allocation percentages.
+        </div>
+
+        <!-- SLIDE 14: SWOT (Strengths/Weaknesses) -->
+        <div class="slide" style="background: #F9F7F3; padding: 50px 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 15px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 40px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">SWOT</h2>
+
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(42, 63, 90, 0.08);">
+                <thead>
+                    <tr style="background: linear-gradient(to right, #B4E4E0, #7B68EE);">
+                        <th style="padding: 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 18px; color: white; font-weight: 600; width: 50%;">Strengths</th>
+                        <th style="padding: 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 18px; color: white; font-weight: 600; width: 50%;">Weaknesses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 20px; vertical-align: top; border-right: 1px solid rgba(230, 230, 250, 0.3);">
+                            <ol style="margin: 0; padding-left: 20px; font-size: 13px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Unique approach</strong> to solving the problem with complete focus on developing empathetic AI tools</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Access to high level expert resources</strong> including senior university faculty to develop proprietary in-house IP</li>
+                                <li><strong style="color: #2A3F5A;">Speed to market</strong> of private company vs. universities and NHS working on the same problem who are slowed down by bureaucracy</li>
+                            </ol>
+                        </td>
+                        <td style="padding: 20px; vertical-align: top;">
+                            <ol style="margin: 0; padding-left: 20px; font-size: 13px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Early‑stage funding dependence</strong> – this round will not provide enough capital on its own to execute the business plan</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Small initial team</strong> – At the moment, only one full-time employee. The company needs to build out a qualified team</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Incomplete technology</strong> – We only have a prototype at the moment and the technology is unproven</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Lack of market validation</strong> – Estimates of willingness to pay are not yet validated by customer research or paying customers</li>
+                                <li><strong style="color: #2A3F5A;">High customer acquisition costs</strong> – Other players have faced CAC of £100 or more. We have not yet demonstrated that we can do it for less.</li>
+                            </ol>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Two-column table with gradient header (teal→purple). Numbered lists with key phrases in bold. Left column: 3 strengths. Right column: 5 weaknesses. Honest assessment for investors.
+        </div>
+
+        <!-- SLIDE 15: SWOT CONTINUED (Opportunities/Threats) -->
+        <div class="slide" style="background: #F9F7F3; padding: 50px 60px;">
+            <div style="width: 60px; height: 4px; background: #7B68EE; margin-bottom: 15px;"></div>
+            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 40px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Risk to Capital SWOT Continued...</h2>
+
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(42, 63, 90, 0.08);">
+                <thead>
+                    <tr style="background: linear-gradient(to right, #7B68EE, #E6E6FA);">
+                        <th style="padding: 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 18px; color: white; font-weight: 600; width: 50%;">Opportunities</th>
+                        <th style="padding: 18px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 18px; color: white; font-weight: 600; width: 50%;">Threats</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 20px; vertical-align: top; border-right: 1px solid rgba(230, 230, 250, 0.3);">
+                            <ol style="margin: 0; padding-left: 20px; font-size: 13px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Large & growing market</strong> with millions of children having conditions but their parents being under-served by current systems</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Precision interventions & data leadership</strong></li>
+                                <li><strong style="color: #2A3F5A;">Access to distribution channels</strong> such as schools and charities</li>
+                            </ol>
+                        </td>
+                        <td style="padding: 20px; vertical-align: top;">
+                            <ol style="margin: 0; padding-left: 20px; font-size: 13px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Crowded competitive landscape</strong> – There are a large number of other companies trying to solve the same problems using technology</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Competition from large players</strong> – Companies like Microsoft, Google and Open AI are actively involved in digital health and have huge resources with which to out-spend the company</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Funding and economic environment</strong> – The funding environment for AI companies may change and the company may not be able to raise future rounds</li>
+                                <li style="margin-bottom: 12px;"><strong style="color: #2A3F5A;">Adoption barriers</strong> – Parents may not take to AI solutions as substitutes for human support. Clinicians may not support new ways of working</li>
+                                <li><strong style="color: #2A3F5A;">Technical risks</strong> – Much of the technology has yet to be developed and it may not be possible to achieve our ambitious goals in this area</li>
+                            </ol>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> Continuation of SWOT with Opportunities (3) and Threats (5). Same table format with gradient header (purple→lavender). Transparent about risks for investor credibility.
+        </div>
+
+        <!-- SLIDE 16: THANK YOU (CALL TO ACTION) -->
+        <div class="slide" style="background: linear-gradient(135deg, #B4E4E0 0%, #7B68EE 40%, #E6E6FA 80%, #FFD4A3 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <!-- Background pattern -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1;">
+                <svg width="100%" height="100%">
+                    <defs>
+                        <pattern id="dots-final" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                            <circle cx="25" cy="25" r="2" fill="white"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#dots-final)"/>
+                </svg>
+            </div>
+
+            <!-- Abstract shapes -->
+            <svg style="position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; opacity: 0.12;" viewBox="0 0 200 200">
+                <path fill="white" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,89.9,-16.3,88.6,-0.7C87.3,14.8,82.2,29.7,74.1,43.1C66.1,56.5,55.1,68.5,41.9,74.7C28.7,80.9,14.4,81.3,-0.3,81.9C-14.9,82.4,-29.8,83.1,-43.2,77.2C-56.5,71.2,-68.3,58.7,-76.9,44.3C-85.6,29.8,-91.1,14.9,-91.6,-0.3C-92.2,-15.5,-87.8,-31.1,-79.4,-43.9C-70.9,-56.7,-58.4,-66.9,-44.5,-74.3C-30.5,-81.8,-15.3,-86.6,-0.1,-86.5C15.2,-86.4,30.5,-83.5,44.7,-76.4Z" transform="translate(100 100)"/>
+            </svg>
+
+            <svg style="position: absolute; bottom: -60px; left: -60px; width: 350px; height: 350px; opacity: 0.12;" viewBox="0 0 200 200">
+                <path fill="white" d="M39.5,-66.3C51.4,-58.5,61.3,-47.3,68.1,-34.4C74.9,-21.5,78.6,-6.9,76.8,6.9C75,20.7,67.7,33.6,58.2,44.2C48.7,54.8,37,63.1,24.1,67.8C11.2,72.5,-2.9,73.6,-16.3,70.4C-29.7,67.2,-42.4,59.7,-53.2,49.7C-64,39.7,-73,27.2,-76.4,13.4C-79.8,-0.4,-77.6,-15.5,-71.2,-28.9C-64.8,-42.3,-54.2,-54,-41.6,-61.3C-29,-68.6,-14.5,-71.5,-0.3,-71.1C13.9,-70.7,27.7,-74.1,39.5,-66.3Z" transform="translate(100 100)"/>
+            </svg>
+
+            <div style="position: relative; z-index: 1; text-align: center; max-width: 700px;">
+                <h1 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: white; margin-bottom: 25px; font-weight: 700; text-shadow: 0 2px 10px rgba(42, 63, 90, 0.2);">Thank you</h1>
+                <p style="font-size: 22px; color: white; margin-bottom: 45px; line-height: 1.6; font-weight: 500; text-shadow: 0 1px 5px rgba(42, 63, 90, 0.15);">Let's transform neurodivergent support together</p>
+
+                <!-- Contact card -->
+                <div style="background: white; padding: 40px 50px; border-radius: 20px; box-shadow: 0 10px 40px rgba(42, 63, 90, 0.25); display: inline-block; min-width: 500px;">
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 15px; color: #586C8E; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Contact</div>
+                        <div style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; font-weight: 600;">rupert@pathfinder.ai</div>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <div style="font-size: 15px; color: #586C8E; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Website</div>
+                        <div style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; font-weight: 600;">www.pathfinder.ai</div>
+                    </div>
+                    <div style="background: linear-gradient(to right, #7B68EE, #B4E4E0); padding: 16px 48px; border-radius: 50px; color: white; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 18px; display: inline-block; box-shadow: 0 4px 15px rgba(123, 104, 238, 0.3); cursor: pointer;">
+                        Let's Connect
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-note">
+            <strong>Design Notes:</strong> UPGRADED closing slide with full gradient background, abstract shapes, dot pattern. Centered "Thank you" heading, white contact card with email, website, and gradient CTA button. Much more impactful than plain text!
+        </div>
+
+    </div>
+
+    <div style="text-align: center; margin: 80px 0 40px; padding: 50px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 16px; max-width: 960px; margin: 80px auto 40px;">
+        <h2 style="font-family: 'Quicksand', sans-serif; font-size: 36px; color: white; margin-bottom: 20px; font-weight: 700;">Pathfinder Pitch Deck Complete!</h2>
+        <p style="font-size: 18px; color: white; line-height: 1.7; max-width: 800px; margin: 0 auto;">
+            16 slides with your actual content styled with the design system. Use this as your visual reference when recreating in Google Slides or PowerPoint. All colors, fonts, icons, charts, and layouts are investor-ready and accessible.
+        </p>
+    </div>
+</body>
+</html>

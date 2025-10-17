@@ -1,90 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth/auth-context';
+import { useState } from 'react';
 import { ElevenLabsVoiceAssistant } from '@/components/ElevenLabsVoiceAssistant';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
-import { SessionTypeCard } from '@/components/SessionTypeCard';
-import { ContentContainer } from '@/components/layouts/ContentContainer';
-import type { SessionType } from '@/lib/config/session-types';
 import { SPACING } from '@/lib/styles/spacing';
 
 export default function VoicePage() {
-  const { user } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [sessionType, setSessionType] = useState<SessionType | null>(null);
-  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(50);
-  const [discoveryCompleted, setDiscoveryCompleted] = useState(false);
 
-  const handleTypeSelected = (type: SessionType, suggestedTime: number) => {
-    setSessionType(type);
-    setTimeBudgetMinutes(suggestedTime);
-  };
-
-  // Load user profile to check discovery status
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      if (!user) return;
-
-      try {
-        const response = await fetch('/api/profile', {
-          method: 'GET',
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          const profile = await response.json();
-          setDiscoveryCompleted(profile.discovery_completed || false);
-        }
-      } catch (error) {
-        console.error('Failed to load user profile:', error);
-      }
-    };
-
-    loadUserProfile();
-  }, [user]);
-
-  // Show session type selection screen if type not set
-  if (sessionType === null) {
-    return (
-      <MobileDeviceMockup>
-        <div className="w-full h-full bg-white flex flex-col"
-             style={{
-               position: 'fixed',
-               top: 0,
-               left: 0,
-               right: 0,
-               bottom: 0,
-               overflow: 'hidden'
-             }}>
-          <NavigationDrawer
-            isOpen={isDrawerOpen}
-            onClose={() => setIsDrawerOpen(false)}
-          />
-
-          <AppHeader
-            onMenuClick={() => setIsDrawerOpen(true)}
-            title="Voice Coaching"
-            subtitle="Speak naturally with your coach"
-          />
-
-          <div className="flex-grow overflow-y-auto"
-               style={{
-                 backgroundColor: '#F9F7F3',
-                 marginTop: SPACING.contentTopMargin
-               }}>
-            <ContentContainer>
-              <SessionTypeCard onTypeSelected={handleTypeSelected} discoveryCompleted={discoveryCompleted} />
-            </ContentContainer>
-          </div>
-        </div>
-      </MobileDeviceMockup>
-    );
-  }
-
-  // Show voice interface once time is selected
   return (
     <MobileDeviceMockup>
       <div className="w-full h-full bg-white flex flex-col"
@@ -115,7 +40,7 @@ export default function VoicePage() {
           overflow: 'hidden',
           marginTop: SPACING.contentTopMargin
         }}>
-          <ElevenLabsVoiceAssistant sessionType={sessionType} timeBudgetMinutes={timeBudgetMinutes} />
+          <ElevenLabsVoiceAssistant sessionType="coaching" timeBudgetMinutes={50} />
         </div>
       </div>
     </MobileDeviceMockup>

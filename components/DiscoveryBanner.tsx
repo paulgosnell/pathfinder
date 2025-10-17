@@ -33,15 +33,22 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
 
         if (!user) return;
 
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('user_profiles')
           .select('discovery_completed')
           .eq('user_id', user.id)
           .single();
 
-        setDiscoveryCompleted(profile?.discovery_completed || false);
+        // If no profile exists yet, or discovery_completed is null/false, show the banner
+        if (error || !profile || !profile.discovery_completed) {
+          setDiscoveryCompleted(false);
+        } else {
+          setDiscoveryCompleted(true);
+        }
       } catch (error) {
         console.error('Failed to check discovery status:', error);
+        // On error, assume they need discovery (show banner)
+        setDiscoveryCompleted(false);
       }
     };
 

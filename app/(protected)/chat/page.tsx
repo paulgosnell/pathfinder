@@ -57,12 +57,31 @@ export default function ChatPage() {
   const specificSessionId = searchParams.get('sessionId');
   const urlSessionType = searchParams.get('sessionType') as SessionType | null;
   const coachingMode = searchParams.get('mode') === 'coaching'; // Backwards compat
-  const timeBudget = searchParams.get('time') ? parseInt(searchParams.get('time')!) : undefined;
+  const urlTimeBudget = searchParams.get('time') ? parseInt(searchParams.get('time')!) : undefined;
+
+  // Determine session configuration from URL params
+  const initialSessionType: SessionType = urlSessionType || (coachingMode ? 'coaching' : 'check-in');
+  const initialInteractionMode = coachingMode ? 'coaching' : 'check-in';
+  const initialTimeBudget = urlTimeBudget || (coachingMode ? 30 : 15);
+
+  // Helper function to get first message based on session type
+  const getFirstMessage = (type: SessionType): string => {
+    switch (type) {
+      case 'discovery':
+        return "Let's take a few minutes to understand your situation. This will help me give you better support going forward. What brings you here today?";
+      case 'coaching':
+        return "I'm glad you've set aside time for this. What would make this coaching session useful for you today?";
+      default:
+        return "How are you doing today?";
+    }
+  };
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [loadingSession, setLoadingSession] = useState(true);
   const [sessionId, setSessionId] = useState<string>();
-  const [sessionType, setSessionType] = useState<SessionType>('check-in'); // Default to check-in
+  const [sessionType, setSessionType] = useState<SessionType>(initialSessionType);
+  const [interactionMode, setInteractionMode] = useState<'check-in' | 'coaching'>(initialInteractionMode);
+  const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(initialTimeBudget);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,7 +100,7 @@ export default function ChatPage() {
           setMessages([
             {
               role: 'assistant',
-              content: "How are you doing today?"
+              content: getFirstMessage(sessionType)
             }
           ]);
           setLoadingSession(false);
@@ -127,20 +146,20 @@ export default function ChatPage() {
           }
         }
 
-        // No existing session - start fresh with check-in message
+        // No existing session - start fresh with message based on session type
         setMessages([
           {
             role: 'assistant',
-            content: "How are you doing today?"
+            content: getFirstMessage(sessionType)
           }
         ]);
       } catch (error) {
         console.error('Failed to load session:', error);
-        // On error, still start with check-in message
+        // On error, still start with message based on session type
         setMessages([
           {
             role: 'assistant',
-            content: "How are you doing today?"
+            content: getFirstMessage(sessionType)
           }
         ]);
       } finally {
@@ -190,8 +209,8 @@ export default function ChatPage() {
             userId: user?.id,
             sessionId: sessionId,
             sessionType: sessionType,
-            interactionMode: 'check-in', // Always check-in mode by default
-            timeBudgetMinutes: 15 // Default 15 min check-in
+            interactionMode: interactionMode, // Use state variable (from URL params)
+            timeBudgetMinutes: timeBudgetMinutes // Use state variable (from URL params)
           }
         })
       });

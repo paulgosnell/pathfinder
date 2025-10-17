@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { BORDER_RADIUS } from '@/lib/styles/spacing';
 
 interface DiscoveryBannerProps {
@@ -38,8 +38,6 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
       }
 
       try {
-        const supabase = createBrowserClient();
-
         const { data: profile, error } = await supabase
           .from('user_profiles')
           .select('discovery_completed')

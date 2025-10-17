@@ -96,8 +96,15 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
       // Get session type (default to coaching if not set)
-      const mode = sessionType || 'coaching';
+      const sessionTypeValue = sessionType || 'coaching';
       const timeBudget = timeBudgetMinutes || 50;
+
+      // Map SessionType to voice prompt type
+      // Voice has only 3 modes: discovery, check-in, coaching
+      const mode: 'discovery' | 'check-in' | 'coaching' =
+        sessionTypeValue === 'discovery' ? 'discovery' :
+        sessionTypeValue === 'coaching' ? 'coaching' :
+        'check-in'; // All others (quick-tip, update, strategy, crisis) use check-in
 
       // Get voice-optimized prompts for this session type
       const systemPrompt = getVoiceSystemPrompt(mode, timeBudget);

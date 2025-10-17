@@ -41,8 +41,10 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
 
         // If no profile exists yet, or discovery_completed is null/false, show the banner
         if (error || !profile || !profile.discovery_completed) {
+          console.log('[DiscoveryBanner] Should show banner:', { error: !!error, profile, discovery_completed: profile?.discovery_completed });
           setDiscoveryCompleted(false);
         } else {
+          console.log('[DiscoveryBanner] Should hide banner - discovery completed');
           setDiscoveryCompleted(true);
         }
       } catch (error) {
@@ -57,8 +59,11 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
 
   // Don't show if discovery is completed or still loading
   if (discoveryCompleted === null || discoveryCompleted === true || dismissed) {
+    console.log('[DiscoveryBanner] Hiding banner:', { discoveryCompleted, dismissed });
     return null;
   }
+
+  console.log('[DiscoveryBanner] Rendering banner!');
 
   return (
     <div

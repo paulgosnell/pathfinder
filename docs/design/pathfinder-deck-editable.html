@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder - Investor Pitch Deck (Editable)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            background-color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide-wrapper {
+            width: 90vw;
+            max-width: 1400px;
+            height: 87vh;
+            max-height: 870px;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 60px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            position: absolute;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            display: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            display: block;
+        }
+
+        .slide.prev {
+            transform: translateX(-100px);
+        }
+
+        /* Navigation */
+        .nav-button {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #7B68EE;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .nav-button:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 30px rgba(123, 104, 238, 0.4);
+        }
+
+        .nav-button:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .nav-button.prev {
+            left: 30px;
+        }
+
+        .nav-button.next {
+            right: 30px;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 16px;
+            color: #2A3F5A;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        /* Fullscreen toggle */
+        .fullscreen-button {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 14px;
+            color: #7B68EE;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fullscreen-button:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        /* Instructions overlay */
+        .instructions {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(123, 104, 238, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 14px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            animation: fadeOut 5s forwards;
+        }
+
+        @keyframes fadeOut {
+            0%, 70% { opacity: 1; }
+            100% { opacity: 0; pointer-events: none; }
+        }
+
+        .instructions kbd {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0 3px;
+        }
+
+        /* Scrollbar styling */
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: #7B68EE;
+            border-radius: 4px;
+        }
+
+        .slide::-webkit-scrollbar-thumb:hover {
+            background: #6355d4;
+        }
+
+        /* Edit Mode Styles */
+        body.edit-mode .editable-text {
+            outline: 2px dashed transparent;
+            transition: outline 0.2s;
+        }
+
+        body.edit-mode .editable-text:hover {
+            outline: 2px dashed #7B68EE;
+            outline-offset: 2px;
+        }
+
+        body.edit-mode .editable-text:focus {
+            outline: 2px solid #7B68EE;
+            outline-offset: 2px;
+        }
+
+        .slide-controls {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 12px;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        body.edit-mode .slide.active .slide-controls {
+            display: flex;
+        }
+
+        .slide-controls button {
+            background: white;
+            border: 2px solid #7B68EE;
+            color: #7B68EE;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .slide-controls button:hover {
+            background: #7B68EE;
+            color: white;
+        }
+
+        .slide-controls button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .mode-toggle {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(123, 104, 238, 0.95);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 14px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(123, 104, 238, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .mode-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(123, 104, 238, 0.4);
+        }
+
+        body.edit-mode .mode-toggle {
+            background: #2A3F5A;
+        }
+
+        /* Hide edit controls when printing */
+        @media print {
+            .slide-controls,
+            .mode-toggle,
+            .nav-button,
+            .slide-counter,
+            .fullscreen-button,
+            .instructions {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .slide {
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-wrapper">
+            <!-- SLIDE 1: TITLE -->
+            <div class="slide active" data-slide="1">
+                <div style="background: linear-gradient(135deg, #E8F5F0 0%, #E6E6FA 50%, #B4E4E0 100%); display: flex; align-items: center; position: relative; overflow: hidden; height: 100%; padding: 60px;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.08;">
+                        <svg width="100%" height="100%">
+                            <defs>
+                                <pattern id="dots-title" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                    <circle cx="20" cy="20" r="2" fill="#2A3F5A"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#dots-title)"/>
+                        </svg>
+                    </div>
+                    <svg style="position: absolute; top: -50px; right: -50px; width: 350px; height: 350px; opacity: 0.15;" viewBox="0 0 200 200">
+                        <path fill="#7B68EE" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,89.9,-16.3,88.6,-0.7C87.3,14.8,82.2,29.7,74.1,43.1C66.1,56.5,55.1,68.5,41.9,74.7C28.7,80.9,14.4,81.3,-0.3,81.9C-14.9,82.4,-29.8,83.1,-43.2,77.2C-56.5,71.2,-68.3,58.7,-76.9,44.3C-85.6,29.8,-91.1,14.9,-91.6,-0.3C-92.2,-15.5,-87.8,-31.1,-79.4,-43.9C-70.9,-56.7,-58.4,-66.9,-44.5,-74.3C-30.5,-81.8,-15.3,-86.6,-0.1,-86.5C15.2,-86.4,30.5,-83.5,44.7,-76.4Z" transform="translate(100 100)"/>
+                    </svg>
+                    <div style="flex: 1; padding: 0 40px; position: relative; z-index: 1;">
+                        <div style="width: 100%; max-width: 500px; height: 400px; background: linear-gradient(135deg, rgba(123, 104, 238, 0.1), rgba(180, 228, 224, 0.1)); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 3px dashed #7B68EE;">
+                            <div style="text-align: center; color: #586C8E;">
+                                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p style="margin-top: 20px; font-size: 16px;">Insert diverse families illustration</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 0 40px; position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center;">
+                        <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 35px;"></div>
+                        <h1 style="font-family: 'Quicksand', sans-serif; font-size: 68px; color: #2A3F5A; margin-bottom: 0; font-weight: 700; line-height: 1.1;">Pathfinder</h1>
+                        <p style="font-size: 20px; color: #586C8E; line-height: 1.7; margin-top: 35px;">
+                            Pathfinder's mission is to help families of neurodivergent children with continuous, compassionate support from the first concern through diagnosis and beyond. We combine empathetic, human-like AI with gold-standard coaching insights so that no parent feels alone and every child's unique strengths are nurtured and celebrated to help them build agency, resilience and happiness.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 2: THE PROBLEM -->
+            <div class="slide" data-slide="2">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">The problem</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 40px; line-height: 1.7; max-width: 1100px;">
+                        The neurodevelopmental pathway is characterised by delay, disconnection, and unmet need. More than 400,000 children in England are waiting for assessment, while nearly one million are already in contact with services in the UK and at least 10 million in the US. Families report feeling unheard and not equipped to support their children.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                        <div style="background: white; padding: 30px; border-radius: 14px; box-shadow: 0 3px 15px rgba(42, 63, 90, 0.1); border-top: 5px solid #B4E4E0;">
+                            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2A3F5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 18px; font-weight: 600;">Children need</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 1.9;">
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Safe, supportive ways to be understood while waiting for or living with a diagnosis.
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Consistency between school and home.
+                                </li>
+                                <li style="padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Strategies that help with daily challenges like homework, transitions, and emotional regulation.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 30px; border-radius: 14px; box-shadow: 0 3px 15px rgba(42, 63, 90, 0.1); border-top: 5px solid #E6E6FA;">
+                            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #E6E6FA, #7B68EE); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2A3F5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 18px; font-weight: 600;">Parents need</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 1.9;">
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Trusted, empathetic guidance rather than impersonal forms or static apps.
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Continuity of support: a tool that remembers their child's story.
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Practical, personalised strategies that make daily life more manageable.
+                                </li>
+                                <li style="padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Confidence and wellbeing support for themselves.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 30px; border-radius: 14px; box-shadow: 0 3px 15px rgba(42, 63, 90, 0.1); border-top: 5px solid #FFD4A3;">
+                            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #FFD4A3, #7B68EE); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2A3F5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 18px; font-weight: 600;">Teachers need</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 1.9;">
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Simple, quick ways to contribute observations without excessive paperwork.
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Practical classroom strategies they can apply immediately.
+                                </li>
+                                <li style="padding-left: 24px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">•</span>
+                                    Evidence to support SEN and EHCP / IEP processes.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add remaining slides here... I'll create a condensed version with key slides -->
+            <!-- For brevity, I'll add a few more key slides and you can see the pattern -->
+
+            <!-- SLIDE 3: SOLUTION (simplified for space) -->
+            <div class="slide" data-slide="3">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="display: flex; gap: 60px; height: 100%; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 30px; font-weight: 700;">The solution</h2>
+                            <p style="font-size: 20px; color: #586C8E; line-height: 1.8; margin-bottom: 35px;">
+                                Pathfinder is an empathetic, AI-enabled coach for families of neurodivergent children. This means families feeling heard and being supported with personalised strategies. Pathfinder simplifies complex journeys by bringing together parents, schools, and clinicians into one trusted platform.
+                            </p>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 48px; height: 48px; background: linear-gradient(135deg, #7B68EE, #B4E4E0); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Pathfinder converses in a warm, understanding tone, uses reflective listening and adjusts its approach to match the needs of parents whether they need a quick tip or an in depth coaching session.
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 48px; height: 48px; background: linear-gradient(135deg, #E6E6FA, #7B68EE); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                        <path d="M2 12h20"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Pathfinder remembers prior interactions and refers back to past conversations when the parent returns
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 48px; height: 48px; background: linear-gradient(135deg, #B4E4E0, #FFD4A3); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    It collects structured details, stores them securely with parent consent, and explicitly requests consent while meeting GDPR standards and providing escalation pathways for safeguarding concerns
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 48px; height: 48px; background: linear-gradient(135deg, #FFD4A3, #E6E6FA); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    The platform is initially designed to handle ADHD, expanding rapidly to autism, ODD and other conditions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 4: KANJO HEALTH -->
+            <div class="slide" data-slide="4">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 70px; display: flex; gap: 70px; align-items: center; height: 100%;">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 60px; align-items: center;">
+                        <div style="width: 70px; height: 5px; background: #7B68EE; position: absolute; top: 70px; left: 70px;"></div>
+                        <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; font-weight: 700; position: absolute; top: 95px; left: 70px;">Kanjo Health</h2>
+
+                        <div style="margin-top: 120px; text-align: center;">
+                            <div style="width: 380px; height: 160px; background: #1A2332; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.25);">
+                                <div style="color: white; text-align: center;">
+                                    <div style="font-size: 56px; font-weight: 700; margin-bottom: 12px;">kanjo</div>
+                                    <div style="font-size: 15px; opacity: 0.9;">Remodelling mental health</div>
+                                    <div style="font-size: 13px; opacity: 0.75;">The first pre-diagnostic insight platform</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#7B68EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+
+                        <div style="text-align: center;">
+                            <div style="width: 380px; height: 120px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.15); padding: 25px;">
+                                <div style="color: #2A3F5A; font-size: 38px; font-weight: 700; font-family: 'Quicksand', sans-serif;">MAYO CLINIC<br/>PLATFORM</div>
+                            </div>
+                            <div style="margin-top: 25px; display: flex; gap: 18px; justify-content: center;">
+                                <div style="padding: 10px 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.1);">
+                                    <span style="font-size: 13px; color: #586C8E; font-weight: 600;">Entrepreneur First</span>
+                                </div>
+                                <div style="padding: 10px 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.1);">
+                                    <span style="font-size: 13px; color: #586C8E; font-weight: 600;">Innovate UK</span>
+                                </div>
+                                <div style="padding: 10px 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(42, 63, 90, 0.1);">
+                                    <span style="font-size: 13px; color: #586C8E; font-weight: 600;">Big Health Ventures</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12);">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: #2A3F5A; margin-bottom: 25px; font-weight: 600;">Pathfinder is acquiring the business and assets of Kanjo Health.</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 17px; color: #586C8E; line-height: 2.2;">
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    Founder leaving to pursue athletic career
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    Experienced technical co-founder and team remaining
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    Significant IP and knowhow
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    Deep understanding of neurodiversity provision
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    Real world delivery of multi-disciplinary care model
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    £1 million raised / £6.5 million valuation at last round
+                                </li>
+                                <li style="padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">✓</span>
+                                    Starting programme with Mayo Clinic accelerator to use patient data to develop proprietary model for risk factors, phenotypes and co-morbidities
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 5: TEAM -->
+            <div class="slide" data-slide="5">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(180, 228, 224, 0.15) 100%); padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 60px; font-weight: 700;">Team</h2>
+
+                    <div style="display: flex; justify-content: center; gap: 60px; margin-top: 40px;">
+                        <div style="text-align: center; max-width: 280px;">
+                            <div style="width: 190px; height: 190px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(42, 63, 90, 0.2); border: 6px solid white; overflow: hidden;">
+                                <svg width="95" height="95" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #7B68EE; margin-bottom: 10px; font-weight: 600;">Rupert Morley</h3>
+                            <p style="font-size: 15px; color: #586C8E; line-height: 1.7;">
+                                Rupert has led businesses across multiple sectors. He was CEO of Hamptons International, Propertyfinder.co.uk, and Sterling Relocation. Rupert currently chairs Pershing Square Holdings and serves as a trustee of Comic Relief and the Kennedy Memorial Trust. He has a degree in economics from Cambridge and an MBA from Harvard Business School.
+                            </p>
+                        </div>
+
+                        <div style="text-align: center; max-width: 280px;">
+                            <div style="width: 190px; height: 190px; background: linear-gradient(135deg, #E6E6FA, #B4E4E0); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(42, 63, 90, 0.2); border: 6px solid white; overflow: hidden;">
+                                <svg width="95" height="95" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #7B68EE; margin-bottom: 10px; font-weight: 600;">Professor Edmund Sonuga-Barke</h3>
+                            <p style="font-size: 15px; color: #586C8E; line-height: 1.7;">
+                                Edmund is Professor of Developmental Psychology, Psychiatry & Neuroscience at King's College London. He is a Fellow of the British Academy, a Fellow of the Academy of Medical Sciences, and Editor-in-Chief of the Journal of Child Psychology & Psychiatry.
+                            </p>
+                        </div>
+
+                        <div style="text-align: center; max-width: 280px;">
+                            <div style="width: 190px; height: 190px; background: linear-gradient(135deg, #FFD4A3, #E6E6FA); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(42, 63, 90, 0.2); border: 6px solid white; overflow: hidden;">
+                                <svg width="95" height="95" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #7B68EE; margin-bottom: 10px; font-weight: 600;">Deepthi Uppala</h3>
+                            <p style="font-size: 15px; color: #586C8E; line-height: 1.7;">
+                                Deepthi has been CTO of Kanjo Health for two years. She previously worked at Microsoft for nine years, most recently as Senior Research Product Manager in the research accelerator and three years for Intel. Deepthi has an MS in Engineering from Carnegie Mellon and an MBA from Wharton.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 6: PRODUCT - COACH -->
+            <div class="slide" data-slide="6">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Product - Coach</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 50px;">
+                        Pathfinder engages families through a simple, empathetic chat interface that collects information and coordinates inputs.
+                    </p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0 40px;">
+                        <div style="flex: 1; text-align: center;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; position: relative; z-index: 2;">
+                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Step 1</h3>
+                            <p style="font-size: 16px; color: #586C8E; line-height: 1.6;">Parent engages with AI chatbot, providing family context and sharing strengths and challenges</p>
+                        </div>
+
+                        <div style="flex: 0 0 60px; text-align: center; margin-bottom: 100px;">
+                            <svg width="50" height="28" viewBox="0 0 50 24">
+                                <path d="M0 12 L40 12 M40 12 L28 6 M40 12 L28 18" stroke="#7B68EE" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+
+                        <div style="flex: 1; text-align: center;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #E6E6FA, #B4E4E0); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; position: relative; z-index: 2;">
+                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Step 2</h3>
+                            <p style="font-size: 16px; color: #586C8E; line-height: 1.6;">Chatbot offers empathetic guidance while capturing structured data</p>
+                        </div>
+
+                        <div style="flex: 0 0 60px; text-align: center; margin-bottom: 100px;">
+                            <svg width="50" height="28" viewBox="0 0 50 24">
+                                <path d="M0 12 L40 12 M40 12 L28 6 M40 12 L28 18" stroke="#7B68EE" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+
+                        <div style="flex: 1; text-align: center;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #FFD4A3, #E6E6FA); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; position: relative; z-index: 2;">
+                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Step 3</h3>
+                            <p style="font-size: 16px; color: #586C8E; line-height: 1.6;">Teachers & clinicians add insights to build a shared profile</p>
+                        </div>
+
+                        <div style="flex: 0 0 60px; text-align: center; margin-bottom: 100px;">
+                            <svg width="50" height="28" viewBox="0 0 50 24">
+                                <path d="M0 12 L40 12 M40 12 L28 6 M40 12 L28 18" stroke="#7B68EE" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+
+                        <div style="flex: 1; text-align: center;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.15); border: 5px solid white; position: relative; z-index: 2;">
+                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 12px; font-weight: 600;">Step 4</h3>
+                            <p style="font-size: 16px; color: #586C8E; line-height: 1.6;">Profile generates personalised strategies & referral-ready reports</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 7: ROADMAP -->
+            <div class="slide" data-slide="7">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Roadmap</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 55px; max-width: 850px;">
+                        Pathfinder evolves in three clear stages from an ADHD wellness coach for parents to a platform covering a broader range of conditions and then to a regulated medical device that links parents to teachers and clinicians. At each stage, the company will develop its own proprietary data sets and algorithms.
+                    </p>
+
+                    <div style="position: relative; margin-top: 60px;">
+                        <div style="position: absolute; top: 95px; left: 130px; right: 130px; height: 4px; background: linear-gradient(to right, #B4E4E0, #7B68EE, #E6E6FA); border-radius: 2px; z-index: 1;"></div>
+
+                        <div style="display: flex; justify-content: space-between; position: relative; z-index: 2; padding: 0 60px;">
+                            <div style="flex: 1; text-align: center;">
+                                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.2); border: 6px solid white;">
+                                    <span style="font-family: 'Quicksand', sans-serif; font-size: 34px; color: white; font-weight: 700;">Y1</span>
+                                </div>
+                                <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">Pathfinder Coach</h3>
+                                <p style="font-size: 15px; color: #586C8E; line-height: 1.7; padding: 0 20px;">
+                                    Direct-to-consumer wellness tool providing practical, personalised coaching while building a living family profile.
+                                </p>
+                            </div>
+
+                            <div style="flex: 1; text-align: center;">
+                                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.2); border: 6px solid white;">
+                                    <span style="font-family: 'Quicksand', sans-serif; font-size: 34px; color: white; font-weight: 700;">Y2</span>
+                                </div>
+                                <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">Pathfinder Platform</h3>
+                                <p style="font-size: 15px; color: #586C8E; line-height: 1.7; padding: 0 20px;">
+                                    Expands across conditions, brings schools into ecosystem creating continuity between home and classroom.
+                                </p>
+                            </div>
+
+                            <div style="flex: 1; text-align: center;">
+                                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #E6E6FA, #FFD4A3); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(42, 63, 90, 0.2); border: 6px solid white;">
+                                    <span style="font-family: 'Quicksand', sans-serif; font-size: 34px; color: white; font-weight: 700;">Y3</span>
+                                </div>
+                                <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 15px; font-weight: 600;">Pathfinder System</h3>
+                                <p style="font-size: 15px; color: #586C8E; line-height: 1.7; padding: 0 20px;">
+                                    Regulated medical device (UKCA Class IIa) embedded into NHS workflows as multi-condition diagnostic and support system.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 8: COMPETITIVE MOATS -->
+            <div class="slide" data-slide="8">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="display: flex; gap: 70px;">
+                        <div style="flex: 1;">
+                            <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                            <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 30px; font-weight: 700;">Competitive Moats</h2>
+                            <p style="font-size: 20px; color: #586C8E; line-height: 1.8;">
+                                The business will develop a number of competitive moats. Some will be in operation from the start and others will develop over time.
+                            </p>
+                        </div>
+
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 22px;">
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 52px; height: 52px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(42, 63, 90, 0.15); flex-shrink: 0;">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Proprietary agent design that makes parents feel heard and empowered. It meets them where they are, learns about the specific situation of their family and uses empathetic coaching tailored for their mood and availability.
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 52px; height: 52px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(42, 63, 90, 0.15); flex-shrink: 0;">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                        <path d="M2 12h20"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Stickiness of parents having shared information about the child and family over a period of time.
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 52px; height: 52px; background: linear-gradient(135deg, #E6E6FA, #FFD4A3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(42, 63, 90, 0.15); flex-shrink: 0;">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Proprietary data model for risk factors, phenotypes and co-morbidities.
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 52px; height: 52px; background: linear-gradient(135deg, #FFD4A3, #B4E4E0); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(42, 63, 90, 0.15); flex-shrink: 0;">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Integration of interfaces with parents, schools, children, clinicians and other professionals.
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 18px; align-items: start;">
+                                <div style="min-width: 52px; height: 52px; background: linear-gradient(135deg, #B4E4E0, #E6E6FA); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(42, 63, 90, 0.15); flex-shrink: 0;">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                        <polyline points="17 6 23 6 23 12"></polyline>
+                                    </svg>
+                                </div>
+                                <p style="font-size: 16px; color: #586C8E; line-height: 1.7;">
+                                    Flywheel from collection of behavioural data from users to continuously improve delivery of personalised strategies.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 9: MARKET -->
+            <div class="slide" data-slide="9">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(180, 228, 224, 0.15) 100%); padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Market</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 40px; line-height: 1.7; max-width: 1000px;">
+                        The target market is families of children with ADHD or suspected ADHD. We will launch in the UK and target the US within 18 months. Parents will pay directly, with later tiers paid by employers, health insurers, and ultimately the NHS.
+                    </p>
+
+                    <div style="display: flex; gap: 60px; margin-top: 50px;">
+                        <div style="flex: 1;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: #2A3F5A; margin-bottom: 25px; font-weight: 600;">UK TAM</h3>
+                            <div style="display: flex; flex-direction: column; gap: 20px;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 16px; color: #586C8E; font-weight: 600;">Diagnosed ADHD children</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 18px; color: #7B68EE; font-weight: 700;">500k</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 50px; border-radius: 8px; position: relative; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #7B68EE, #B4E4E0); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">100%</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 16px; color: #586C8E; font-weight: 600;">Waiting for assessment</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 18px; color: #7B68EE; font-weight: 700;">400k</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 50px; border-radius: 8px; position: relative; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #B4E4E0, #7B68EE); width: 80%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">80%</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 16px; color: #586C8E; font-weight: 600;">Undiagnosed but concerned</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 18px; color: #7B68EE; font-weight: 700;">300k</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 50px; border-radius: 8px; position: relative; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #E6E6FA, #B4E4E0); width: 60%; height: 100%; display: flex; align-items: center; justify-content: center; color: #2A3F5A; font-weight: 600;">60%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="flex: 1; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12);">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: #2A3F5A; margin-bottom: 25px; font-weight: 600;">US Opportunity</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 17px; color: #586C8E; line-height: 2.2;">
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">•</span>
+                                    6 million children diagnosed with ADHD
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">•</span>
+                                    Millions more waiting or undiagnosed
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">•</span>
+                                    Strong health insurance market
+                                </li>
+                                <li style="margin-bottom: 14px; padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">•</span>
+                                    Employers actively seeking support solutions
+                                </li>
+                                <li style="padding-left: 30px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 22px;">•</span>
+                                    Market 12x larger than UK
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 10: PRODUCT PATH -->
+            <div class="slide" data-slide="10">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Product Path</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 50px; line-height: 1.7;">
+                        Pathfinder's pricing reflects the value delivered at each stage of product development. We start direct-to-consumer, evolve to B2B2C, and ultimately integrate into NHS workflows.
+                    </p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 30px; margin-top: 60px;">
+                        <div style="flex: 1; background: white; border-radius: 20px; padding: 50px 35px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12); text-align: center; border-top: 6px solid #B4E4E0;">
+                            <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #B4E4E0, #7B68EE); border-radius: 50%; margin: 0 auto 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(42, 63, 90, 0.2);">
+                                <div style="font-family: 'Quicksand', sans-serif; font-size: 48px; color: white; font-weight: 700; line-height: 1;">£10</div>
+                                <div style="font-size: 14px; color: white; margin-top: 5px; opacity: 0.95;">/month</div>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 20px; font-weight: 600;">Direct to Consumer</h3>
+                            <p style="font-size: 15px; color: #586C8E; line-height: 1.8;">
+                                Parents pay directly for unlimited coaching sessions, personalized strategies, and continuous family profile tracking.
+                            </p>
+                        </div>
+
+                        <div style="flex: 1; background: white; border-radius: 20px; padding: 50px 35px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12); text-align: center; border-top: 6px solid #E6E6FA;">
+                            <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #7B68EE, #E6E6FA); border-radius: 50%; margin: 0 auto 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(42, 63, 90, 0.2);">
+                                <div style="font-family: 'Quicksand', sans-serif; font-size: 48px; color: white; font-weight: 700; line-height: 1;">£30</div>
+                                <div style="font-size: 14px; color: white; margin-top: 5px; opacity: 0.95;">/month</div>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 20px; font-weight: 600;">B2B2C - Employers</h3>
+                            <p style="font-size: 15px; color: #586C8E; line-height: 1.8;">
+                                Employers provide Pathfinder as an employee benefit, reducing absenteeism and improving productivity for working parents.
+                            </p>
+                        </div>
+
+                        <div style="flex: 1; background: white; border-radius: 20px; padding: 50px 35px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12); text-align: center; border-top: 6px solid #FFD4A3;">
+                            <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #FFD4A3, #7B68EE); border-radius: 50%; margin: 0 auto 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(42, 63, 90, 0.2);">
+                                <div style="font-family: 'Quicksand', sans-serif; font-size: 48px; color: white; font-weight: 700; line-height: 1;">£120</div>
+                                <div style="font-size: 14px; color: white; margin-top: 5px; opacity: 0.95;">/month</div>
+                            </div>
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 26px; color: #2A3F5A; margin-bottom: 20px; font-weight: 600;">B2B2C - NHS & Insurers</h3>
+                            <p style="font-size: 15px; color: #586C8E; line-height: 1.8;">
+                                Medical device licensing enables NHS commissioning and insurance reimbursement, delivering regulated diagnostic support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 11: FINANCIAL FORECAST -->
+            <div class="slide" data-slide="11">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Financial Forecast</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 40px; line-height: 1.7; max-width: 900px;">
+                        Pathfinder is raising £200k in this seed round to build and launch the MVP. The business will be break-even by Month 18 and will raise a Series A at Month 24 to fund US expansion.
+                    </p>
+
+                    <div style="background: white; padding: 45px; border-radius: 20px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12); margin-top: 40px;">
+                        <h3 style="font-family: 'Quicksand', sans-serif; font-size: 24px; color: #2A3F5A; margin-bottom: 30px; font-weight: 600;">Revenue Growth Projection</h3>
+                        <div style="position: relative; height: 350px;">
+                            <svg width="100%" height="100%" viewBox="0 0 800 320">
+                                <defs>
+                                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:0.3" />
+                                        <stop offset="100%" style="stop-color:#B4E4E0;stop-opacity:0.05" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Grid lines -->
+                                <line x1="80" y1="40" x2="80" y2="280" stroke="#E6E6FA" stroke-width="2"/>
+                                <line x1="80" y1="280" x2="760" y2="280" stroke="#E6E6FA" stroke-width="2"/>
+                                <line x1="80" y1="230" x2="760" y2="230" stroke="#E6E6FA" stroke-width="1" stroke-dasharray="4"/>
+                                <line x1="80" y1="180" x2="760" y2="180" stroke="#E6E6FA" stroke-width="1" stroke-dasharray="4"/>
+                                <line x1="80" y1="130" x2="760" y2="130" stroke="#E6E6FA" stroke-width="1" stroke-dasharray="4"/>
+                                <line x1="80" y1="80" x2="760" y2="80" stroke="#E6E6FA" stroke-width="1" stroke-dasharray="4"/>
+
+                                <!-- Y-axis labels -->
+                                <text x="50" y="285" font-size="14" fill="#586C8E" font-weight="600">£0</text>
+                                <text x="30" y="235" font-size="14" fill="#586C8E" font-weight="600">£300k</text>
+                                <text x="30" y="185" font-size="14" fill="#586C8E" font-weight="600">£600k</text>
+                                <text x="30" y="135" font-size="14" fill="#586C8E" font-weight="600">£900k</text>
+                                <text x="30" y="85" font-size="14" fill="#586C8E" font-weight="600">£1.2M</text>
+
+                                <!-- Area fill -->
+                                <path d="M 80 280 L 193 260 L 306 220 L 419 160 L 532 100 L 645 60 L 760 40 L 760 280 Z" fill="url(#areaGradient)"/>
+
+                                <!-- Line -->
+                                <path d="M 80 280 L 193 260 L 306 220 L 419 160 L 532 100 L 645 60 L 760 40" stroke="#7B68EE" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+                                <!-- Data points -->
+                                <circle cx="80" cy="280" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+                                <circle cx="193" cy="260" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+                                <circle cx="306" cy="220" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+                                <circle cx="419" cy="160" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+                                <circle cx="532" cy="100" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+                                <circle cx="645" cy="60" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+                                <circle cx="760" cy="40" r="6" fill="white" stroke="#7B68EE" stroke-width="3"/>
+
+                                <!-- X-axis labels -->
+                                <text x="65" y="305" font-size="14" fill="#586C8E" font-weight="600">M6</text>
+                                <text x="175" y="305" font-size="14" fill="#586C8E" font-weight="600">M12</text>
+                                <text x="288" y="305" font-size="14" fill="#586C8E" font-weight="600">M18</text>
+                                <text x="401" y="305" font-size="14" fill="#586C8E" font-weight="600">M24</text>
+                                <text x="514" y="305" font-size="14" fill="#586C8E" font-weight="600">M30</text>
+                                <text x="627" y="305" font-size="14" fill="#586C8E" font-weight="600">M36</text>
+                                <text x="740" y="305" font-size="14" fill="#586C8E" font-weight="600">M42</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 12: COMPETITION -->
+            <div class="slide" data-slide="12">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Competition</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 40px; line-height: 1.7; max-width: 1000px;">
+                        The neurodivergent support space includes therapy platforms, ADHD apps, and educational resources. However, Pathfinder is uniquely positioned with empathetic AI coaching, multi-stakeholder integration, and a pathway to medical device regulation.
+                    </p>
+
+                    <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 6px 25px rgba(42, 63, 90, 0.12); margin-top: 40px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: linear-gradient(to right, #E6E6FA, #B4E4E0);">
+                                    <th style="padding: 20px; text-align: left; font-family: 'Quicksand', sans-serif; font-size: 18px; color: #2A3F5A; font-weight: 700;">Feature</th>
+                                    <th style="padding: 20px; text-align: center; font-family: 'Quicksand', sans-serif; font-size: 18px; color: #2A3F5A; font-weight: 700;">Pathfinder</th>
+                                    <th style="padding: 20px; text-align: center; font-family: 'Quicksand', sans-serif; font-size: 18px; color: #2A3F5A; font-weight: 700;">BetterHelp / Talkspace</th>
+                                    <th style="padding: 20px; text-align: center; font-family: 'Quicksand', sans-serif; font-size: 18px; color: #2A3F5A; font-weight: 700;">ADHD Apps</th>
+                                    <th style="padding: 20px; text-align: center; font-family: 'Quicksand', sans-serif; font-size: 18px; color: #2A3F5A; font-weight: 700;">Educational Platforms</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #E6E6FA;">
+                                    <td style="padding: 18px; font-size: 15px; color: #586C8E; font-weight: 600;">AI-powered empathetic coach</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E6E6FA;">
+                                    <td style="padding: 18px; font-size: 15px; color: #586C8E; font-weight: 600;">Parent, school, clinician integration</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E6E6FA;">
+                                    <td style="padding: 18px; font-size: 15px; color: #586C8E; font-weight: 600;">Continuous family profile</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E6E6FA;">
+                                    <td style="padding: 18px; font-size: 15px; color: #586C8E; font-weight: 600;">ADHD-specific strategies</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E6E6FA;">
+                                    <td style="padding: 18px; font-size: 15px; color: #586C8E; font-weight: 600;">Pathway to medical device regulation</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 18px; font-size: 15px; color: #586C8E; font-weight: 600;">Available 24/7</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #E6E6FA;">✗</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                    <td style="padding: 18px; text-align: center; font-size: 22px; color: #7B68EE;">✓</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 13: USE OF FUNDS -->
+            <div class="slide" data-slide="13">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(180, 228, 224, 0.15) 100%); padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 20px; font-weight: 700;">Use of Funds</h2>
+                    <p style="font-size: 18px; color: #586C8E; margin-bottom: 40px; line-height: 1.7; max-width: 950px;">
+                        The £200k seed round will fund 18 months of runway to build the MVP, acquire initial users, validate product-market fit, and prepare for Series A fundraising.
+                    </p>
+
+                    <div style="display: flex; gap: 60px; margin-top: 50px; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; flex-direction: column; gap: 25px;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; font-weight: 600;">Product Development</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #7B68EE; font-weight: 700;">£80k (40%)</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 45px; border-radius: 10px; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #7B68EE, #B4E4E0); width: 40%; height: 100%;"></div>
+                                    </div>
+                                    <p style="font-size: 14px; color: #586C8E; margin-top: 10px; line-height: 1.6;">AI agent design, mobile app, backend infrastructure</p>
+                                </div>
+
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; font-weight: 600;">Clinical Content & IP</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #7B68EE; font-weight: 700;">£40k (20%)</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 45px; border-radius: 10px; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #B4E4E0, #E6E6FA); width: 20%; height: 100%;"></div>
+                                    </div>
+                                    <p style="font-size: 14px; color: #586C8E; margin-top: 10px; line-height: 1.6;">ADHD strategies database, clinical advisor consultations</p>
+                                </div>
+
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; font-weight: 600;">Marketing & User Acquisition</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #7B68EE; font-weight: 700;">£50k (25%)</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 45px; border-radius: 10px; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #E6E6FA, #FFD4A3); width: 25%; height: 100%;"></div>
+                                    </div>
+                                    <p style="font-size: 14px; color: #586C8E; margin-top: 10px; line-height: 1.6;">Digital marketing, community partnerships, pilot programs</p>
+                                </div>
+
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #2A3F5A; font-weight: 600;">Operations & Legal</span>
+                                        <span style="font-family: 'Quicksand', sans-serif; font-size: 20px; color: #7B68EE; font-weight: 700;">£30k (15%)</span>
+                                    </div>
+                                    <div style="background: #E6E6FA; height: 45px; border-radius: 10px; overflow: hidden;">
+                                        <div style="background: linear-gradient(to right, #FFD4A3, #7B68EE); width: 15%; height: 100%;"></div>
+                                    </div>
+                                    <p style="font-size: 14px; color: #586C8E; margin-top: 10px; line-height: 1.6;">GDPR compliance, insurance, legal setup, accounting</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="flex: 0 0 350px; text-align: center;">
+                            <svg width="350" height="350" viewBox="0 0 200 200">
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#E6E6FA" stroke-width="40"/>
+                                <!-- Product Development: 40% -->
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#7B68EE" stroke-width="40"
+                                        stroke-dasharray="201 502" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                                <!-- Clinical: 20% -->
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#B4E4E0" stroke-width="40"
+                                        stroke-dasharray="100 502" stroke-dashoffset="-201" transform="rotate(-90 100 100)"/>
+                                <!-- Marketing: 25% -->
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#E6E6FA" stroke-width="40"
+                                        stroke-dasharray="126 502" stroke-dashoffset="-301" transform="rotate(-90 100 100)"/>
+                                <!-- Operations: 15% -->
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#FFD4A3" stroke-width="40"
+                                        stroke-dasharray="75 502" stroke-dashoffset="-427" transform="rotate(-90 100 100)"/>
+
+                                <text x="100" y="95" font-family="Quicksand, sans-serif" font-size="32" font-weight="700" fill="#2A3F5A" text-anchor="middle">£200k</text>
+                                <text x="100" y="115" font-family="Atkinson Hyperlegible, sans-serif" font-size="14" fill="#586C8E" text-anchor="middle">Seed Round</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 14: SWOT -->
+            <div class="slide" data-slide="14">
+                <div style="background: #F9F7F3; padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 50px; font-weight: 700;">SWOT Analysis</h2>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 35px;">
+                        <div style="background: linear-gradient(135deg, rgba(180, 228, 224, 0.15), rgba(123, 104, 238, 0.08)); padding: 40px; border-radius: 18px; border-left: 6px solid #B4E4E0;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 30px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Strengths</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">✓</span>
+                                    Empathetic AI coaching uniquely designed for ADHD parents
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">✓</span>
+                                    Acquisition of Kanjo Health brings deep domain expertise
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">✓</span>
+                                    World-class clinical advisory team (Prof. Sonuga-Barke)
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">✓</span>
+                                    Pathway to medical device regulation (UKCA Class IIa)
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">✓</span>
+                                    Multi-stakeholder integration (parents, schools, clinicians)
+                                </li>
+                                <li style="padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">✓</span>
+                                    Low marginal cost enables scalability
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div style="background: linear-gradient(135deg, rgba(230, 230, 250, 0.15), rgba(180, 228, 224, 0.08)); padding: 40px; border-radius: 18px; border-left: 6px solid #E6E6FA;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 30px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Weaknesses</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">−</span>
+                                    Early-stage startup with unproven product-market fit
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">−</span>
+                                    Dependent on AI technology advances and reliability
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">−</span>
+                                    Requires significant user education and trust-building
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">−</span>
+                                    Limited brand recognition in crowded mental health space
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">−</span>
+                                    Small team requiring key hires for scale
+                                </li>
+                                <li style="padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">−</span>
+                                    Regulatory pathway (medical device) adds complexity
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 15: SWOT CONTINUED -->
+            <div class="slide" data-slide="15">
+                <div style="background: linear-gradient(to bottom, #F9F7F3 0%, rgba(230, 230, 250, 0.2) 100%); padding: 70px; height: 100%;">
+                    <div style="width: 70px; height: 5px; background: #7B68EE; margin-bottom: 25px;"></div>
+                    <h2 style="font-family: 'Quicksand', sans-serif; font-size: 52px; color: #2A3F5A; margin-bottom: 50px; font-weight: 700;">SWOT Analysis</h2>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 35px;">
+                        <div style="background: linear-gradient(135deg, rgba(255, 212, 163, 0.15), rgba(230, 230, 250, 0.08)); padding: 40px; border-radius: 18px; border-left: 6px solid #FFD4A3;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 30px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Opportunities</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">+</span>
+                                    Growing awareness and diagnosis of ADHD in children
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">+</span>
+                                    NHS waitlists creating demand for private support
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">+</span>
+                                    Employer interest in mental health benefits
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">+</span>
+                                    US market 12x larger than UK for rapid expansion
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">+</span>
+                                    Expand to autism, ODD, and other neurodivergent conditions
+                                </li>
+                                <li style="padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #7B68EE; font-size: 20px;">+</span>
+                                    Partnership potential with schools and health insurers
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div style="background: linear-gradient(135deg, rgba(255, 192, 203, 0.12), rgba(255, 212, 163, 0.08)); padding: 40px; border-radius: 18px; border-left: 6px solid #F0D9DA;">
+                            <h3 style="font-family: 'Quicksand', sans-serif; font-size: 30px; color: #2A3F5A; margin-bottom: 25px; font-weight: 700;">Threats</h3>
+                            <ul style="list-style: none; padding: 0; font-size: 16px; color: #586C8E; line-height: 2;">
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">!</span>
+                                    Large competitors (BetterHelp) may enter ADHD space
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">!</span>
+                                    AI limitations or errors could harm brand trust
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">!</span>
+                                    Regulatory changes affecting AI in healthcare
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">!</span>
+                                    Data privacy concerns in mental health space
+                                </li>
+                                <li style="margin-bottom: 12px; padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">!</span>
+                                    Economic downturn reducing discretionary healthcare spend
+                                </li>
+                                <li style="padding-left: 28px; position: relative;">
+                                    <span style="position: absolute; left: 0; color: #586C8E; font-size: 20px;">!</span>
+                                    Resistance from traditional clinical community
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 16: THANK YOU -->
+            <div class="slide" data-slide="16">
+                <div style="background: linear-gradient(135deg, #B4E4E0 0%, #7B68EE 40%, #E6E6FA 80%, #FFD4A3 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; height: 100%;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1;">
+                        <svg width="100%" height="100%">
+                            <defs>
+                                <pattern id="dots-final" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                                    <circle cx="25" cy="25" r="2" fill="white"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#dots-final)"/>
+                        </svg>
+                    </div>
+                    <svg style="position: absolute; top: -80px; right: -80px; width: 450px; height: 450px; opacity: 0.12;" viewBox="0 0 200 200">
+                        <path fill="white" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,89.9,-16.3,88.6,-0.7C87.3,14.8,82.2,29.7,74.1,43.1C66.1,56.5,55.1,68.5,41.9,74.7C28.7,80.9,14.4,81.3,-0.3,81.9C-14.9,82.4,-29.8,83.1,-43.2,77.2C-56.5,71.2,-68.3,58.7,-76.9,44.3C-85.6,29.8,-91.1,14.9,-91.6,-0.3C-92.2,-15.5,-87.8,-31.1,-79.4,-43.9C-70.9,-56.7,-58.4,-66.9,-44.5,-74.3C-30.5,-81.8,-15.3,-86.6,-0.1,-86.5C15.2,-86.4,30.5,-83.5,44.7,-76.4Z" transform="translate(100 100)"/>
+                    </svg>
+                    <svg style="position: absolute; bottom: -60px; left: -60px; width: 400px; height: 400px; opacity: 0.12;" viewBox="0 0 200 200">
+                        <path fill="white" d="M39.5,-66.3C51.4,-58.5,61.3,-47.3,68.1,-34.4C74.9,-21.5,78.6,-6.9,76.8,6.9C75,20.7,67.7,33.6,58.2,44.2C48.7,54.8,37,63.1,24.1,67.8C11.2,72.5,-2.9,73.6,-16.3,70.4C-29.7,67.2,-42.4,59.7,-53.2,49.7C-64,39.7,-73,27.2,-76.4,13.4C-79.8,-0.4,-77.6,-15.5,-71.2,-28.9C-64.8,-42.3,-54.2,-54,-41.6,-61.3C-29,-68.6,-14.5,-71.5,-0.3,-71.1C13.9,-70.7,27.7,-74.1,39.5,-66.3Z" transform="translate(100 100)"/>
+                    </svg>
+
+                    <div style="position: relative; z-index: 1; text-align: center; max-width: 800px;">
+                        <h1 style="font-family: 'Quicksand', sans-serif; font-size: 68px; color: white; margin-bottom: 30px; font-weight: 700; text-shadow: 0 2px 15px rgba(42, 63, 90, 0.25);">Thank you</h1>
+                        <p style="font-size: 26px; color: white; margin-bottom: 55px; line-height: 1.6; font-weight: 500; text-shadow: 0 1px 8px rgba(42, 63, 90, 0.2);">Let's transform neurodivergent support together</p>
+
+                        <div style="background: white; padding: 50px 60px; border-radius: 24px; box-shadow: 0 12px 50px rgba(42, 63, 90, 0.3); display: inline-block; min-width: 600px;">
+                            <div style="margin-bottom: 30px;">
+                                <div style="font-size: 16px; color: #586C8E; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">Contact</div>
+                                <div style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: #2A3F5A; font-weight: 600;">rupert@pathfinder.ai</div>
+                            </div>
+                            <div style="margin-bottom: 35px;">
+                                <div style="font-size: 16px; color: #586C8E; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">Website</div>
+                                <div style="font-family: 'Quicksand', sans-serif; font-size: 28px; color: #2A3F5A; font-weight: 600;">www.pathfinder.ai</div>
+                            </div>
+                            <div style="background: linear-gradient(to right, #7B68EE, #B4E4E0); padding: 18px 56px; border-radius: 50px; color: white; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 20px; display: inline-block; box-shadow: 0 6px 20px rgba(123, 104, 238, 0.35); cursor: pointer;">
+                                Let's Connect
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <button class="nav-button prev" onclick="previousSlide()">←</button>
+        <button class="nav-button next" onclick="nextSlide()">→</button>
+
+        <!-- Slide Counter -->
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">16</span>
+        </div>
+
+        <!-- Fullscreen Button -->
+        <button class="fullscreen-button" onclick="toggleFullscreen()">
+            <span id="fullscreenText">Enter Fullscreen</span>
+        </button>
+
+        <!-- Mode Toggle Button -->
+        <button class="mode-toggle" onclick="toggleEditMode()">
+            <span id="modeText">✏️ Edit Mode</span>
+        </button>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            Use <kbd>←</kbd> <kbd>→</kbd> arrow keys to navigate • Click <strong>Edit Mode</strong> to customize slides
+        </div>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active', 'prev');
+                if (i === index) {
+                    slide.classList.add('active');
+                    slide.scrollTop = 0; // Reset scroll position
+                } else if (i < index) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            currentSlideIndex = index;
+            document.getElementById('currentSlide').textContent = index + 1;
+
+            // Update button states
+            document.querySelector('.nav-button.prev').disabled = index === 0;
+            document.querySelector('.nav-button.next').disabled = index === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                showSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                showSlide(totalSlides - 1);
+            }
+        });
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.getElementById('fullscreenText').textContent = 'Exit Fullscreen';
+            } else {
+                document.exitFullscreen();
+                document.getElementById('fullscreenText').textContent = 'Enter Fullscreen';
+            }
+        }
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.getElementById('fullscreenText').textContent = 'Enter Fullscreen';
+            }
+        });
+
+        // ===== EDIT MODE FUNCTIONALITY =====
+
+        let editMode = false;
+        const STORAGE_KEY = 'pathfinder-deck-content';
+
+        // Toggle between Edit and Present mode
+        function toggleEditMode() {
+            editMode = !editMode;
+            document.body.classList.toggle('edit-mode', editMode);
+
+            const modeText = document.getElementById('modeText');
+            modeText.textContent = editMode ? '👁️ Present Mode' : '✏️ Edit Mode';
+
+            // Toggle contenteditable on all editable elements
+            document.querySelectorAll('.editable-text').forEach(el => {
+                el.contentEditable = editMode;
+            });
+
+            // Update slide controls
+            updateSlideControls();
+        }
+
+        // Add slide control buttons to each slide
+        function initializeSlideControls() {
+            slides.forEach((slide, index) => {
+                // Skip if controls already exist
+                if (slide.querySelector('.slide-controls')) return;
+
+                const controls = document.createElement('div');
+                controls.className = 'slide-controls';
+                controls.innerHTML = `
+                    <button onclick="duplicateSlide(${index})" title="Duplicate slide">📋 Duplicate</button>
+                    <button onclick="deleteSlide(${index})" title="Delete slide" ${totalSlides <= 1 ? 'disabled' : ''}>🗑️ Delete</button>
+                    <button onclick="moveSlideUp(${index})" title="Move up" ${index === 0 ? 'disabled' : ''}>↑</button>
+                    <button onclick="moveSlideDown(${index})" title="Move down" ${index === totalSlides - 1 ? 'disabled' : ''}>↓</button>
+                    <button onclick="saveToLocalStorage()" title="Save changes">💾 Save</button>
+                `;
+                slide.appendChild(controls);
+            });
+        }
+
+        // Update slide control buttons state
+        function updateSlideControls() {
+            slides.forEach((slide, index) => {
+                const controls = slide.querySelector('.slide-controls');
+                if (!controls) return;
+
+                const deleteBtn = controls.querySelector('button:nth-child(2)');
+                const upBtn = controls.querySelector('button:nth-child(3)');
+                const downBtn = controls.querySelector('button:nth-child(4)');
+
+                deleteBtn.disabled = slides.length <= 1;
+                upBtn.disabled = index === 0;
+                downBtn.disabled = index === slides.length - 1;
+            });
+        }
+
+        // Duplicate slide
+        function duplicateSlide(index) {
+            const slide = slides[index];
+            const clone = slide.cloneNode(true);
+
+            // Update data-slide attribute
+            clone.setAttribute('data-slide', slides.length + 1);
+            clone.classList.remove('active', 'prev');
+
+            // Insert after current slide
+            slide.parentNode.insertBefore(clone, slide.nextSibling);
+
+            // Reinitialize
+            location.reload(); // Simple approach - reload to reinitialize everything
+        }
+
+        // Delete slide
+        function deleteSlide(index) {
+            if (slides.length <= 1) {
+                alert('Cannot delete the last slide!');
+                return;
+            }
+
+            if (confirm('Delete this slide?')) {
+                slides[index].remove();
+
+                // Navigate to previous slide if we deleted the current one
+                if (index === currentSlideIndex) {
+                    showSlide(Math.max(0, currentSlideIndex - 1));
+                }
+
+                location.reload(); // Reload to reinitialize
+            }
+        }
+
+        // Move slide up
+        function moveSlideUp(index) {
+            if (index === 0) return;
+
+            const slide = slides[index];
+            const prev = slides[index - 1];
+            slide.parentNode.insertBefore(slide, prev);
+
+            location.reload(); // Reload to reinitialize
+        }
+
+        // Move slide down
+        function moveSlideDown(index) {
+            if (index === slides.length - 1) return;
+
+            const slide = slides[index];
+            const next = slides[index + 1];
+            slide.parentNode.insertBefore(next, slide);
+
+            location.reload(); // Reload to reinitialize
+        }
+
+        // Save content to localStorage
+        function saveToLocalStorage() {
+            const slideWrapper = document.querySelector('.slide-wrapper');
+            localStorage.setItem(STORAGE_KEY, slideWrapper.innerHTML);
+
+            // Show feedback
+            const modeText = document.getElementById('modeText');
+            const originalText = modeText.textContent;
+            modeText.textContent = '✅ Saved!';
+            setTimeout(() => {
+                modeText.textContent = originalText;
+            }, 2000);
+        }
+
+        // Load content from localStorage
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const slideWrapper = document.querySelector('.slide-wrapper');
+                slideWrapper.innerHTML = saved;
+
+                // Reinitialize after loading
+                location.reload();
+            }
+        }
+
+        // Auto-save on content change (debounced)
+        let saveTimeout;
+        document.addEventListener('input', (e) => {
+            if (editMode && e.target.classList.contains('editable-text')) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    saveToLocalStorage();
+                }, 2000); // Auto-save 2 seconds after last edit
+            }
+        });
+
+        // Make text elements editable
+        function makeTextEditable() {
+            // Target common text elements (h1, h2, h3, p, li)
+            const textSelectors = 'h1, h2, h3, p, li';
+            document.querySelectorAll(textSelectors).forEach(el => {
+                // Skip if inside SVG or already has class
+                if (el.closest('svg') || el.classList.contains('editable-text')) return;
+
+                // Skip navigation elements
+                if (el.closest('.nav-button, .slide-counter, .fullscreen-button, .instructions, .mode-toggle, .slide-controls')) return;
+
+                el.classList.add('editable-text');
+            });
+        }
+
+        // Initialize
+        makeTextEditable();
+        initializeSlideControls();
+        showSlide(0);
+
+        // Try to load saved content on startup (optional)
+        // Uncomment the next line if you want to auto-load saved content
+        // loadFromLocalStorage();
+    </script>
+</body>
+</html>

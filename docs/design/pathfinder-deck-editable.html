@@ -1356,8 +1356,8 @@
 
     <script>
         let currentSlideIndex = 0;
-        const slides = document.querySelectorAll('.slide');
-        const totalSlides = slides.length;
+        let slides = document.querySelectorAll('.slide');
+        let totalSlides = slides.length;
 
         document.getElementById('totalSlides').textContent = totalSlides;
 
@@ -1496,8 +1496,9 @@
             // Insert after current slide
             slide.parentNode.insertBefore(clone, slide.nextSibling);
 
-            // Reinitialize
-            location.reload(); // Simple approach - reload to reinitialize everything
+            // Save and reload
+            saveToLocalStorage();
+            setTimeout(() => location.reload(), 100); // Brief delay to ensure save completes
         }
 
         // Delete slide
@@ -1515,7 +1516,9 @@
                     showSlide(Math.max(0, currentSlideIndex - 1));
                 }
 
-                location.reload(); // Reload to reinitialize
+                // Save and reload
+                saveToLocalStorage();
+                setTimeout(() => location.reload(), 100);
             }
         }
 
@@ -1527,7 +1530,9 @@
             const prev = slides[index - 1];
             slide.parentNode.insertBefore(slide, prev);
 
-            location.reload(); // Reload to reinitialize
+            // Save and reload
+            saveToLocalStorage();
+            setTimeout(() => location.reload(), 100);
         }
 
         // Move slide down
@@ -1538,7 +1543,9 @@
             const next = slides[index + 1];
             slide.parentNode.insertBefore(next, slide);
 
-            location.reload(); // Reload to reinitialize
+            // Save and reload
+            saveToLocalStorage();
+            setTimeout(() => location.reload(), 100);
         }
 
         // Save content to localStorage
@@ -1561,10 +1568,9 @@
             if (saved) {
                 const slideWrapper = document.querySelector('.slide-wrapper');
                 slideWrapper.innerHTML = saved;
-
-                // Reinitialize after loading
-                location.reload();
+                return true; // Indicate that content was loaded
             }
+            return false;
         }
 
         // Auto-save on content change (debounced)
@@ -1594,13 +1600,19 @@
         }
 
         // Initialize
+        // Try to load saved content first
+        const wasLoaded = loadFromLocalStorage();
+
+        if (wasLoaded) {
+            // Re-query slides after loading from localStorage
+            slides = document.querySelectorAll('.slide');
+            totalSlides = slides.length;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
         makeTextEditable();
         initializeSlideControls();
         showSlide(0);
-
-        // Try to load saved content on startup (optional)
-        // Uncomment the next line if you want to auto-load saved content
-        // loadFromLocalStorage();
     </script>
 </body>
 </html>

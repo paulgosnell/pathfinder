@@ -37,15 +37,25 @@ class SessionManager {
     scheduledFor?: Date,
     sessionType?: string  // NEW: explicit session type (discovery, quick-tip, etc.)
   ): Promise<SessionState> {
+    // Use explicit session type if provided, otherwise infer from interaction mode
+    const finalSessionType = sessionType || (interactionMode === 'coaching' ? 'coaching' : 'quick-tip');
+
+    // CRITICAL: Check for existing active discovery session
+    // Discovery should only happen once - if active discovery exists, return that session
+    if (finalSessionType === 'discovery') {
+      const existingDiscovery = await dbChats.getActiveDiscoverySession(userId);
+      if (existingDiscovery) {
+        console.log(`⚠️ Active discovery session already exists: ${existingDiscovery.id}`);
+        return existingDiscovery;
+      }
+    }
+
     const sessionId = crypto.randomUUID();
     const startedAt = scheduledFor || new Date();
 
     // Default time budgets based on interaction mode
     const defaultTimeBudget = interactionMode === 'coaching' ? 30 : 15;
     const finalTimeBudget = timeBudgetMinutes || defaultTimeBudget;
-
-    // Use explicit session type if provided, otherwise infer from interaction mode
-    const finalSessionType = sessionType || (interactionMode === 'coaching' ? 'coaching' : 'quick-tip');
 
     await dbChats.createSession({
       id: sessionId,

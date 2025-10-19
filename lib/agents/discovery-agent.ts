@@ -1,7 +1,7 @@
 import { generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase/client';
+import { createServiceClient } from '@/lib/supabase/service-client';
 
 export interface DiscoveryContext {
   userId: string;
@@ -66,12 +66,23 @@ export const createDiscoveryAgent = () => {
     console.log(`[Discovery Agent] Processing message ${messages.length}`);
     console.log(`[Discovery Agent] Progress:`, context.discoveryProgress);
 
+    // Check if we should auto-trigger save based on conversation progress
+    const shouldAutoSave = context.discoveryProgress?.readyToComplete || false;
+    console.log(`[Discovery Agent] Auto-save trigger: ${shouldAutoSave}`);
+
     // Generate response using AI SDK
     const result = await generateText({
       model: openai('gpt-4o-mini'),
       temperature: 0.7,
+      maxSteps: 5, // Allow tool execution + response generation
 
       system: `You are conducting a brief information-gathering session to set up a parent's profile.
+
+${shouldAutoSave ? `
+🚨 CRITICAL ACTION REQUIRED 🚨
+You have collected sufficient information. You MUST call the updateDiscoveryProfile tool NOW to save the data.
+After the user's next response, immediately call updateDiscoveryProfile with all collected information from the conversation history.
+` : ''}
 
 DISCOVERY SESSION PURPOSE:
 This is a 5-10 minute onboarding conversation to collect essential information about the parent's child(ren) and situation. This is NOT a coaching session - you are simply gathering data to build their profile.
@@ -135,17 +146,33 @@ ${context.discoveryProgress ? `
 - Diagnosis info: ${context.discoveryProgress.hasDiagnosis ? 'Yes' : 'Not yet'}
 - Main challenges: ${context.discoveryProgress.hasChallenges ? 'Yes' : 'Not yet'}
 - Family/school context: ${context.discoveryProgress.hasContext ? 'Yes' : 'Not yet'}
-- Ready to complete: ${context.discoveryProgress.readyToComplete ? 'Yes - summarize and save profile' : 'No - continue gathering information'}
+- Ready to complete: ${context.discoveryProgress.readyToComplete ? '⚠️ YES - MUST CALL updateDiscoveryProfile TOOL NOW' : 'No - continue gathering information'}
 ` : 'Just starting - ask how many children they have'}
+
+${shouldAutoSave ? `
+⚠️⚠️⚠️ MANDATORY ACTION ⚠️⚠️⚠️
+You have collected ALL required information. You MUST now:
+1. Review the conversation history above
+2. Extract all child and family information
+3. Call the updateDiscoveryProfile tool with the extracted data
+4. Do NOT ask more questions - SAVE THE DATA NOW
+
+Parse the conversation to find:
+- Each child's name, age, diagnosis status, challenges, school info, medication/therapy
+- Family context (co-parenting setup, support network)
+
+Then immediately call updateDiscoveryProfile.
+` : ''}
 
 CRITICAL REMINDERS:
 - This is DATA COLLECTION, not coaching - keep it brief and factual
 - Always start by asking how many children they have
 - Collect information for EACH child separately before moving to family context
 - Don't validate, don't coach, don't give advice - just gather facts
-- After collecting info on all children + family context, use the updateDiscoveryProfile tool
+- After collecting info on all children + family context, YOU MUST CALL updateDiscoveryProfile tool
 - Move quickly - aim for 8-12 total exchanges depending on number of children
 - Review conversation history to avoid re-asking questions
+- When readyToComplete is true, STOP asking questions and CALL THE SAVE TOOL
 
 TONE:
 - Friendly and warm, but efficient
@@ -179,12 +206,18 @@ TONE:
             try {
               console.log('[Discovery Agent] Saving profile for user:', context.userId);
               console.log(`[Discovery Agent] Number of children: ${profile.children.length}`);
+              console.log('[Discovery Agent] Profile data:', JSON.stringify(profile, null, 2));
+
+              // Create service client with admin permissions
+              const supabase = createServiceClient();
 
               // Save each child as a separate row in child_profiles
               const childResults = [];
               for (let i = 0; i < profile.children.length; i++) {
                 const child = profile.children[i];
                 const isPrimary = i === 0; // First child is primary by default
+
+                console.log(`[Discovery Agent] Inserting child ${i + 1}: ${child.childName}`);
 
                 const { data: childData, error: childError } = await supabase
                   .from('child_profiles')
@@ -264,10 +297,25 @@ TONE:
       },
     });
 
+    // Check if tool was executed successfully
+    const toolResults = result.steps?.map(step => step.toolResults).flat().filter(Boolean) || [];
+    const discoveryToolResult = toolResults.find((r: any) => r.toolName === 'updateDiscoveryProfile');
+
+    // If tool executed but no text response, provide completion message
+    let responseText = result.text;
+    if (discoveryToolResult && !result.text) {
+      const toolOutput = (discoveryToolResult as any).result;
+      if (toolOutput?.success) {
+        responseText = `Perfect! I've saved all the information about ${toolOutput.profileSummary?.children?.map((c: any) => c.name).join(' and ') || 'your children'}. Your profile is complete! 🎉\n\nYou can now start coaching sessions or explore other features.`;
+      } else {
+        responseText = `I tried to save your information but encountered an error: ${toolOutput?.error || 'Unknown error'}. Please try again or contact support.`;
+      }
+    }
+
     // Return in same format as proper-tools-agent for compatibility
     return {
-      text: result.text,
-      toolResults: result.steps?.map(step => step.toolResults).flat().filter(Boolean) || [],
+      text: responseText,
+      toolResults,
       usage: result.usage
     };
   };

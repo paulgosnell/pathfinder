@@ -265,10 +265,30 @@ export async function POST(req: NextRequest) {
       const hasChallenges = conversationHistory?.some(m =>
         m.role === 'assistant' && m.content.toLowerCase().includes('challenge')
       ) || false;
-      const hasContext = conversationHistory?.some(m =>
-        m.role === 'assistant' && (m.content.toLowerCase().includes('family') || m.content.toLowerCase().includes('school'))
+
+      // More reliable family context detection - check if we've asked about family setup
+      const hasFamilyContext = conversationHistory?.some(m =>
+        m.role === 'assistant' && (
+          m.content.toLowerCase().includes('family setup') ||
+          m.content.toLowerCase().includes('single parent') ||
+          m.content.toLowerCase().includes('co-parenting')
+        )
       ) || false;
-      const readyToComplete = exchangeCount >= 8 && hasChildBasics && hasDiagnosis && hasChallenges && hasContext;
+
+      // User has responded to family context question
+      const familyContextAnswered = hasFamilyContext && conversationHistory?.some((m, idx) => {
+        const prevMessage = idx > 0 ? conversationHistory[idx - 1] : null;
+        return m.role === 'user' && prevMessage?.role === 'assistant' && (
+          prevMessage.content.toLowerCase().includes('family setup') ||
+          prevMessage.content.toLowerCase().includes('single parent') ||
+          prevMessage.content.toLowerCase().includes('co-parenting')
+        );
+      }) || false;
+
+      // Ready to save if we have basic info AND family context has been answered
+      const readyToComplete = exchangeCount >= 8 && hasChildBasics && hasDiagnosis && hasChallenges && familyContextAnswered;
+
+      console.log(`   📊 Discovery Progress: exchanges=${exchangeCount}, basics=${hasChildBasics}, diagnosis=${hasDiagnosis}, challenges=${hasChallenges}, familyContext=${familyContextAnswered}, ready=${readyToComplete}`);
 
       agentResult = await discoveryAgent(message, {
         userId,
@@ -279,10 +299,19 @@ export async function POST(req: NextRequest) {
           hasChildBasics,
           hasDiagnosis,
           hasChallenges,
-          hasContext,
+          hasContext: familyContextAnswered,
           readyToComplete
         }
       });
+
+      // Check if discovery was completed (tool was executed successfully)
+      const discoveryToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updateDiscoveryProfile');
+      if (discoveryToolResult && (discoveryToolResult as any).result?.success) {
+        console.log('✅ Discovery completed successfully - marking session as complete');
+        await sessionManager.updateSession(session.id, {
+          status: 'complete'
+        });
+      }
     } else {
       // Route to Standard Coaching Agent (for all other session types)
       console.log(`   🧠 Using Standard Coaching Agent (${session.sessionType})`);

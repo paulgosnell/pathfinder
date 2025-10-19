@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, Target, TrendingUp, Clock, AlertCircle, CheckCircle2, Lightbulb, Calendar, List, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { MessageCircle, Target, TrendingUp, Clock, AlertCircle, CheckCircle2, Lightbulb, Calendar, List, ChevronLeft, ChevronRight, Sparkles, Star, Archive, MoreVertical, Trash2, Edit3, X, Check } from 'lucide-react';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
@@ -14,6 +14,7 @@ import { Alert } from '@/components/layouts/Alert';
 import { SPACING } from '@/lib/styles/spacing';
 
 type ViewMode = 'timeline' | 'calendar';
+type FilterMode = 'all' | 'favorites' | 'archived';
 
 interface Session {
   id: string;
@@ -23,6 +24,11 @@ interface Session {
   started_at: string;
   ended_at: string | null;
   interaction_mode: 'check-in' | 'coaching';
+  session_type: 'discovery' | 'quick-tip' | 'update' | 'strategy' | 'crisis' | 'coaching';
+  is_favorite: boolean;
+  is_archived: boolean;
+  deleted_at: string | null;
+  custom_title: string | null;
 }
 
 export default function SessionHistoryPage() {
@@ -34,6 +40,7 @@ export default function SessionHistoryPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [filterMode, setFilterMode] = useState<FilterMode>('all');
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -64,6 +71,7 @@ export default function SessionHistoryPage() {
         .from('agent_sessions')
         .select('*')
         .eq('user_id', uid)
+        .is('deleted_at', null) // Exclude soft-deleted sessions
         .order('started_at', { ascending: false })
         .limit(50);
 
@@ -79,9 +87,21 @@ export default function SessionHistoryPage() {
     }
   };
 
+  // Filter sessions based on current filter mode
+  const filteredSessions = sessions.filter(session => {
+    if (filterMode === 'favorites') {
+      return session.is_favorite;
+    } else if (filterMode === 'archived') {
+      return session.is_archived;
+    } else {
+      // 'all' shows non-archived sessions
+      return !session.is_archived;
+    }
+  });
+
   return (
     <MobileDeviceMockup>
-      <div className="w-full h-full bg-white flex flex-col relative" style={{ overflow: 'hidden' }}>
+      <div className="w-full h-full bg-white flex flex-col relative">
 
         <NavigationDrawer
           isOpen={isDrawerOpen}
@@ -95,7 +115,14 @@ export default function SessionHistoryPage() {
         />
 
         {/* Content Area */}
-        <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+        <div
+          className="flex-grow overflow-y-auto"
+          style={{
+            backgroundColor: '#F9F7F3',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
           <ContentContainer>
 
             {loading ? (
@@ -112,7 +139,7 @@ export default function SessionHistoryPage() {
                   Try Again
                 </Button>
               </>
-            ) : sessions.length === 0 ? (
+            ) : filteredSessions.length === 0 ? (
               <Card padding="large">
                 <div className="text-center py-8">
                   <MessageCircle size={64} style={{ color: '#D7CDEC', margin: '0 auto 16px' }} />
@@ -163,6 +190,78 @@ export default function SessionHistoryPage() {
                     />
                   </div>
                 </Card>
+
+                {/* Filter Tabs */}
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                  marginBottom: '16px'
+                }}>
+                  <button
+                    onClick={() => setFilterMode('all')}
+                    style={{
+                      flex: 1,
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      border: filterMode === 'all' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
+                      background: filterMode === 'all' ? 'rgba(183, 211, 216, 0.1)' : 'white',
+                      color: filterMode === 'all' ? '#2A3F5A' : '#586C8E',
+                      fontFamily: 'Quicksand, sans-serif',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setFilterMode('favorites')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      border: filterMode === 'favorites' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
+                      background: filterMode === 'favorites' ? 'rgba(183, 211, 216, 0.1)' : 'white',
+                      color: filterMode === 'favorites' ? '#2A3F5A' : '#586C8E',
+                      fontFamily: 'Quicksand, sans-serif',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Star size={16} fill={filterMode === 'favorites' ? '#FFD700' : 'none'} />
+                    Favorites
+                  </button>
+                  <button
+                    onClick={() => setFilterMode('archived')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      border: filterMode === 'archived' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
+                      background: filterMode === 'archived' ? 'rgba(183, 211, 216, 0.1)' : 'white',
+                      color: filterMode === 'archived' ? '#2A3F5A' : '#586C8E',
+                      fontFamily: 'Quicksand, sans-serif',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Archive size={16} />
+                    Archived
+                  </button>
+                </div>
 
                 {/* View Switcher */}
                 <div style={{
@@ -228,7 +327,7 @@ export default function SessionHistoryPage() {
 
                 {/* Timeline View */}
                 {viewMode === 'timeline' && (
-                  <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'relative', overflow: 'visible' }}>
                   {/* Timeline vertical line */}
                   <div style={{
                     position: 'absolute',
@@ -237,16 +336,18 @@ export default function SessionHistoryPage() {
                     bottom: '20px',
                     width: '2px',
                     background: 'linear-gradient(to bottom, #D7CDEC, #B7D3D8)',
-                    opacity: 0.3
+                    opacity: 0.3,
+                    pointerEvents: 'none'
                   }} />
 
                     {/* Sessions */}
-                    {sessions.map((session, index) => (
+                    {filteredSessions.map((session, index) => (
                       <SessionTimelineItem
                         key={session.id}
                         session={session}
                         isFirst={index === 0}
-                        isLast={index === sessions.length - 1}
+                        isLast={index === filteredSessions.length - 1}
+                        onUpdate={() => userId && fetchSessions(userId)}
                       />
                     ))}
                   </div>
@@ -255,9 +356,10 @@ export default function SessionHistoryPage() {
                 {/* Calendar View */}
                 {viewMode === 'calendar' && (
                   <CalendarView
-                    sessions={sessions}
+                    sessions={filteredSessions}
                     currentMonth={currentMonth}
                     onMonthChange={setCurrentMonth}
+                    onUpdate={() => userId && fetchSessions(userId)}
                   />
                 )}
               </>
@@ -271,16 +373,163 @@ export default function SessionHistoryPage() {
   );
 }
 
-function SessionTimelineItem({ session, isFirst, isLast }: { session: Session; isFirst: boolean; isLast: boolean }) {
+function SessionTimelineItem({
+  session,
+  isFirst,
+  isLast,
+  onUpdate
+}: {
+  session: Session;
+  isFirst: boolean;
+  isLast: boolean;
+  onUpdate: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(session.custom_title || '');
+  const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const date = new Date(session.started_at);
   const duration = session.ended_at
     ? Math.round((new Date(session.ended_at).getTime() - date.getTime()) / 1000 / 60)
     : null;
 
-  const handleSessionClick = () => {
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [menuOpen]);
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSessionClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking menu button or editing
+    if ((e.target as HTMLElement).closest('[data-menu-button]') || isEditing) {
+      return;
+    }
     // Navigate to chat and load this specific session
     window.location.href = `/chat?sessionId=${session.id}`;
+  };
+
+  const handleStartRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setIsEditing(true);
+    setEditedTitle(session.custom_title || '');
+  };
+
+  const handleSaveTitle = async () => {
+    if (editedTitle.trim() === session.custom_title) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_title: editedTitle.trim() || null })
+      });
+
+      if (response.ok) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Failed to update title:', error);
+    } finally {
+      setIsUpdating(false);
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedTitle(session.custom_title || '');
+  };
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsUpdating(true);
+    setMenuOpen(false);
+
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_favorite: !session.is_favorite })
+      });
+
+      if (response.ok) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Failed to update favorite:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleToggleArchive = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsUpdating(true);
+    setMenuOpen(false);
+
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_archived: !session.is_archived })
+      });
+
+      if (response.ok) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Failed to update archive:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this session? This cannot be undone.')) {
+      return;
+    }
+
+    setIsUpdating(true);
+    setMenuOpen(false);
+
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const getCrisisColor = (level: string) => {
@@ -303,7 +552,8 @@ function SessionTimelineItem({ session, isFirst, isLast }: { session: Session; i
     <div style={{
       position: 'relative',
       paddingLeft: '52px',
-      paddingBottom: isLast ? '0' : '24px'
+      paddingBottom: isLast ? '0' : '24px',
+      zIndex: menuOpen || isEditing ? 100 : 'auto'
     }}>
       {/* Timeline dot/icon */}
       <div style={{
@@ -353,24 +603,273 @@ function SessionTimelineItem({ session, isFirst, isLast }: { session: Session; i
           e.currentTarget.style.boxShadow = '0 2px 10px rgba(42, 63, 90, 0.08)';
         }}
       >
-        {/* Date & Time */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <Clock size={14} style={{ color: '#586C8E' }} />
-          <p style={{ fontSize: '13px', color: '#586C8E', margin: 0, fontWeight: 500 }}>
-            {date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at {date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-          {duration && (
-            <span style={{
-              fontSize: '11px',
-              color: '#586C8E',
-              padding: '2px 8px',
-              backgroundColor: 'rgba(227, 234, 221, 0.3)',
-              borderRadius: '8px',
-              marginLeft: 'auto'
-            }}>
-              {duration} min
-            </span>
-          )}
+        {/* Session Header with Title and Actions */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '12px' }}>
+          <div style={{ flex: 1 }}>
+            {isEditing ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveTitle();
+                    if (e.key === 'Escape') handleCancelEdit();
+                  }}
+                  placeholder="Enter custom title..."
+                  style={{
+                    flex: 1,
+                    padding: '8px 10px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#2A3F5A',
+                    border: '2px solid #B7D3D8',
+                    borderRadius: '8px',
+                    fontFamily: 'Quicksand, sans-serif',
+                    outline: 'none'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSaveTitle();
+                  }}
+                  disabled={isUpdating}
+                  style={{
+                    padding: '6px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: '#B7D3D8',
+                    color: 'white',
+                    cursor: isUpdating ? 'wait' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCancelEdit();
+                  }}
+                  disabled={isUpdating}
+                  style={{
+                    padding: '6px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: 'rgba(230, 168, 151, 0.2)',
+                    color: '#E6A897',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <Clock size={14} style={{ color: '#586C8E' }} />
+                <div style={{ flex: 1 }}>
+                  {session.custom_title && (
+                    <p style={{ fontSize: '14px', color: '#2A3F5A', margin: '0 0 2px 0', fontWeight: 700 }}>
+                      {session.custom_title}
+                    </p>
+                  )}
+                  <p style={{ fontSize: session.custom_title ? '11px' : '13px', color: session.custom_title ? '#586C8E' : '#2A3F5A', margin: 0, fontWeight: session.custom_title ? 500 : 600 }}>
+                    {getSessionTitle(session)}
+                  </p>
+                </div>
+                {session.is_favorite && (
+                  <Star size={16} fill="#FFD700" stroke="#FFD700" />
+                )}
+              </div>
+            )}
+            {duration && (
+              <span style={{
+                fontSize: '11px',
+                color: '#586C8E',
+                padding: '2px 8px',
+                backgroundColor: 'rgba(227, 234, 221, 0.3)',
+                borderRadius: '8px',
+                display: 'inline-block'
+              }}>
+                {duration} min
+              </span>
+            )}
+          </div>
+
+          {/* Three-dot menu */}
+          <div ref={menuRef} style={{ position: 'relative', zIndex: 1 }}>
+            <button
+              data-menu-button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(!menuOpen);
+              }}
+              disabled={isUpdating}
+              style={{
+                padding: '6px',
+                borderRadius: '8px',
+                border: 'none',
+                background: menuOpen ? 'rgba(215, 205, 236, 0.3)' : 'transparent',
+                color: '#586C8E',
+                cursor: isUpdating ? 'wait' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (!menuOpen) {
+                  e.currentTarget.style.background = 'rgba(215, 205, 236, 0.2)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!menuOpen) {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <MoreVertical size={18} />
+            </button>
+
+            {/* Dropdown menu */}
+            {menuOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '4px',
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 16px rgba(42, 63, 90, 0.15)',
+                  border: '1px solid rgba(215, 205, 236, 0.3)',
+                  minWidth: '160px',
+                  zIndex: 1,
+                  overflow: 'hidden'
+                }}
+              >
+                <button
+                  onClick={handleStartRename}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#2A3F5A',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(227, 234, 221, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <Edit3 size={16} />
+                  Rename
+                </button>
+
+                <button
+                  onClick={handleToggleFavorite}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#2A3F5A',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(227, 234, 221, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <Star size={16} fill={session.is_favorite ? '#FFD700' : 'none'} stroke={session.is_favorite ? '#FFD700' : 'currentColor'} />
+                  {session.is_favorite ? 'Unfavorite' : 'Favorite'}
+                </button>
+
+                <button
+                  onClick={handleToggleArchive}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#2A3F5A',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(227, 234, 221, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <Archive size={16} />
+                  {session.is_archived ? 'Unarchive' : 'Archive'}
+                </button>
+
+                <div style={{ height: '1px', background: 'rgba(215, 205, 236, 0.3)', margin: '4px 0' }} />
+
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#E6A897',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(230, 168, 151, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Session Type Badge */}
@@ -539,15 +1038,32 @@ function getCrisisSessions(sessions: Session[]): number {
   return sessions.filter(s => s.crisis_level !== 'none').length;
 }
 
+// Get human-readable session title
+function getSessionTitle(session: Session): string {
+  const date = new Date(session.started_at);
+  const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  // Capitalize first letter of session type
+  const sessionType = session.session_type
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  return `${sessionType} • ${dateStr} at ${timeStr}`;
+}
+
 // Calendar View Component
 function CalendarView({
   sessions,
   currentMonth,
-  onMonthChange
+  onMonthChange,
+  onUpdate
 }: {
   sessions: Session[];
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
+  onUpdate: () => void;
 }) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -804,7 +1320,7 @@ function CalendarView({
         <Card title={`Sessions on ${selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {sessionsForSelectedDate.map(session => (
-              <SessionCalendarItem key={session.id} session={session} />
+              <SessionCalendarItem key={session.id} session={session} onUpdate={onUpdate} />
             ))}
           </div>
         </Card>
@@ -814,14 +1330,89 @@ function CalendarView({
 }
 
 // Compact session item for calendar view
-function SessionCalendarItem({ session }: { session: Session }) {
+function SessionCalendarItem({ session, onUpdate }: { session: Session; onUpdate: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const date = new Date(session.started_at);
   const duration = session.ended_at
     ? Math.round((new Date(session.ended_at).getTime() - date.getTime()) / 1000 / 60)
     : null;
 
-  const handleSessionClick = () => {
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [menuOpen]);
+
+  const handleSessionClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('[data-menu-button]')) {
+      return;
+    }
     window.location.href = `/chat?sessionId=${session.id}`;
+  };
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsUpdating(true);
+    setMenuOpen(false);
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_favorite: !session.is_favorite })
+      });
+      if (response.ok) onUpdate();
+    } catch (error) {
+      console.error('Failed to update favorite:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleToggleArchive = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsUpdating(true);
+    setMenuOpen(false);
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_archived: !session.is_archived })
+      });
+      if (response.ok) onUpdate();
+    } catch (error) {
+      console.error('Failed to update archive:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this session? This cannot be undone.')) {
+      return;
+    }
+    setIsUpdating(true);
+    setMenuOpen(false);
+    try {
+      const response = await fetch(`/api/sessions/${session.id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) onUpdate();
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const getCrisisColor = (level: string) => {
@@ -847,7 +1438,9 @@ function SessionCalendarItem({ session }: { session: Session }) {
         background: 'rgba(249, 247, 243, 0.5)',
         border: '1px solid rgba(215, 205, 236, 0.2)',
         cursor: 'pointer',
-        transition: 'all 0.2s'
+        transition: 'all 0.2s',
+        position: 'relative',
+        zIndex: menuOpen ? 100 : 'auto'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = 'rgba(227, 234, 221, 0.4)';
@@ -858,23 +1451,158 @@ function SessionCalendarItem({ session }: { session: Session }) {
         e.currentTarget.style.borderColor = 'rgba(215, 205, 236, 0.2)';
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-        <Clock size={14} style={{ color: '#586C8E' }} />
-        <span style={{ fontSize: '12px', color: '#586C8E', fontWeight: 500 }}>
-          {date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-        </span>
-        {duration && (
-          <span style={{
-            fontSize: '11px',
-            color: '#586C8E',
-            padding: '2px 6px',
-            backgroundColor: 'rgba(227, 234, 221, 0.5)',
-            borderRadius: '6px',
-            marginLeft: 'auto'
-          }}>
-            {duration} min
-          </span>
-        )}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <p style={{ fontSize: '12px', color: '#2A3F5A', fontWeight: 600, margin: 0 }}>
+              {getSessionTitle(session)}
+            </p>
+            {session.is_favorite && (
+              <Star size={14} fill="#FFD700" stroke="#FFD700" />
+            )}
+          </div>
+          {duration && (
+            <span style={{
+              fontSize: '11px',
+              color: '#586C8E',
+              padding: '2px 6px',
+              backgroundColor: 'rgba(227, 234, 221, 0.5)',
+              borderRadius: '6px'
+            }}>
+              {duration} min
+            </span>
+          )}
+        </div>
+
+        {/* Three-dot menu */}
+        <div ref={menuRef} style={{ position: 'relative', zIndex: 1 }}>
+          <button
+            data-menu-button
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(!menuOpen);
+            }}
+            disabled={isUpdating}
+            style={{
+              padding: '4px',
+              borderRadius: '6px',
+              border: 'none',
+              background: menuOpen ? 'rgba(215, 205, 236, 0.3)' : 'transparent',
+              color: '#586C8E',
+              cursor: isUpdating ? 'wait' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s'
+            }}
+          >
+            <MoreVertical size={16} />
+          </button>
+
+          {menuOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '4px',
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 4px 16px rgba(42, 63, 90, 0.15)',
+                border: '1px solid rgba(215, 205, 236, 0.3)',
+                minWidth: '140px',
+                zIndex: 1,
+                overflow: 'hidden'
+              }}
+            >
+              <button
+                onClick={handleToggleFavorite}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#2A3F5A',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'Quicksand, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(227, 234, 221, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <Star size={14} fill={session.is_favorite ? '#FFD700' : 'none'} stroke={session.is_favorite ? '#FFD700' : 'currentColor'} />
+                {session.is_favorite ? 'Unfavorite' : 'Favorite'}
+              </button>
+
+              <button
+                onClick={handleToggleArchive}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#2A3F5A',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'Quicksand, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(227, 234, 221, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <Archive size={14} />
+                {session.is_archived ? 'Unarchive' : 'Archive'}
+              </button>
+
+              <div style={{ height: '1px', background: 'rgba(215, 205, 236, 0.3)', margin: '4px 0' }} />
+
+              <button
+                onClick={handleDelete}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#E6A897',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'Quicksand, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(230, 168, 151, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <Trash2 size={14} />
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {session.interaction_mode === 'coaching' && (

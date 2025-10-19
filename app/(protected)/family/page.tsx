@@ -24,7 +24,7 @@ interface UserProfile {
   parent_name?: string;
   family_context?: string;
   support_network?: string[];
-  parent_photo_url?: string;
+  discovery_completed?: boolean;
 }
 
 export default function FamilyPage() {
@@ -48,6 +48,8 @@ export default function FamilyPage() {
 
     setLoading(true);
     try {
+      console.log('[Family Page] Loading data for user:', user.id);
+
       // Load children
       const { data: childData, error: childError } = await supabase
         .from('child_profiles')
@@ -55,16 +57,32 @@ export default function FamilyPage() {
         .eq('user_id', user.id)
         .order('is_primary', { ascending: false });
 
+      console.log('[Family Page] Child profiles query result:', {
+        count: childData?.length || 0,
+        error: childError,
+        children: childData?.map(c => c.child_name)
+      });
+
       if (!childError && childData) {
         setChildren(childData);
+      } else if (childError) {
+        console.error('[Family Page] Error loading children:', childError);
       }
 
       // Load parent profile
       const { data: parentData, error: parentError } = await supabase
         .from('user_profiles')
-        .select('parent_name, family_context, support_network, parent_photo_url')
+        .select('parent_name, family_context, support_network, discovery_completed')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+
+      console.log('[Family Page] Parent profile:', {
+        discoveryCompleted: parentData?.discovery_completed,
+        error: parentError,
+        errorMessage: parentError?.message,
+        errorDetails: parentError?.details,
+        errorHint: parentError?.hint
+      });
 
       if (!parentError && parentData) {
         setParentProfile(parentData);
@@ -149,9 +167,11 @@ export default function FamilyPage() {
                         + Add Child Manually
                       </Button>
 
-                      <Button onClick={handleRunDiscovery} variant="secondary">
-                        Start Discovery Session
-                      </Button>
+                      {!parentProfile?.discovery_completed && (
+                        <Button onClick={handleRunDiscovery} variant="secondary">
+                          Start Discovery Session
+                        </Button>
+                      )}
                     </div>
 
                     <p style={{
@@ -336,9 +356,11 @@ export default function FamilyPage() {
                         + Add Child Manually
                       </Button>
 
-                      <Button onClick={handleRunDiscovery} variant="secondary">
-                        Run Discovery Session
-                      </Button>
+                      {!parentProfile?.discovery_completed && (
+                        <Button onClick={handleRunDiscovery} variant="secondary">
+                          Run Discovery Session
+                        </Button>
+                      )}
                     </div>
 
                     <p style={{
@@ -348,7 +370,10 @@ export default function FamilyPage() {
                       marginBottom: 0,
                       lineHeight: 1.5
                     }}>
-                      Add a child profile manually or run a Discovery session to gather information through conversation.
+                      {parentProfile?.discovery_completed
+                        ? 'Add another child profile to your family.'
+                        : 'Add a child profile manually or run a Discovery session to gather information through conversation.'
+                      }
                     </p>
                   </Card>
                 )}

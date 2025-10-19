@@ -12,6 +12,13 @@ import { Card } from '@/components/layouts/Card';
 import { Button } from '@/components/layouts/Button';
 import { FormField } from '@/components/layouts/FormField';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '@/lib/styles/spacing';
+import { MultiStepFormWizard } from '@/components/MultiStepFormWizard';
+import {
+  BasicInfoStep,
+  ChallengesStrengthsStep,
+  SchoolStep,
+  TreatmentStep
+} from '@/components/ChildProfileFormSteps';
 
 interface UserProfile {
   parent_name?: string;
@@ -627,7 +634,7 @@ function ChildProfileCard({
   );
 }
 
-// Add/Edit Child Form Component
+// Add/Edit Child Form Component with Multi-Step Wizard
 function AddEditChildForm({
   child,
   userId,
@@ -656,16 +663,13 @@ function AddEditChildForm({
   });
 
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = async () => {
+  const handleComplete = async () => {
     if (!formData.child_name.trim()) {
-      setError("Child's name is required");
-      return;
+      return; // Validation will be handled by step validator
     }
 
     setSaving(true);
-    setError(null);
 
     try {
       const childData = {
@@ -713,265 +717,48 @@ function AddEditChildForm({
       onSave();
     } catch (err) {
       console.error('Error saving child profile:', err);
-      setError('Failed to save. Please try again.');
+      alert('Failed to save. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
+  // Validation function for Step 1 (Basic Info)
+  const validateBasicInfo = () => {
+    if (!formData.child_name.trim()) {
+      return "Please enter your child's name";
+    }
+    return true;
+  };
+
+  const steps = [
+    {
+      title: 'Basic Information',
+      component: <BasicInfoStep formData={formData} setFormData={setFormData} />,
+      validate: validateBasicInfo
+    },
+    {
+      title: 'Challenges & Strengths',
+      component: <ChallengesStrengthsStep formData={formData} setFormData={setFormData} />
+    },
+    {
+      title: 'School',
+      component: <SchoolStep formData={formData} setFormData={setFormData} />
+    },
+    {
+      title: 'Treatment',
+      component: <TreatmentStep formData={formData} setFormData={setFormData} />
+    }
+  ];
+
   return (
-    <Card title={child ? `Edit ${child.child_name}` : 'Add Child'} padding="large">
-      {error && (
-        <div style={{
-          padding: '12px',
-          background: 'rgba(230, 168, 151, 0.1)',
-          border: '1px solid rgba(230, 168, 151, 0.3)',
-          borderRadius: BORDER_RADIUS.medium,
-          marginBottom: '16px',
-          color: '#E6A897',
-          fontSize: '14px'
-        }}>
-          {error}
-        </div>
-      )}
-
-      {/* Basic Info */}
-      <div style={{ marginBottom: '24px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#7F8FA6',
-          marginTop: 0,
-          marginBottom: '16px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          Basic Information
-        </h4>
-
-        <FormField
-          label="Child's Name"
-          value={formData.child_name}
-          onChange={(e) => setFormData({ ...formData, child_name: e.target.value })}
-          placeholder="Enter name"
-        />
-
-        <FormField
-          label="Age (years)"
-          type="number"
-          value={formData.child_age}
-          onChange={(e) => setFormData({ ...formData, child_age: e.target.value })}
-          placeholder="7"
-        />
-
-        <div style={{ marginBottom: SPACING.formFieldGap }}>
-          <label style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: 700,
-            color: '#586C8E',
-            marginBottom: SPACING.labelMargin,
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-          }}>
-            Diagnosis Status
-          </label>
-          <select
-            value={formData.diagnosis_status}
-            onChange={(e) => setFormData({ ...formData, diagnosis_status: e.target.value as any })}
-            style={{
-              width: '100%',
-              padding: '14px 18px',
-              fontSize: '16px',
-              borderRadius: BORDER_RADIUS.medium,
-              border: '2px solid #E3EADD',
-              outline: 'none',
-              color: '#2A3F5A',
-              boxSizing: 'border-box',
-              background: 'white'
-            }}
-          >
-            <option value="diagnosed">Diagnosed</option>
-            <option value="suspected">Suspected</option>
-            <option value="exploring">Exploring</option>
-            <option value="not-adhd">Not ADHD</option>
-          </select>
-        </div>
-
-        <FormField
-          label="Diagnosis Details (optional)"
-          value={formData.diagnosis_details}
-          onChange={(e) => setFormData({ ...formData, diagnosis_details: e.target.value })}
-          placeholder="When diagnosed, by whom, subtype, comorbidities"
-        />
-      </div>
-
-      {/* Challenges & Strengths */}
-      <div style={{ marginBottom: '24px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#7F8FA6',
-          marginTop: 0,
-          marginBottom: '16px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          Challenges & Strengths
-        </h4>
-
-        <FormField
-          label="Main Challenges (comma-separated)"
-          value={formData.main_challenges}
-          onChange={(e) => setFormData({ ...formData, main_challenges: e.target.value })}
-          placeholder="homework refusal, emotional dysregulation"
-        />
-
-        <FormField
-          label="Strengths (comma-separated)"
-          value={formData.strengths}
-          onChange={(e) => setFormData({ ...formData, strengths: e.target.value })}
-          placeholder="creative, empathetic, loves building"
-        />
-
-        <FormField
-          label="Interests (comma-separated)"
-          value={formData.interests}
-          onChange={(e) => setFormData({ ...formData, interests: e.target.value })}
-          placeholder="Lego, dinosaurs, drawing"
-        />
-      </div>
-
-      {/* School */}
-      <div style={{ marginBottom: '24px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#7F8FA6',
-          marginTop: 0,
-          marginBottom: '16px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          School
-        </h4>
-
-        <div style={{ marginBottom: SPACING.formFieldGap }}>
-          <label style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: 700,
-            color: '#586C8E',
-            marginBottom: SPACING.labelMargin,
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-          }}>
-            School Type
-          </label>
-          <select
-            value={formData.school_type}
-            onChange={(e) => setFormData({ ...formData, school_type: e.target.value })}
-            style={{
-              width: '100%',
-              padding: '14px 18px',
-              fontSize: '16px',
-              borderRadius: BORDER_RADIUS.medium,
-              border: '2px solid #E3EADD',
-              outline: 'none',
-              color: '#2A3F5A',
-              boxSizing: 'border-box',
-              background: 'white'
-            }}
-          >
-            <option value="">Select...</option>
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-            <option value="charter">Charter</option>
-            <option value="homeschool">Homeschool</option>
-          </select>
-        </div>
-
-        <FormField
-          label="Grade Level (optional)"
-          value={formData.grade_level}
-          onChange={(e) => setFormData({ ...formData, grade_level: e.target.value })}
-          placeholder="2"
-        />
-
-        <div style={{ marginBottom: SPACING.formFieldGap }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '14px',
-            color: '#586C8E',
-            cursor: 'pointer',
-            marginBottom: '8px'
-          }}>
-            <input
-              type="checkbox"
-              checked={formData.has_iep}
-              onChange={(e) => setFormData({ ...formData, has_iep: e.target.checked })}
-              style={{ marginRight: '8px' }}
-            />
-            Has IEP
-          </label>
-
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '14px',
-            color: '#586C8E',
-            cursor: 'pointer'
-          }}>
-            <input
-              type="checkbox"
-              checked={formData.has_504_plan}
-              onChange={(e) => setFormData({ ...formData, has_504_plan: e.target.checked })}
-              style={{ marginRight: '8px' }}
-            />
-            Has 504 Plan
-          </label>
-        </div>
-      </div>
-
-      {/* Treatment */}
-      <div style={{ marginBottom: '24px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#7F8FA6',
-          marginTop: 0,
-          marginBottom: '16px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          Treatment
-        </h4>
-
-        <FormField
-          label="Medication (optional)"
-          value={formData.medication_status}
-          onChange={(e) => setFormData({ ...formData, medication_status: e.target.value })}
-          placeholder="Concerta 18mg, started 6 months ago"
-        />
-
-        <FormField
-          label="Therapy (optional)"
-          value={formData.therapy_status}
-          onChange={(e) => setFormData({ ...formData, therapy_status: e.target.value })}
-          placeholder="Weekly behavioral therapy with Dr. Smith"
-        />
-      </div>
-
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <Button onClick={handleSave} disabled={saving} variant="primary">
-          {saving ? 'Saving...' : (child ? 'Save Changes' : 'Add Child')}
-        </Button>
-        <Button onClick={onCancel} disabled={saving} variant="secondary">
-          Cancel
-        </Button>
-      </div>
-    </Card>
+    <MultiStepFormWizard
+      steps={steps}
+      onComplete={handleComplete}
+      onCancel={onCancel}
+      title={child ? `Edit ${child.child_name}` : 'Add Child Profile'}
+      saving={saving}
+      completionButtonText={child ? 'Save Changes' : 'Save Profile'}
+    />
   );
 }

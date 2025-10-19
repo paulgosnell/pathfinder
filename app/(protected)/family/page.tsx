@@ -95,10 +95,7 @@ export default function FamilyPage() {
         />
 
         {/* Content Area */}
-        <div className="flex-grow overflow-y-auto" style={{
-          backgroundColor: '#F9F7F3',
-          marginTop: SPACING.contentTopMargin
-        }}>
+        <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
           <ContentContainer>
 
             {/* Empty State - No Children Yet */}

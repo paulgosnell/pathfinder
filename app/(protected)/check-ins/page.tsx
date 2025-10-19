@@ -7,7 +7,6 @@ import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { ContentContainer } from '@/components/layouts/ContentContainer';
 import { Card } from '@/components/layouts/Card';
-import { SPACING } from '@/lib/styles/spacing';
 
 export default function CheckInsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -26,10 +25,7 @@ export default function CheckInsPage() {
           subtitle="Track your child's daily patterns"
         />
 
-        <div className="flex-grow overflow-y-auto" style={{
-          backgroundColor: '#F9F7F3',
-          marginTop: SPACING.contentTopMargin
-        }}>
+        <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
           <ContentContainer>
 
             <Card padding="large">

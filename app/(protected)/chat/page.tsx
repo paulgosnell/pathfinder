@@ -61,7 +61,8 @@ export default function ChatPage() {
   const urlTimeBudget = searchParams.get('time') ? parseInt(searchParams.get('time')!) : undefined;
 
   // Determine session configuration from URL params
-  const initialSessionType: SessionType = urlSessionType || (coachingMode ? 'coaching' : 'check-in');
+  // Default to 'quick-tip' for check-in mode (not 'check-in' - that's not a valid session type!)
+  const initialSessionType: SessionType = urlSessionType || (coachingMode ? 'coaching' : 'quick-tip');
   const initialInteractionMode = coachingMode ? 'coaching' : 'check-in';
   const initialTimeBudget = urlTimeBudget || (coachingMode ? 30 : 15);
 
@@ -150,7 +151,7 @@ export default function ChatPage() {
               if (timeSinceLastMessage > fiveMinutesMs) {
                 // Show messages immediately, add prompt at the end
                 setSessionId(data.session.id);
-                setSessionType(data.session.sessionType || 'check-in');
+                setSessionType(data.session.sessionType || 'quick-tip');
                 setMessages(data.messages); // Show conversation history
                 setLastMessageAt(lastMsgTime);
                 setShowContinuationPrompt(true); // Show prompt as last message
@@ -163,7 +164,7 @@ export default function ChatPage() {
             setSessionId(data.session.id);
             setCurrentSession(data.session.id, 'chat');
             setMessages(data.messages);
-            setSessionType(data.session.sessionType || 'check-in');
+            setSessionType(data.session.sessionType || 'quick-tip');
             setLoadingSession(false);
             return;
           }

@@ -435,7 +435,9 @@ export async function POST(req: NextRequest) {
     
   } catch (error) {
     console.error('❌ API error:', error);
-    
+    console.error('❌ Error stack:', (error as Error).stack);
+    console.error('❌ Error details:', JSON.stringify(error, null, 2));
+
     // Log error
     if (sessionId && userId) {
       await performanceTracker.logError(
@@ -449,8 +451,9 @@ export async function POST(req: NextRequest) {
 
     return new Response(JSON.stringify({
       message: "I'm experiencing some technical difficulties. Please try again in a moment.",
-      error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-    }), { 
+      error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
+      stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

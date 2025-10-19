@@ -38,10 +38,17 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
           .from('user_profiles')
           .select('discovery_completed')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();  // Use maybeSingle() instead of single() to avoid errors when no rows exist
+
+        // If error, log it for debugging
+        if (error) {
+          console.error('Error checking discovery status:', error);
+          setDiscoveryCompleted(false);
+          return;
+        }
 
         // If no profile exists yet, or discovery_completed is null/false, show the banner
-        if (error || !profile || !profile.discovery_completed) {
+        if (!profile || !profile.discovery_completed) {
           setDiscoveryCompleted(false);
         } else {
           setDiscoveryCompleted(true);

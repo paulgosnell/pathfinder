@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   // First verify the session belongs to this user
   const { data: session, error: sessionError } = await supabase
     .from('agent_sessions')
-    .select('id, user_id, mode, time_budget_minutes, current_phase')
+    .select('id, user_id, mode, time_budget_minutes, current_phase, session_type')
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .single();
@@ -43,12 +43,19 @@ export async function GET(req: NextRequest) {
     return Response.json({ message: 'Failed to load conversation' }, { status: 500 });
   }
 
+  // Get last message timestamp for continuation prompt
+  const lastMessageTime = conversations && conversations.length > 0
+    ? conversations[conversations.length - 1].created_at
+    : null;
+
   return Response.json({
     session: {
       id: session.id,
       mode: session.mode,
       timeBudgetMinutes: session.time_budget_minutes,
-      currentPhase: session.current_phase
+      currentPhase: session.current_phase,
+      sessionType: session.session_type,
+      lastMessageAt: lastMessageTime
     },
     messages: (conversations || []).map(c => ({
       role: c.role,
@@ -72,7 +79,7 @@ export async function POST(req: NextRequest) {
   // Find most recent session that hasn't ended
   const { data: session, error: sessionError } = await supabase
     .from('agent_sessions')
-    .select('id, mode, time_budget_minutes, current_phase')
+    .select('id, mode, time_budget_minutes, current_phase, session_type')
     .eq('user_id', user.id)
     .is('ended_at', null)
     .order('started_at', { ascending: false })
@@ -101,12 +108,19 @@ export async function POST(req: NextRequest) {
     return Response.json({ message: 'Failed to load conversation' }, { status: 500 });
   }
 
+  // Get last message timestamp for continuation prompt
+  const lastMessageTime = conversations && conversations.length > 0
+    ? conversations[conversations.length - 1].created_at
+    : null;
+
   return Response.json({
     session: {
       id: session.id,
       mode: session.mode,
       timeBudgetMinutes: session.time_budget_minutes,
-      currentPhase: session.current_phase
+      currentPhase: session.current_phase,
+      sessionType: session.session_type,
+      lastMessageAt: lastMessageTime
     },
     messages: (conversations || []).map(c => ({
       role: c.role,

@@ -11,6 +11,7 @@ import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { DiscoveryBanner } from '@/components/DiscoveryBanner';
+import ContinuationPrompt from '@/components/ContinuationPrompt';
 import { SPACING } from '@/lib/styles/spacing';
 
 interface Message {
@@ -68,7 +69,7 @@ export default function ChatPage() {
   const getFirstMessage = (type: SessionType): string => {
     switch (type) {
       case 'discovery':
-        return "Let's take a few minutes to understand your situation. This will help me give you better support going forward. What brings you here today?";
+        return "Welcome! Let me get some basic information so I can personalize your experience. How many children do you have?";
       case 'coaching':
         return "I'm glad you've set aside time for this. What would make this coaching session useful for you today?";
       default:
@@ -85,7 +86,10 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showContinuationPrompt, setShowContinuationPrompt] = useState(false);
+  const [lastMessageAt, setLastMessageAt] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const continuationPromptRef = useRef<HTMLDivElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -136,11 +140,30 @@ export default function ChatPage() {
         if (response.ok) {
           const data = await response.json();
           if (data.session && data.messages && data.messages.length > 0) {
-            // Resume existing session
+            // Check if this is a returning user (has messages from earlier)
+            const lastMsgTime = data.session.lastMessageAt;
+            if (lastMsgTime) {
+              const timeSinceLastMessage = Date.now() - new Date(lastMsgTime).getTime();
+              const fiveMinutesMs = 5 * 60 * 1000;
+
+              // Show continuation prompt if user left for more than 5 minutes
+              if (timeSinceLastMessage > fiveMinutesMs) {
+                // Show messages immediately, add prompt at the end
+                setSessionId(data.session.id);
+                setSessionType(data.session.sessionType || 'check-in');
+                setMessages(data.messages); // Show conversation history
+                setLastMessageAt(lastMsgTime);
+                setShowContinuationPrompt(true); // Show prompt as last message
+                setLoadingSession(false);
+                return;
+              }
+            }
+
+            // Resume existing session without prompt (recent activity)
             setSessionId(data.session.id);
             setCurrentSession(data.session.id, 'chat');
             setMessages(data.messages);
-            setSessionType(data.session.session_type);
+            setSessionType(data.session.sessionType || 'check-in');
             setLoadingSession(false);
             return;
           }
@@ -173,8 +196,29 @@ export default function ChatPage() {
   }, [user, isNewSession, specificSessionId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    // If continuation prompt is showing, scroll to it instead of the absolute bottom
+    if (showContinuationPrompt && continuationPromptRef.current && chatAreaRef.current) {
+      // Small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (!continuationPromptRef.current || !chatAreaRef.current) return;
+
+        // Get the prompt's position relative to the chat area
+        const promptRect = continuationPromptRef.current.getBoundingClientRect();
+        const chatAreaRect = chatAreaRef.current.getBoundingClientRect();
+
+        // Calculate scroll position to show the prompt with some padding above it
+        const scrollTarget = continuationPromptRef.current.offsetTop - 100; // 100px padding from top
+
+        // Smooth scroll to the calculated position
+        chatAreaRef.current.scrollTo({
+          top: scrollTarget,
+          behavior: 'smooth'
+        });
+      }, 100);
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, showContinuationPrompt]);
 
   // Auto-resize textarea as user types
   useEffect(() => {
@@ -184,6 +228,28 @@ export default function ChatPage() {
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   }, [input]);
+
+  // Continuation prompt handlers
+  const handleContinue = () => {
+    // Messages already showing, just activate session and hide prompt
+    setCurrentSession(sessionId!, 'chat');
+    setShowContinuationPrompt(false);
+  };
+
+  const handleStartNew = () => {
+    // Start fresh check-in (default session type)
+    setMessages([
+      {
+        role: 'assistant',
+        content: getFirstMessage('check-in')
+      }
+    ]);
+    setSessionId(undefined);
+    setSessionType('check-in');
+    setInteractionMode('check-in');
+    setTimeBudgetMinutes(15);
+    setShowContinuationPrompt(false);
+  };
 
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || input;
@@ -333,7 +399,10 @@ export default function ChatPage() {
           style={{
             backgroundColor: '#F9F7F3',
             marginTop: SPACING.contentTopMargin,
-            paddingBottom: '88px' // Height of fixed input area
+            paddingBottom: '88px', // Height of fixed input area
+            WebkitOverflowScrolling: 'touch', // Enable momentum scrolling on iOS
+            touchAction: 'pan-y', // Allow vertical scrolling, prevent other gestures
+            overscrollBehavior: 'contain' // Prevent scroll chaining to parent
           }}
         >
           {/* Noise texture overlay */}
@@ -426,6 +495,17 @@ export default function ChatPage() {
                 </div>
               </div>
             ))}
+
+            {/* Continuation Prompt - as a natural message at the end */}
+            {showContinuationPrompt && lastMessageAt && (
+              <div ref={continuationPromptRef}>
+                <ContinuationPrompt
+                  lastMessageAt={lastMessageAt}
+                  onContinue={handleContinue}
+                  onStartNew={handleStartNew}
+                />
+              </div>
+            )}
 
             {/* Typing indicator - wavy dots only */}
               {loading && (

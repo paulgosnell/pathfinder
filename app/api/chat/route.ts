@@ -185,14 +185,14 @@ export async function POST(req: NextRequest) {
       console.log('✅ No crisis indicators detected');
     }
 
-    // STEP 2: Get user profile
+    // STEP 2: Get user profile (parent-level data)
     console.log('👤 Loading user profile...');
     const { data: userProfile } = await serviceClient
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
       .single();
-    
+
     // Create profile if doesn't exist
     if (!userProfile) {
       await serviceClient
@@ -201,6 +201,23 @@ export async function POST(req: NextRequest) {
           user_id: userId,
           parent_stress_level: 'unknown'
         });
+    }
+
+    // STEP 2.5: Load ALL child profiles for this user
+    console.log('👶 Loading child profiles...');
+    const { data: childProfiles, error: childError } = await serviceClient
+      .from('child_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .order('is_primary', { ascending: false }); // Primary child first
+
+    console.log(`   Found ${childProfiles?.length || 0} child profiles`);
+    if (childError) {
+      console.error('❌ Child profiles error:', childError);
+    }
+    if (childProfiles && childProfiles.length > 0) {
+      const names = childProfiles.map(c => c.child_name).join(', ');
+      console.log(`   Children: ${names}`);
     }
 
     // STEP 3: Get conversation history (load for active sessions too)
@@ -284,7 +301,31 @@ export async function POST(req: NextRequest) {
           successfulStrategies: userProfile.successful_strategies || [],
           failedStrategies: userProfile.failed_strategies || [],
           parentStressLevel: userProfile.parent_stress_level,
+          familyContext: userProfile.family_context,
+          supportNetwork: userProfile.support_network || [],
         } : undefined,
+        // NEW: Pass ALL child profiles to agent
+        childProfiles: childProfiles?.map(child => ({
+          childName: child.child_name,
+          childAge: child.child_age,
+          childAgeRange: child.child_age_range,
+          diagnosisStatus: child.diagnosis_status,
+          diagnosisDetails: child.diagnosis_details,
+          mainChallenges: child.main_challenges || [],
+          commonTriggers: child.common_triggers || [],
+          schoolType: child.school_type,
+          gradeLevel: child.grade_level,
+          hasIEP: child.has_iep,
+          has504Plan: child.has_504_plan,
+          medicationStatus: child.medication_status,
+          therapyStatus: child.therapy_status,
+          triedSolutions: child.tried_solutions || [],
+          successfulStrategies: child.successful_strategies || [],
+          failedStrategies: child.failed_strategies || [],
+          strengths: child.strengths || [],
+          interests: child.interests || [],
+          isPrimary: child.is_primary,
+        })) || [],
         // Add coaching state with time tracking (only used in coaching mode)
         sessionState: session.interactionMode === 'coaching' ? {
           currentPhase: session.currentPhase || 'goal',

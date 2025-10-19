@@ -34,6 +34,7 @@ export function createBrowserClient() {
 export interface AgentSession {
   id: string;
   user_id: string | null;
+  child_id?: string | null; // NEW: Which child this session is about
   therapeutic_goal?: string | null;
   crisis_level?: string | null;
   strategies_discussed?: string[] | null;
@@ -147,4 +148,72 @@ export interface WaitlistSignup {
   metadata?: any | null;
   created_at: string;
   updated_at: string;
+}
+
+// NEW: Child profile interface for multi-child support
+export interface ChildProfile {
+  id: string;
+  user_id: string;
+
+  // Child Identity
+  child_name: string;
+  nickname?: string | null;
+  child_age?: number | null;
+  child_age_range?: string | null;
+  date_of_birth?: string | null;
+
+  // ADHD Diagnosis
+  diagnosis_status?: 'diagnosed' | 'suspected' | 'exploring' | 'not-adhd' | null;
+  diagnosis_details?: string | null;
+  diagnosed_date?: string | null;
+  diagnosed_by?: string | null;
+  adhd_subtype?: string | null;
+  comorbidities?: string[] | null;
+
+  // Challenges & Behaviors
+  main_challenges?: string[] | null;
+  common_triggers?: string[] | null;
+  behavioral_patterns?: any | null;
+  emotional_regulation_notes?: string | null;
+
+  // School Information
+  school_name?: string | null;
+  school_type?: string | null;
+  grade_level?: string | null;
+  has_iep?: boolean | null;
+  has_504_plan?: boolean | null;
+  school_support_details?: string | null;
+  teacher_relationship_notes?: string | null;
+  academic_strengths?: string[] | null;
+  academic_struggles?: string[] | null;
+
+  // Medical & Treatment
+  medication_status?: string | null;
+  current_medications?: any | null;
+  medication_notes?: string | null;
+  therapy_status?: string | null;
+  current_therapies?: any | null;
+  therapy_notes?: string | null;
+
+  // Strategy Tracking
+  tried_solutions?: string[] | null;
+  successful_strategies?: string[] | null;
+  failed_strategies?: string[] | null;
+  strategy_notes?: any | null;
+
+  // Parent Notes
+  strengths?: string[] | null;
+  interests?: string[] | null;
+  parent_observations?: string | null;
+  communication_style?: string | null;
+
+  // Photos
+  photo_url?: string | null;
+  photo_uploaded_at?: string | null;
+
+  // Metadata
+  is_primary?: boolean | null;
+  profile_complete?: boolean | null;
+  created_at?: string | null;
+  last_updated?: string | null;
 }

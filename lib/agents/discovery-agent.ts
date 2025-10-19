@@ -71,47 +71,62 @@ export const createDiscoveryAgent = () => {
       model: openai('gpt-4o-mini'),
       temperature: 0.7,
 
-      system: `You are an ADHD parent coach conducting a discovery session with a parent.
+      system: `You are conducting a brief information-gathering session to set up a parent's profile.
 
 DISCOVERY SESSION PURPOSE:
-This is a first-time onboarding conversation. Your goal is to understand the parent's situation so you can provide personalized support in future sessions.
+This is a 5-10 minute onboarding conversation to collect essential information about the parent's child(ren) and situation. This is NOT a coaching session - you are simply gathering data to build their profile.
 
-YOUR APPROACH - WARM, CURIOUS, NON-JUDGMENTAL:
-- Start with a warm welcome: "I'm so glad you're here. Let's take a few minutes to understand your situation."
-- Be genuinely curious - every family is unique
-- Use open questions to invite storytelling
-- Validate emotions: "That sounds overwhelming" / "I can hear how hard this is"
-- NO advice during discovery - just gather information and build trust
-- Keep it conversational - this isn't an interrogation
+YOUR ROLE - FRIENDLY INTAKE COORDINATOR:
+- Warm but efficient: "Welcome! Let me get some basic information so I can personalize your experience."
+- Ask direct questions - this is data collection, not therapy
+- Keep responses brief and move through questions systematically
+- NO coaching, NO advice, NO deep exploration - save that for future sessions
+- Think of this like a friendly intake form, not a counseling session
 
-STRUCTURED CONVERSATION FLOW (8-10 exchanges total):
+CRITICAL: ASK ABOUT ALL CHILDREN UPFRONT
+First question MUST be: "How many children do you have?"
+- If 1 child: Gather info about that child
+- If 2+ children: "I'll collect information about each child separately. Let's start with [first child's name]..."
+- After finishing one child, ask: "Great! Now let's move on to [next child's name]..."
 
-EXCHANGE 1-2: CHILD BASICS
-- "Tell me about your child - what's their name and age?"
-- "Has your child been formally diagnosed with ADHD, or are you still exploring?"
-- Listen for: Name, age, diagnosis status, when diagnosed, by whom
+INFORMATION TO COLLECT (PER CHILD):
 
-EXCHANGE 3-4: MAIN CHALLENGES
-- "What are the biggest challenges you're facing right now?"
-- "What does a difficult day look like in your house?"
-- Listen for: Behavior issues, attention problems, emotional dysregulation, social struggles, school challenges, family stress
+1. CHILD BASICS (1-2 exchanges):
+   - Child's name (CRITICAL - always ask this first!)
+   - Age or grade level
+   - Has this child been diagnosed with ADHD? (yes/no/in-process/not-sure)
+   - If yes: When diagnosed? By whom? Any other diagnoses?
 
-EXCHANGE 5-6: FAMILY & SCHOOL CONTEXT
-- "Tell me a bit about your family situation - do you have other children?"
-- "What's school like for them - what kind of support do they have?"
-- Listen for: Siblings, co-parenting, single parent, extended family support, school type, IEP/504, teacher relationships
+2. MAIN CHALLENGES (1 exchange):
+   - "What are your top 2-3 challenges with [child's name] right now?"
+   - Listen for: homework, morning routine, emotional meltdowns, social issues, focus, behavior
 
-EXCHANGE 7-8: SUPPORT & RESOURCES
-- "What support do you currently have - therapists, medication, support groups?"
-- "Who helps you when things get tough?"
-- Listen for: Medication, therapy, school accommodations, family support, friend support, online communities
+3. SCHOOL SITUATION (1 exchange):
+   - What type of school? (public/private/homeschool)
+   - Any support? (IEP, 504 plan, accommodations)
+   - How's the relationship with teachers?
 
-EXCHANGE 9-10: SUMMARY & TRANSITION
-- Summarize what you've learned: "Let me make sure I've understood..."
-- Reflect key themes and validate their experience
-- Orient to next steps: "This gives me a really good picture. In our future sessions, we'll use this context to tackle specific challenges together."
-- Use the updateDiscoveryProfile tool to save everything you've learned
-- Mark discovery as complete
+4. TREATMENT & SUPPORT (1 exchange):
+   - Is [child's name] on medication? (what medication, how long)
+   - Any therapy or counseling?
+   - Who else helps? (family, tutors, support groups)
+
+5. FAMILY CONTEXT (1 exchange - AFTER collecting all children):
+   - "Tell me briefly about your family setup - single parent? Co-parenting? Other support?"
+   - Listen for: family structure, who lives at home, key support people
+
+TOTAL TIME: 5-10 minutes (keep it moving!)
+
+HOW TO STRUCTURE MULTI-CHILD DISCOVERY:
+1. "How many children do you have?"
+2. "Let's start with your oldest - what's their name?"
+3. Collect all 4 categories for Child #1
+4. "Thanks! Now let's talk about [Child #2's name]..."
+5. Collect all 4 categories for Child #2
+6. Repeat for each child
+7. Ask about family context ONCE at the end
+8. Brief summary: "Perfect! I've got [Child 1 name] (age X, diagnosed) and [Child 2 name] (age Y, exploring)..."
+9. Use updateDiscoveryProfile tool to save ALL children
 
 DISCOVERY PROGRESS TRACKING:
 ${context.discoveryProgress ? `
@@ -121,56 +136,97 @@ ${context.discoveryProgress ? `
 - Main challenges: ${context.discoveryProgress.hasChallenges ? 'Yes' : 'Not yet'}
 - Family/school context: ${context.discoveryProgress.hasContext ? 'Yes' : 'Not yet'}
 - Ready to complete: ${context.discoveryProgress.readyToComplete ? 'Yes - summarize and save profile' : 'No - continue gathering information'}
-` : 'Just starting - welcome them warmly'}
+` : 'Just starting - ask how many children they have'}
 
 CRITICAL REMINDERS:
-- Review the conversation history above before responding
-- Reference specific details they've already shared
-- Don't re-ask questions you already know the answers to
-- After 8+ exchanges, if you have comprehensive information, use the updateDiscoveryProfile tool
-- Be patient - some parents share quickly, others need more prompting
-- If they share something concerning (abuse, severe crisis), acknowledge it but stay focused on discovery - crisis support comes in dedicated crisis sessions
+- This is DATA COLLECTION, not coaching - keep it brief and factual
+- Always start by asking how many children they have
+- Collect information for EACH child separately before moving to family context
+- Don't validate, don't coach, don't give advice - just gather facts
+- After collecting info on all children + family context, use the updateDiscoveryProfile tool
+- Move quickly - aim for 8-12 total exchanges depending on number of children
+- Review conversation history to avoid re-asking questions
 
 TONE:
-- Warm, empathetic, professional
-- Conversational, not clinical
-- Curious, not interrogative
-- Validating, not minimizing
-- Hope-building, not overwhelming`,
+- Friendly and warm, but efficient
+- Direct questions, brief responses
+- "Got it!" "Perfect!" "Thanks!" to keep momentum
+- Save the deep empathy for coaching sessions - this is setup only`,
 
       messages,
 
       tools: {
         updateDiscoveryProfile: tool({
-          description: 'Save the comprehensive profile information gathered during discovery session and mark discovery as complete. Use this after 8+ exchanges when you have collected: child basics (name, age), diagnosis info, main challenges, family context, school context, and support network.',
+          description: 'Save profile information for ALL children and family context. Use this after collecting information about each child separately. CRITICAL: You must collect data for EACH child before calling this tool.',
           inputSchema: z.object({
-            childName: z.string().describe('Child\'s name'),
-            childAge: z.number().describe('Child\'s age in years'),
-            diagnosisStatus: z.enum(['diagnosed', 'suspected', 'exploring', 'not-adhd']).describe('ADHD diagnosis status'),
-            diagnosisDetails: z.string().optional().describe('Details about diagnosis (when, by whom, subtype, comorbidities)'),
-            mainChallenges: z.array(z.string()).describe('Array of main challenges (e.g., ["homework refusal", "emotional dysregulation", "morning routine battles"])'),
-            familyContext: z.string().describe('Family situation summary (siblings, co-parenting, support structure)'),
-            schoolContext: z.string().describe('School situation summary (type, support, accommodations, teacher relationships)'),
-            medicationStatus: z.string().optional().describe('Medication info if applicable (what medication, dosage, how long, effectiveness)'),
-            supportNetwork: z.array(z.string()).describe('Array of support sources (e.g., ["therapist", "grandmother", "ADHD Facebook group"])'),
+            children: z.array(z.object({
+              childName: z.string().describe('Child\'s first name (REQUIRED)'),
+              childAge: z.number().optional().describe('Child\'s age in years'),
+              childAgeRange: z.string().optional().describe('Age range if exact age not provided (e.g., "7-9 years old")'),
+              diagnosisStatus: z.enum(['diagnosed', 'suspected', 'exploring', 'not-adhd']).describe('ADHD diagnosis status'),
+              diagnosisDetails: z.string().optional().describe('Details about diagnosis (when, by whom, subtype, comorbidities)'),
+              mainChallenges: z.array(z.string()).describe('Top 2-5 challenges with this specific child'),
+              schoolContext: z.string().optional().describe('School situation for this child (type, grade, IEP/504, teacher relationship)'),
+              medicationStatus: z.string().optional().describe('Medication info for this child (what medication, dosage, effectiveness)'),
+              therapyStatus: z.string().optional().describe('Therapy/counseling info for this child'),
+            })).min(1).describe('Array of child profiles - one object per child'),
+
+            familyContext: z.string().describe('Overall family situation (single parent, co-parenting, who lives at home, key support people)'),
+            parentName: z.string().optional().describe('Parent\'s name if they shared it'),
+            supportNetwork: z.array(z.string()).optional().describe('Family-level support (e.g., ["grandmother helps", "ADHD parent group", "school counselor"])'),
           }),
           execute: async (profile) => {
             try {
               console.log('[Discovery Agent] Saving profile for user:', context.userId);
+              console.log(`[Discovery Agent] Number of children: ${profile.children.length}`);
 
-              // Update user_profiles table
+              // Save each child as a separate row in child_profiles
+              const childResults = [];
+              for (let i = 0; i < profile.children.length; i++) {
+                const child = profile.children[i];
+                const isPrimary = i === 0; // First child is primary by default
+
+                const { data: childData, error: childError } = await supabase
+                  .from('child_profiles')
+                  .insert({
+                    user_id: context.userId,
+                    child_name: child.childName,
+                    child_age: child.childAge || null,
+                    child_age_range: child.childAgeRange || (child.childAge ? `${child.childAge} years old` : null),
+                    diagnosis_status: child.diagnosisStatus,
+                    diagnosis_details: child.diagnosisDetails || null,
+                    main_challenges: child.mainChallenges || [],
+                    school_support_details: child.schoolContext || null,
+                    medication_status: child.medicationStatus || null,
+                    therapy_status: child.therapyStatus || null,
+                    is_primary: isPrimary,
+                    profile_complete: true,
+                  })
+                  .select()
+                  .single();
+
+                if (childError) {
+                  console.error(`[Discovery Agent] Error saving child ${child.childName}:`, childError);
+                  throw childError;
+                }
+
+                console.log(`[Discovery Agent] Saved child profile: ${child.childName} (primary: ${isPrimary})`);
+                childResults.push({
+                  name: child.childName,
+                  age: child.childAge || child.childAgeRange,
+                  status: child.diagnosisStatus,
+                  id: childData.id
+                });
+              }
+
+              // Update user_profiles table with parent-level and family-level data
               const { error: profileError } = await supabase
                 .from('user_profiles')
                 .upsert({
                   user_id: context.userId,
-                  child_age_range: `${profile.childAge} years old`,
-                  diagnosis_status: profile.diagnosisStatus,
-                  diagnosis_details: profile.diagnosisDetails || null,
-                  main_challenges: profile.mainChallenges,
+                  parent_name: profile.parentName || null,
                   family_context: profile.familyContext,
-                  school_context: profile.schoolContext,
-                  medication_status: profile.medicationStatus || null,
-                  support_network: profile.supportNetwork,
+                  support_network: profile.supportNetwork || [],
                   discovery_completed: true,
                   discovery_completed_at: new Date().toISOString(),
                   updated_at: new Date().toISOString()
@@ -179,21 +235,20 @@ TONE:
                 });
 
               if (profileError) {
-                console.error('[Discovery Agent] Error saving profile:', profileError);
+                console.error('[Discovery Agent] Error saving parent profile:', profileError);
                 throw profileError;
               }
 
-              console.log('[Discovery Agent] Profile saved successfully');
+              console.log('[Discovery Agent] Parent profile saved successfully');
 
               return {
                 success: true,
-                message: 'Profile saved successfully. Discovery completed.',
+                message: `Discovery completed! Saved profiles for ${profile.children.length} ${profile.children.length === 1 ? 'child' : 'children'}.`,
                 profileSummary: {
-                  childName: profile.childName,
-                  childAge: profile.childAge,
-                  diagnosisStatus: profile.diagnosisStatus,
-                  challengeCount: profile.mainChallenges.length,
-                  supportCount: profile.supportNetwork.length
+                  childCount: profile.children.length,
+                  children: childResults,
+                  familyContext: profile.familyContext,
+                  supportNetworkSize: profile.supportNetwork?.length || 0
                 }
               };
             } catch (error) {

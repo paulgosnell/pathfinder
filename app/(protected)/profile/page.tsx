@@ -12,6 +12,7 @@ import { FormField } from '@/components/layouts/FormField';
 import { Button } from '@/components/layouts/Button';
 import { Alert } from '@/components/layouts/Alert';
 import { DiscoveryBanner } from '@/components/DiscoveryBanner';
+import { SPACING } from '@/lib/styles/spacing';
 
 interface UserProfile {
   parent_name: string | null;
@@ -118,7 +119,10 @@ export default function ProfilePage() {
         />
 
         {/* Content Area */}
-        <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+        <div className="flex-grow overflow-y-auto" style={{
+          backgroundColor: '#F9F7F3',
+          marginTop: SPACING.contentTopMargin
+        }}>
           <ContentContainer>
 
             {loading ? (

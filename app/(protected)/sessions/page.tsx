@@ -11,6 +11,7 @@ import { ContentContainer } from '@/components/layouts/ContentContainer';
 import { Card } from '@/components/layouts/Card';
 import { Button } from '@/components/layouts/Button';
 import { Alert } from '@/components/layouts/Alert';
+import { SPACING } from '@/lib/styles/spacing';
 
 type ViewMode = 'timeline' | 'calendar';
 
@@ -94,7 +95,10 @@ export default function SessionHistoryPage() {
         />
 
         {/* Content Area */}
-        <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+        <div className="flex-grow overflow-y-auto" style={{
+          backgroundColor: '#F9F7F3',
+          marginTop: SPACING.contentTopMargin
+        }}>
           <ContentContainer>
 
             {loading ? (

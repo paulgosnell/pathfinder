@@ -7,6 +7,7 @@ import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { ContentContainer } from '@/components/layouts/ContentContainer';
 import { Card } from '@/components/layouts/Card';
+import { SPACING } from '@/lib/styles/spacing';
 
 export default function ReportsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -25,7 +26,10 @@ export default function ReportsPage() {
           subtitle="Share progress with professionals"
         />
 
-        <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
+        <div className="flex-grow overflow-y-auto" style={{
+          backgroundColor: '#F9F7F3',
+          marginTop: SPACING.contentTopMargin
+        }}>
           <ContentContainer>
 
             <Card padding="large">

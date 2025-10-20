@@ -17,7 +17,8 @@ import {
   BasicInfoStep,
   ChallengesStrengthsStep,
   SchoolStep,
-  TreatmentStep
+  TreatmentStep,
+  type ChildFormData
 } from '@/components/ChildProfileFormSteps';
 
 interface UserProfile {
@@ -244,9 +245,7 @@ export default function FamilyPage() {
                       width: '64px',
                       height: '64px',
                       borderRadius: '50%',
-                      background: parentProfile?.parent_photo_url
-                        ? `url(${parentProfile.parent_photo_url}) center/cover`
-                        : 'linear-gradient(135deg, #D7CDEC 0%, #B7D3D8 100%)',
+                      background: 'linear-gradient(135deg, #D7CDEC 0%, #B7D3D8 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -254,7 +253,7 @@ export default function FamilyPage() {
                       flexShrink: 0,
                       boxShadow: SHADOWS.card
                     }}>
-                      {!parentProfile?.parent_photo_url && '👤'}
+                      👤
                     </div>
 
                     {/* Parent Info */}
@@ -671,10 +670,10 @@ function AddEditChildForm({
   onSave: () => void;
   onCancel: () => void;
 }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ChildFormData>({
     child_name: child?.child_name || '',
     child_age: child?.child_age?.toString() || '',
-    diagnosis_status: child?.diagnosis_status || 'exploring',
+    diagnosis_status: (child?.diagnosis_status as 'diagnosed' | 'suspected' | 'exploring' | 'not-adhd') || 'exploring',
     diagnosis_details: child?.diagnosis_details || '',
     main_challenges: child?.main_challenges?.join(', ') || '',
     strengths: child?.strengths?.join(', ') || '',

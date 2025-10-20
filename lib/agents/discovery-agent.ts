@@ -74,7 +74,6 @@ export const createDiscoveryAgent = () => {
     const result = await generateText({
       model: openai('gpt-4o-mini'),
       temperature: 0.7,
-      maxSteps: 5, // Allow tool execution + response generation
 
       system: `You are conducting a brief information-gathering session to set up a parent's profile.
 

@@ -1,12 +1,13 @@
 'use client';
 
+import { Dispatch, SetStateAction } from 'react';
 import { FormField } from '@/components/layouts/FormField';
 import { SPACING, BORDER_RADIUS } from '@/lib/styles/spacing';
 
-interface ChildFormData {
+export interface ChildFormData {
   child_name: string;
   child_age: string;
-  diagnosis_status: string;
+  diagnosis_status: 'diagnosed' | 'suspected' | 'exploring' | 'not-adhd';
   diagnosis_details: string;
   main_challenges: string;
   strengths: string;
@@ -21,7 +22,7 @@ interface ChildFormData {
 
 interface StepProps {
   formData: ChildFormData;
-  setFormData: (data: ChildFormData) => void;
+  setFormData: Dispatch<SetStateAction<ChildFormData>>;
 }
 
 // Step 1: Basic Information
@@ -92,7 +93,7 @@ export function BasicInfoStep({ formData, setFormData }: StepProps) {
         </label>
         <select
           value={formData.diagnosis_status}
-          onChange={(e) => setFormData({ ...formData, diagnosis_status: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, diagnosis_status: e.target.value as ChildFormData['diagnosis_status'] })}
           style={{
             width: '100%',
             padding: '14px 18px',

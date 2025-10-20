@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { useRouter } from 'next/navigation';
-import { MessageCircle, Target, TrendingUp, Clock, AlertCircle, CheckCircle2, Lightbulb, Calendar, List, ChevronLeft, ChevronRight, Sparkles, Star, Archive, MoreVertical, Trash2, Edit3, X, Check } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { MessageCircle, Target, TrendingUp, Clock, AlertCircle, CheckCircle2, Lightbulb, Calendar, List, ChevronLeft, ChevronRight, Sparkles, Star, Archive, MoreVertical, Trash2, Edit3, X, Check, CalendarClock } from 'lucide-react';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
@@ -14,7 +14,7 @@ import { Alert } from '@/components/layouts/Alert';
 import { SPACING } from '@/lib/styles/spacing';
 
 type ViewMode = 'timeline' | 'calendar';
-type FilterMode = 'all' | 'favorites' | 'archived';
+type FilterMode = 'all' | 'upcoming' | 'favorites' | 'archived';
 
 interface Session {
   id: string;
@@ -29,10 +29,14 @@ interface Session {
   is_archived: boolean;
   deleted_at: string | null;
   custom_title: string | null;
+  status?: 'active' | 'complete' | 'scheduled';
+  scheduled_for?: string | null;
+  time_budget_minutes?: number | null;
 }
 
 export default function SessionHistoryPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +45,14 @@ export default function SessionHistoryPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
+
+  useEffect(() => {
+    // Check for tab parameter in URL
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['all', 'upcoming', 'favorites', 'archived'].includes(tabParam)) {
+      setFilterMode(tabParam as FilterMode);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -89,13 +101,15 @@ export default function SessionHistoryPage() {
 
   // Filter sessions based on current filter mode
   const filteredSessions = sessions.filter(session => {
-    if (filterMode === 'favorites') {
-      return session.is_favorite;
+    if (filterMode === 'upcoming') {
+      return session.status === 'scheduled';
+    } else if (filterMode === 'favorites') {
+      return session.is_favorite && session.status !== 'scheduled';
     } else if (filterMode === 'archived') {
       return session.is_archived;
     } else {
-      // 'all' shows non-archived sessions
-      return !session.is_archived;
+      // 'all' shows non-archived, non-scheduled sessions
+      return !session.is_archived && session.status !== 'scheduled';
     }
   });
 
@@ -195,13 +209,15 @@ export default function SessionHistoryPage() {
                 <div style={{
                   display: 'flex',
                   gap: '8px',
-                  marginBottom: '16px'
+                  marginBottom: '16px',
+                  flexWrap: 'wrap'
                 }}>
                   <button
                     onClick={() => setFilterMode('all')}
                     style={{
                       flex: 1,
-                      padding: '10px 16px',
+                      minWidth: '80px',
+                      padding: '10px 12px',
                       borderRadius: '12px',
                       border: filterMode === 'all' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
                       background: filterMode === 'all' ? 'rgba(183, 211, 216, 0.1)' : 'white',
@@ -216,14 +232,39 @@ export default function SessionHistoryPage() {
                     All
                   </button>
                   <button
-                    onClick={() => setFilterMode('favorites')}
+                    onClick={() => setFilterMode('upcoming')}
                     style={{
                       flex: 1,
+                      minWidth: '100px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
-                      padding: '10px 16px',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      border: filterMode === 'upcoming' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
+                      background: filterMode === 'upcoming' ? 'rgba(183, 211, 216, 0.1)' : 'white',
+                      color: filterMode === 'upcoming' ? '#2A3F5A' : '#586C8E',
+                      fontFamily: 'Quicksand, sans-serif',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <CalendarClock size={16} />
+                    Upcoming
+                  </button>
+                  <button
+                    onClick={() => setFilterMode('favorites')}
+                    style={{
+                      flex: 1,
+                      minWidth: '100px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '10px 12px',
                       borderRadius: '12px',
                       border: filterMode === 'favorites' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
                       background: filterMode === 'favorites' ? 'rgba(183, 211, 216, 0.1)' : 'white',
@@ -242,11 +283,12 @@ export default function SessionHistoryPage() {
                     onClick={() => setFilterMode('archived')}
                     style={{
                       flex: 1,
+                      minWidth: '100px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
-                      padding: '10px 16px',
+                      padding: '10px 12px',
                       borderRadius: '12px',
                       border: filterMode === 'archived' ? '2px solid #B7D3D8' : '1px solid rgba(215, 205, 236, 0.3)',
                       background: filterMode === 'archived' ? 'rgba(183, 211, 216, 0.1)' : 'white',
@@ -391,10 +433,13 @@ function SessionTimelineItem({
   const [editedTitle, setEditedTitle] = useState(session.custom_title || '');
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const date = new Date(session.started_at);
+  const isScheduled = session.status === 'scheduled';
+  const date = isScheduled && session.scheduled_for
+    ? new Date(session.scheduled_for)
+    : new Date(session.started_at);
   const duration = session.ended_at
     ? Math.round((new Date(session.ended_at).getTime() - date.getTime()) / 1000 / 60)
-    : null;
+    : session.time_budget_minutes || null;
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -423,6 +468,15 @@ function SessionTimelineItem({
     if ((e.target as HTMLElement).closest('[data-menu-button]') || isEditing) {
       return;
     }
+
+    // For scheduled sessions, start the session
+    if (isScheduled) {
+      if (confirm('Start your coaching session now?')) {
+        window.location.href = `/chat?new=true&mode=coaching&time=${session.time_budget_minutes || 50}`;
+      }
+      return;
+    }
+
     // Navigate to chat and load this specific session
     window.location.href = `/chat?sessionId=${session.id}`;
   };
@@ -563,17 +617,23 @@ function SessionTimelineItem({
         width: '40px',
         height: '40px',
         borderRadius: '50%',
-        background: isFirst
+        background: isScheduled
+          ? 'white'
+          : isFirst
           ? 'linear-gradient(135deg, #D7CDEC, #B7D3D8)'
           : 'white',
-        border: `3px solid ${crisisColors.border}`,
+        border: isScheduled
+          ? '3px solid #D7CDEC'
+          : `3px solid ${crisisColors.border}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '0 2px 8px rgba(42, 63, 90, 0.15)',
         zIndex: 1
       }}>
-        {session.crisis_level !== 'none' ? (
+        {isScheduled ? (
+          <CalendarClock size={20} style={{ color: '#D7CDEC' }} />
+        ) : session.crisis_level !== 'none' ? (
           <AlertCircle size={20} style={{ color: crisisColors.border }} />
         ) : isFirst ? (
           <CheckCircle2 size={20} style={{ color: '#2A3F5A' }} />
@@ -680,7 +740,7 @@ function SessionTimelineItem({
                     </p>
                   )}
                   <p style={{ fontSize: session.custom_title ? '11px' : '13px', color: session.custom_title ? '#586C8E' : '#2A3F5A', margin: 0, fontWeight: session.custom_title ? 500 : 600 }}>
-                    {getSessionTitle(session)}
+                    {isScheduled ? `Scheduled Coaching Session` : getSessionTitle(session)}
                   </p>
                 </div>
                 {session.is_favorite && (
@@ -688,18 +748,36 @@ function SessionTimelineItem({
                 )}
               </div>
             )}
-            {duration && (
-              <span style={{
-                fontSize: '11px',
-                color: '#586C8E',
-                padding: '2px 8px',
-                backgroundColor: 'rgba(227, 234, 221, 0.3)',
-                borderRadius: '8px',
-                display: 'inline-block'
-              }}>
-                {duration} min
-              </span>
-            )}
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+              {isScheduled && (
+                <span style={{
+                  fontSize: '11px',
+                  color: 'white',
+                  padding: '3px 10px',
+                  backgroundColor: '#D7CDEC',
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontWeight: 600
+                }}>
+                  <CalendarClock size={12} />
+                  Scheduled
+                </span>
+              )}
+              {duration && (
+                <span style={{
+                  fontSize: '11px',
+                  color: '#586C8E',
+                  padding: '2px 8px',
+                  backgroundColor: 'rgba(227, 234, 221, 0.3)',
+                  borderRadius: '8px',
+                  display: 'inline-block'
+                }}>
+                  {duration} min
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Three-dot menu */}
@@ -889,6 +967,22 @@ function SessionTimelineItem({
           }}>
             <Sparkles size={14} />
             COACHING SESSION
+          </div>
+        )}
+
+        {/* Scheduled Date */}
+        {isScheduled && session.scheduled_for && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '12px', padding: '12px', backgroundColor: 'rgba(215, 205, 236, 0.1)', borderRadius: '12px', border: '1px solid rgba(215, 205, 236, 0.3)' }}>
+            <CalendarClock size={16} style={{ color: '#D7CDEC', marginTop: '2px', flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#2A3F5A', margin: '0 0 4px 0' }}>
+                {date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+              <p style={{ fontSize: '12px', color: '#586C8E', margin: 0 }}>
+                {date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                {duration && ` • ${duration} minutes`}
+              </p>
+            </div>
           </div>
         )}
 

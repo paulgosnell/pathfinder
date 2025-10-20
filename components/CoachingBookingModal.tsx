@@ -33,8 +33,52 @@ export default function CoachingBookingModal({ isOpen, onClose }: CoachingBookin
         window.location.href = `/chat?new=true&mode=coaching&time=${timeBudget}`;
       }, 100);
     } else {
-      // Schedule for later - would integrate with calendar here
-      alert('Calendar integration coming soon! For now, please use "Start Now".');
+      // Schedule for later
+      if (!scheduledDate || !scheduledTime) {
+        alert('Please select a date and time for your session');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const scheduledFor = new Date(`${scheduledDate}T${scheduledTime}`);
+
+        const response = await fetch('/api/sessions/schedule', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            scheduledFor: scheduledFor.toISOString(),
+            timeBudgetMinutes: timeBudget,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to schedule session');
+        }
+
+        const result = await response.json();
+
+        // Success! Automatically download calendar event
+        generateCalendarEvent('apple');
+
+        // Show success message and redirect to sessions page
+        alert('Session scheduled successfully! Check your calendar and the Sessions page.');
+        onClose();
+
+        // Redirect to sessions page to see scheduled session
+        setTimeout(() => {
+          router.push('/sessions?tab=upcoming');
+        }, 500);
+
+      } catch (error) {
+        console.error('Error scheduling session:', error);
+        alert(error instanceof Error ? error.message : 'Failed to schedule session. Please try again.');
+        setLoading(false);
+      }
     }
   };
 

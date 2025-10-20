@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server-client';
 // PATCH - Update session (favorite, archive)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createServerClient();
   const {
@@ -16,7 +16,7 @@ export async function PATCH(
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const body = await req.json();
 
   // Validate request body
@@ -79,7 +79,7 @@ export async function PATCH(
 // DELETE - Soft delete session
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createServerClient();
   const {
@@ -91,7 +91,7 @@ export async function DELETE(
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
 
   // Verify session belongs to user before deleting
   const { data: session, error: fetchError } = await supabase

@@ -219,6 +219,54 @@ class SessionManager {
   async addStrategy(sessionId: string, strategyId: string) {
     await dbChats.appendStrategy(sessionId, strategyId);
   }
+
+  /**
+   * Close a session (mark as complete)
+   * Used for:
+   * - Coaching sessions when GROW phase reaches 'closing'
+   * - Discovery sessions when discovery_completed = true
+   */
+  async closeSession(sessionId: string): Promise<void> {
+    await dbChats.updateSession(sessionId, {
+      status: 'complete',
+      ended_at: new Date().toISOString()
+    });
+    console.log(`✅ Session ${sessionId} marked as complete`);
+  }
+
+  /**
+   * Check if a coaching session should be auto-closed
+   * Returns true if:
+   * - Session type is 'coaching'
+   * - Current phase is 'closing'
+   * - Last message is from assistant (bot delivered final summary)
+   */
+  shouldAutoCloseCoachingSession(
+    session: SessionState,
+    lastMessageRole: 'user' | 'assistant'
+  ): boolean {
+    return (
+      session.sessionType === 'coaching' &&
+      session.currentPhase === 'closing' &&
+      lastMessageRole === 'assistant'
+    );
+  }
+
+  /**
+   * Check if a discovery session should be auto-closed
+   * Returns true if:
+   * - Session type is 'discovery'
+   * - Discovery progress is 100%
+   */
+  shouldAutoCloseDiscoverySession(
+    session: SessionState,
+    discoveryProgressPercent: number
+  ): boolean {
+    return (
+      session.sessionType === 'discovery' &&
+      discoveryProgressPercent === 100
+    );
+  }
 }
 
 export const sessionManager = new SessionManager();

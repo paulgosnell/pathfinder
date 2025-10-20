@@ -4,77 +4,81 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { supabase } from '@/lib/supabase/client';
 import { BORDER_RADIUS } from '@/lib/styles/spacing';
+import { calculateProfileCompleteness, getProgressMessage, type ProfileCompleteness } from '@/lib/profile/completeness';
 
 interface DiscoveryBannerProps {
   /**
    * Context message explaining why discovery is helpful on this page
    * e.g. "Complete discovery to populate your profile automatically"
    */
-  contextMessage: string;
+  contextMessage?: string;
 }
 
 /**
  * Reusable Discovery Banner Component
  *
  * Shows a banner prompting users to complete discovery session if they haven't yet.
+ * Now tracks partial completion and shows progress percentage.
+ *
  * Used on:
  * - Chat page (dismissible)
  * - Profile settings page (always shown if not completed)
  * - Family page (always shown if not completed)
  */
 export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
-  const { user } = useAuth(); // Use auth context instead of creating new client
-  const [discoveryCompleted, setDiscoveryCompleted] = useState<boolean | null>(null);
+  const { user } = useAuth();
+  const [completeness, setCompleteness] = useState<ProfileCompleteness | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkDiscoveryStatus = async () => {
       if (!user) {
+        setLoading(false);
         return;
       }
 
       try {
-        const { data: profile, error } = await supabase
-          .from('user_profiles')
-          .select('discovery_completed')
-          .eq('user_id', user.id)
-          .maybeSingle();  // Use maybeSingle() instead of single() to avoid errors when no rows exist
-
-        // If error, log it for debugging
-        if (error) {
-          console.error('Error checking discovery status:', error);
-          setDiscoveryCompleted(false);
-          return;
-        }
-
-        // If no profile exists yet, or discovery_completed is null/false, show the banner
-        if (!profile || !profile.discovery_completed) {
-          setDiscoveryCompleted(false);
-        } else {
-          setDiscoveryCompleted(true);
-        }
+        const profileCompleteness = await calculateProfileCompleteness(user.id);
+        setCompleteness(profileCompleteness);
       } catch (error) {
         console.error('Failed to check discovery status:', error);
         // On error, assume they need discovery (show banner)
-        setDiscoveryCompleted(false);
+        setCompleteness({
+          hasChildren: false,
+          hasParentInfo: false,
+          hasChildDetails: false,
+          hasSchoolInfo: false,
+          hasTreatmentInfo: false,
+          completionPercentage: 0,
+          missingFields: ['All information'],
+          completedFields: []
+        });
+      } finally {
+        setLoading(false);
       }
     };
 
     checkDiscoveryStatus();
-  }, [user]); // Re-run when user becomes available
+  }, [user]);
 
-  // Don't show if discovery is completed or still loading
-  if (discoveryCompleted === null || discoveryCompleted === true || dismissed) {
+  // Don't show if discovery is completed (100%) or still loading or dismissed
+  if (loading || !completeness || completeness.completionPercentage === 100 || dismissed) {
     return null;
   }
+
+  const isStarted = completeness.completionPercentage > 0;
+  const progressMessage = contextMessage || getProgressMessage(completeness);
 
   return (
     <div
       style={{
         padding: '16px',
         borderRadius: BORDER_RADIUS.large,
-        background: 'rgba(240, 217, 218, 0.15)',
-        border: '2px solid rgba(240, 217, 218, 0.4)',
+        background: isStarted ? 'rgba(227, 234, 221, 0.15)' : 'rgba(240, 217, 218, 0.15)',
+        border: isStarted
+          ? '2px solid rgba(227, 234, 221, 0.4)'
+          : '2px solid rgba(240, 217, 218, 0.4)',
         position: 'relative',
         marginBottom: '24px'
       }}
@@ -104,9 +108,10 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
         ✕
       </button>
 
+      {/* Header with progress */}
       <p
         style={{
-          margin: '0 0 12px 0',
+          margin: '0 0 8px 0',
           fontSize: '15px',
           fontWeight: 600,
           color: '#2A3F5A',
@@ -114,8 +119,34 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
           lineHeight: '1.4'
         }}
       >
-        💡 First time here?
+        {isStarted ? `🔍 Discovery ${completeness.completionPercentage}% Complete` : '💡 First time here?'}
       </p>
+
+      {/* Progress bar (only show if started) */}
+      {isStarted && (
+        <div
+          style={{
+            width: '100%',
+            height: '8px',
+            borderRadius: '4px',
+            backgroundColor: 'rgba(42, 63, 90, 0.1)',
+            marginBottom: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <div
+            style={{
+              width: `${completeness.completionPercentage}%`,
+              height: '100%',
+              background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+              borderRadius: '4px',
+              transition: 'width 0.3s ease'
+            }}
+          />
+        </div>
+      )}
+
+      {/* Message */}
       <p
         style={{
           margin: '0 0 12px 0',
@@ -124,15 +155,35 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
           lineHeight: '1.5'
         }}
       >
-        {contextMessage}
+        {progressMessage}
       </p>
+
+      {/* Missing fields (only show if started) */}
+      {isStarted && completeness.missingFields.length > 0 && (
+        <p
+          style={{
+            margin: '0 0 12px 0',
+            fontSize: '13px',
+            color: '#7F8FA6',
+            lineHeight: '1.4',
+            fontStyle: 'italic'
+          }}
+        >
+          Still needed: {completeness.missingFields.slice(0, 3).join(', ')}
+          {completeness.missingFields.length > 3 && ', and more'}
+        </p>
+      )}
+
+      {/* Action button */}
       <a
         href="/chat?new=true&sessionType=discovery"
         style={{
           display: 'inline-block',
           padding: '8px 16px',
           borderRadius: '12px',
-          background: 'linear-gradient(to right, #F0D9DA, #E3BFBF)',
+          background: isStarted
+            ? 'linear-gradient(to right, #E3EADD, #C8DDB5)'
+            : 'linear-gradient(to right, #F0D9DA, #E3BFBF)',
           color: '#2A3F5A',
           fontSize: '14px',
           fontWeight: 600,
@@ -140,7 +191,7 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
           boxShadow: '0 2px 5px rgba(42, 63, 90, 0.1)'
         }}
       >
-        Start Discovery Session
+        {isStarted ? 'Continue Discovery' : 'Start Discovery Session'}
       </a>
     </div>
   );

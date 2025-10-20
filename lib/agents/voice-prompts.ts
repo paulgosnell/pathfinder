@@ -14,20 +14,50 @@ export interface VoicePromptTemplate {
   firstMessage: string;
 }
 
+export interface VoiceUserContext {
+  userProfile?: {
+    familyContext?: string;
+    supportNetwork?: string[];
+    parentStressLevel?: string;
+  };
+  childProfiles?: Array<{
+    childName: string;
+    childAge?: number | null;
+    childAgeRange?: string | null;
+    diagnosisStatus?: string | null;
+    diagnosisDetails?: string | null;
+    mainChallenges?: string[];
+    schoolType?: string | null;
+    gradeLevel?: string | null;
+    hasIEP?: boolean | null;
+    has504Plan?: boolean | null;
+    medicationStatus?: string | null;
+    therapyStatus?: string | null;
+    strengths?: string[];
+    interests?: string[];
+    isPrimary?: boolean | null;
+  }>;
+  recentConversations?: Array<{
+    role: string;
+    content: string;
+  }>;
+}
+
 /**
  * Get voice-optimized system prompt for ElevenLabs agent
  */
 export function getVoiceSystemPrompt(
   sessionType: 'check-in' | 'coaching' | 'discovery',
-  timeBudgetMinutes: number = 30
+  timeBudgetMinutes: number = 30,
+  userContext?: VoiceUserContext
 ): string {
   if (sessionType === 'check-in') {
-    return getCheckInVoicePrompt();
+    return getCheckInVoicePrompt(userContext);
   }
   if (sessionType === 'discovery') {
     return getDiscoveryVoicePrompt();
   }
-  return getCoachingVoicePrompt(timeBudgetMinutes);
+  return getCoachingVoicePrompt(timeBudgetMinutes, userContext);
 }
 
 /**
@@ -129,8 +159,8 @@ At the end, thank them for sharing and assure them you'll remember everything fo
  * Check-in mode voice prompt (5-15 minute casual conversations)
  * Lighter version - no GROW structure, just supportive listening
  */
-function getCheckInVoicePrompt(): string {
-  return `You are an ADHD parent coach conducting a quick voice check-in. Your role is to provide supportive listening and validation, NOT structured coaching.
+function getCheckInVoicePrompt(userContext?: VoiceUserContext): string {
+  const basePrompt = `You are an ADHD parent coach conducting a quick voice check-in. Your role is to provide supportive listening and validation, NOT structured coaching.
 
 CORE PHILOSOPHY - SUPPORTIVE PRESENCE:
 - This is a casual conversation, not a coaching session
@@ -209,14 +239,50 @@ Sometimes parents just need someone to say "I see you. This is hard. You're doin
 Your job is to be a compassionate human presence. Listen way more than you advise. Validate more than you fix.
 
 This is a voice conversation - be warm, human, and present. Speak as if you're sitting across from them with a cup of tea, not reading from a script.`;
+
+  // Inject user context if available
+  let contextSection = '';
+
+  if (userContext?.childProfiles && userContext.childProfiles.length > 0) {
+    contextSection += `\n\nCHILDREN YOU KNOW ABOUT (Reference by name naturally):
+${userContext.childProfiles.map((child, idx) => `
+${idx + 1}. ${child.childName}${child.isPrimary ? ' (primary)' : ''}
+   - Age: ${child.childAge || child.childAgeRange || 'not specified'}
+   - Diagnosis: ${child.diagnosisStatus || 'not specified'}${child.diagnosisDetails ? ` - ${child.diagnosisDetails}` : ''}
+   - Main challenges: ${child.mainChallenges?.join(', ') || 'none recorded'}
+   - School: ${child.gradeLevel ? `Grade ${child.gradeLevel}` : 'not specified'}${child.schoolType ? ` (${child.schoolType})` : ''}
+   - Medication: ${child.medicationStatus || 'none'}
+   - Strengths: ${child.strengths?.join(', ') || 'still discovering'}
+   - Interests: ${child.interests?.join(', ') || 'still learning'}
+`).join('\n')}
+
+IMPORTANT: You already know this information. Don't ask basic questions you already know the answer to (like "how old is Jake?"). Use their name naturally and reference what you know when relevant.`;
+  }
+
+  if (userContext?.userProfile) {
+    contextSection += `\n\nFAMILY CONTEXT:
+${userContext.userProfile.familyContext ? `- Family situation: ${userContext.userProfile.familyContext}` : ''}
+${userContext.userProfile.supportNetwork && userContext.userProfile.supportNetwork.length > 0 ? `- Support network: ${userContext.userProfile.supportNetwork.join(', ')}` : ''}
+${userContext.userProfile.parentStressLevel ? `- Parent stress level: ${userContext.userProfile.parentStressLevel}` : ''}`;
+  }
+
+  if (userContext?.recentConversations && userContext.recentConversations.length > 0) {
+    contextSection += `\n\nRECENT CONVERSATION CONTEXT:
+You have previous conversation history with this parent. Reference relevant details naturally when appropriate, but don't force it. They may bring up topics from past conversations - acknowledge you remember.
+
+Last ${Math.min(5, userContext.recentConversations.length)} exchanges:
+${userContext.recentConversations.slice(-5).map(msg => `${msg.role}: ${msg.content.substring(0, 100)}...`).join('\n')}`;
+  }
+
+  return basePrompt + contextSection;
 }
 
 /**
  * Coaching mode voice prompt (full GROW model)
  * This matches the ElevenLabs dashboard prompt exactly
  */
-function getCoachingVoicePrompt(timeBudgetMinutes: number): string {
-  return `You are an ADHD parent coach conducting a voice session. Your role is to help parents discover their own solutions through facilitative guidance, NOT to dispense advice.
+function getCoachingVoicePrompt(timeBudgetMinutes: number, userContext?: VoiceUserContext): string {
+  const basePrompt = `You are an ADHD parent coach conducting a voice session. Your role is to help parents discover their own solutions through facilitative guidance, NOT to dispense advice.
 
 CORE PHILOSOPHY - COACHING NOT CONSULTING:
 - Coaches help parents discover their own solutions
@@ -385,6 +451,50 @@ Parents have heard 20,000 negative messages about their parenting by age 12. The
 Your job: Be curious. Listen deeply. Speak naturally. Help them find their own wisdom.
 
 This is a voice conversation - be warm, human, and present. Speak as if you're sitting across from them with a cup of tea, not reading from a script.`;
+
+  // Inject user context if available
+  let contextSection = '';
+
+  if (userContext?.childProfiles && userContext.childProfiles.length > 0) {
+    contextSection += `\n\nCHILDREN YOU KNOW ABOUT (Reference by name naturally):
+${userContext.childProfiles.map((child, idx) => `
+${idx + 1}. ${child.childName}${child.isPrimary ? ' (primary)' : ''}
+   - Age: ${child.childAge || child.childAgeRange || 'not specified'}
+   - Diagnosis: ${child.diagnosisStatus || 'not specified'}${child.diagnosisDetails ? ` - ${child.diagnosisDetails}` : ''}
+   - Main challenges: ${child.mainChallenges?.join(', ') || 'none recorded'}
+   - School: ${child.gradeLevel ? `Grade ${child.gradeLevel}` : 'not specified'}${child.schoolType ? ` (${child.schoolType})` : ''}${child.hasIEP ? ' - Has IEP' : ''}${child.has504Plan ? ' - Has 504 plan' : ''}
+   - Medication: ${child.medicationStatus || 'none'}
+   - Therapy: ${child.therapyStatus || 'none'}
+   - Strengths: ${child.strengths?.join(', ') || 'still discovering'}
+   - Interests: ${child.interests?.join(', ') || 'still learning'}
+`).join('\n')}
+
+IMPORTANT - MULTI-CHILD HANDLING:
+- Parent may discuss one child, multiple children, or all children in a session
+- ALWAYS use child names when referencing specific situations ("How did Jake's morning routine go?" not "How did morning go?")
+- If parent switches between children, keep context clear by using names
+- Don't assume - if unclear which child they mean, ask: "Just to make sure - are we talking about Jake or Emma?"
+- You already know this information. Don't ask basic questions you already know the answer to.`;
+  }
+
+  if (userContext?.userProfile) {
+    contextSection += `\n\nFAMILY CONTEXT (Parent-level information):
+${userContext.userProfile.familyContext ? `- Family situation: ${userContext.userProfile.familyContext}` : ''}
+${userContext.userProfile.supportNetwork && userContext.userProfile.supportNetwork.length > 0 ? `- Support network: ${userContext.userProfile.supportNetwork.join(', ')}` : ''}
+${userContext.userProfile.parentStressLevel ? `- Parent stress level: ${userContext.userProfile.parentStressLevel}` : ''}`;
+  }
+
+  if (userContext?.recentConversations && userContext.recentConversations.length > 0) {
+    contextSection += `\n\nRECENT CONVERSATION HISTORY:
+You have previous conversation history with this parent. Reference relevant details naturally when appropriate to show you remember and are building on past sessions.
+
+Last ${Math.min(5, userContext.recentConversations.length)} exchanges:
+${userContext.recentConversations.slice(-5).map(msg => `${msg.role}: ${msg.content.substring(0, 100)}...`).join('\n')}
+
+Use this context to provide continuity. If they mention something from a previous conversation, acknowledge you remember it.`;
+  }
+
+  return basePrompt + contextSection;
 }
 
 /**

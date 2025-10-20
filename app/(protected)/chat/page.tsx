@@ -61,8 +61,8 @@ export default function ChatPage() {
   const urlTimeBudget = searchParams.get('time') ? parseInt(searchParams.get('time')!) : undefined;
 
   // Determine session configuration from URL params
-  // Default to 'quick-tip' for check-in mode (not 'check-in' - that's not a valid session type!)
-  const initialSessionType: SessionType = urlSessionType || (coachingMode ? 'coaching' : 'quick-tip');
+  // Default to 'check-in' for casual conversations
+  const initialSessionType: SessionType = urlSessionType || (coachingMode ? 'coaching' : 'check-in');
   const initialInteractionMode = coachingMode ? 'coaching' : 'check-in';
   const initialTimeBudget = urlTimeBudget || (coachingMode ? 30 : 15);
 
@@ -73,6 +73,8 @@ export default function ChatPage() {
         return "Welcome! Let me get some basic information so I can personalize your experience. How many children do you have?";
       case 'coaching':
         return "I'm glad you've set aside time for this. What would make this coaching session useful for you today?";
+      case 'check-in':
+        return "Hey there! How are you doing today?";
       default:
         return "How are you doing today?";
     }
@@ -84,6 +86,8 @@ export default function ChatPage() {
   const [sessionType, setSessionType] = useState<SessionType>(initialSessionType);
   const [interactionMode, setInteractionMode] = useState<'check-in' | 'coaching'>(initialInteractionMode);
   const [timeBudgetMinutes, setTimeBudgetMinutes] = useState<number>(initialTimeBudget);
+  const [sessionStatus, setSessionStatus] = useState<'active' | 'complete' | 'scheduled'>('active');
+  const [isSessionCompleted, setIsSessionCompleted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -126,21 +130,36 @@ export default function ChatPage() {
               setCurrentSession(data.session.id, 'chat');
               setMessages(data.messages);
               setSessionType(data.session.session_type);
+              setSessionStatus(data.session.status || 'active');
+
+              // Check if session is completed (coaching or discovery)
+              const isCompleted = data.session.status === 'complete' &&
+                (data.session.session_type === 'coaching' || data.session.session_type === 'discovery');
+              setIsSessionCompleted(isCompleted);
+
               setLoadingSession(false);
               return;
             }
           }
         }
 
-        // Try to load most recent active session
+        // Try to load most recent active session (excluding completed coaching/discovery)
         const response = await fetch('/api/conversation', {
           method: 'POST',
-          credentials: 'include'
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ excludeCompletedCoaching: true })
         });
 
         if (response.ok) {
           const data = await response.json();
           if (data.session && data.messages && data.messages.length > 0) {
+            // Check if session is completed
+            const isCompleted = data.session.status === 'complete' &&
+              (data.session.sessionType === 'coaching' || data.session.sessionType === 'discovery');
+            setIsSessionCompleted(isCompleted);
+            setSessionStatus(data.session.status || 'active');
+
             // Check if this is a returning user (has messages from earlier)
             const lastMsgTime = data.session.lastMessageAt;
             if (lastMsgTime) {
@@ -151,7 +170,7 @@ export default function ChatPage() {
               if (timeSinceLastMessage > fiveMinutesMs) {
                 // Show messages immediately, add prompt at the end
                 setSessionId(data.session.id);
-                setSessionType(data.session.sessionType || 'quick-tip');
+                setSessionType(data.session.sessionType || 'check-in');
                 setMessages(data.messages); // Show conversation history
                 setLastMessageAt(lastMsgTime);
                 setShowContinuationPrompt(true); // Show prompt as last message
@@ -164,7 +183,7 @@ export default function ChatPage() {
             setSessionId(data.session.id);
             setCurrentSession(data.session.id, 'chat');
             setMessages(data.messages);
-            setSessionType(data.session.sessionType || 'quick-tip');
+            setSessionType(data.session.sessionType || 'check-in');
             setLoadingSession(false);
             return;
           }
@@ -534,65 +553,109 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Input Area - Fixed at bottom */}
-        <div className="border-t" style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          borderColor: 'rgba(215, 205, 236, 0.1)',
-          backgroundColor: 'rgba(249, 247, 243, 0.95)',
-          backdropFilter: 'blur(8px)'
-        }}>
-          {/* Input Row */}
-          <div className="px-[15px] py-[15px]">
-            <div className="flex items-end" style={{ gap: '10px' }}>
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message..."
-                rows={1}
-                className="flex-1 bg-white border focus:outline-none focus:ring-2 transition-all font-body resize-none"
-                style={{
-                  color: '#2A3F5A',
-                  borderColor: 'rgba(215, 205, 236, 0.2)',
-                  boxShadow: 'inset 0 2px 4px rgba(42, 63, 90, 0.03)',
-                  fontSize: '16px',
-                  padding: '12px 20px',
-                  minHeight: '48px',
-                  maxHeight: '120px',
-                  overflowY: 'auto',
-                  borderRadius: '24px',
-                  lineHeight: '1.5'
-                }}
-              />
+        {/* Input Area - Fixed at bottom (or completion banner for completed sessions) */}
+        {!isSessionCompleted ? (
+          <div className="border-t" style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            borderColor: 'rgba(215, 205, 236, 0.1)',
+            backgroundColor: 'rgba(249, 247, 243, 0.95)',
+            backdropFilter: 'blur(8px)'
+          }}>
+            {/* Input Row */}
+            <div className="px-[15px] py-[15px]">
+              <div className="flex items-end" style={{ gap: '10px' }}>
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Type your message..."
+                  rows={1}
+                  className="flex-1 bg-white border focus:outline-none focus:ring-2 transition-all font-body resize-none"
+                  style={{
+                    color: '#2A3F5A',
+                    borderColor: 'rgba(215, 205, 236, 0.2)',
+                    boxShadow: 'inset 0 2px 4px rgba(42, 63, 90, 0.03)',
+                    fontSize: '16px',
+                    padding: '12px 20px',
+                    minHeight: '48px',
+                    maxHeight: '120px',
+                    overflowY: 'auto',
+                    borderRadius: '24px',
+                    lineHeight: '1.5'
+                  }}
+                />
 
-              {/* Send Button */}
+                {/* Send Button */}
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={loading || !input.trim()}
+                  aria-label="Send message"
+                  className="flex-shrink-0 flex items-center justify-center rounded-full disabled:opacity-80 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    background: loading || !input.trim()
+                      ? 'rgba(215, 205, 236, 0.55)'
+                      : 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+                    color: '#2A3F5A',
+                    boxShadow: '0 2px 5px rgba(42, 63, 90, 0.1)'
+                  }}
+                >
+                  <span aria-hidden="true" className="text-xl" style={{ marginLeft: '2px', transform: 'translateY(-1px)' }}>
+                    ➤
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Completed Session Banner
+          <div className="border-t" style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            borderColor: 'rgba(215, 205, 236, 0.3)',
+            backgroundColor: '#E3EADD',
+            boxShadow: '0 -2px 10px rgba(42, 63, 90, 0.1)'
+          }}>
+            <div className="px-[20px] py-[20px] text-center">
+              <p style={{
+                fontSize: '15px',
+                color: '#2A3F5A',
+                margin: '0 0 16px 0',
+                fontWeight: 600
+              }}>
+                This {sessionType} session is complete.
+              </p>
               <button
-                onClick={() => sendMessage()}
-                disabled={loading || !input.trim()}
-                aria-label="Send message"
-                className="flex-shrink-0 flex items-center justify-center rounded-full disabled:opacity-80 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+                onClick={() => window.location.href = '/chat?new=true&sessionType=check-in'}
                 style={{
-                  width: '48px',
-                  height: '48px',
-                  background: loading || !input.trim()
-                    ? 'rgba(215, 205, 236, 0.55)'
-                    : 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+                  background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
                   color: '#2A3F5A',
-                  boxShadow: '0 2px 5px rgba(42, 63, 90, 0.1)'
+                  border: 'none',
+                  borderRadius: '24px',
+                  padding: '12px 24px',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 5px rgba(42, 63, 90, 0.15)',
+                  transition: 'transform 0.2s'
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <span aria-hidden="true" className="text-xl" style={{ marginLeft: '2px', transform: 'translateY(-1px)' }}>
-                  ➤
-                </span>
+                Start New Check-in
               </button>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </MobileDeviceMockup>
   );

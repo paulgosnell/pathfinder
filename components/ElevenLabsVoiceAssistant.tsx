@@ -20,7 +20,7 @@ const colors = {
 };
 
 import type { SessionType } from '@/lib/config/session-types';
-import { getVoiceSystemPrompt, getVoiceFirstMessage } from '@/lib/agents/voice-prompts';
+import { getVoiceSystemPrompt, getVoiceFirstMessage, type VoiceUserContext } from '@/lib/agents/voice-prompts';
 
 interface ElevenLabsVoiceAssistantProps {
   sessionType?: SessionType | null;
@@ -32,6 +32,8 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
   const { setCurrentSession } = useSession();
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string>();
+  const [userContext, setUserContext] = useState<VoiceUserContext | null>(null);
+  const [isLoadingContext, setIsLoadingContext] = useState(true);
 
   // Generate stable session ID (browser-compatible UUID)
   const sessionIdRef = useRef<string>('');
@@ -52,6 +54,37 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
     // Update the session context when we generate a new session ID
     setCurrentSession(sessionIdRef.current, 'voice');
   }
+
+  // Load user context on mount
+  useEffect(() => {
+    async function loadUserContext() {
+      if (!user) {
+        setIsLoadingContext(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/voice-context');
+        if (response.ok) {
+          const data = await response.json();
+          setUserContext(data);
+          console.log('✅ Loaded user context for voice agent:', {
+            hasProfile: !!data.userProfile,
+            childCount: data.childProfiles?.length || 0,
+            conversationCount: data.recentConversations?.length || 0,
+          });
+        } else {
+          console.error('Failed to load user context:', response.statusText);
+        }
+      } catch (err) {
+        console.error('Error loading user context:', err);
+      } finally {
+        setIsLoadingContext(false);
+      }
+    }
+
+    loadUserContext();
+  }, [user]);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -106,9 +139,15 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
         sessionTypeValue === 'coaching' ? 'coaching' :
         'check-in'; // All others (quick-tip, update, strategy, crisis) use check-in
 
-      // Get voice-optimized prompts for this session type
-      const systemPrompt = getVoiceSystemPrompt(mode, timeBudget);
+      // Get voice-optimized prompts for this session type with user context
+      const systemPrompt = getVoiceSystemPrompt(mode, timeBudget, userContext || undefined);
       const firstMessage = getVoiceFirstMessage(mode);
+
+      console.log('🎤 Starting voice session with context:', {
+        mode,
+        hasUserContext: !!userContext,
+        childCount: userContext?.childProfiles?.length || 0,
+      });
 
       // Start conversation with ElevenLabs agent
       // Using overrides to control prompts from code (not dashboard)
@@ -179,6 +218,32 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
           >
             Try Again
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while fetching user context
+  if (isLoadingContext) {
+    return (
+      <div className="flex items-center justify-center h-full" style={{ backgroundColor: colors.background }}>
+        <div className="text-center">
+          <div
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(215, 205, 236, 0.2)' }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                border: '3px solid rgba(215, 205, 236, 0.3)',
+                borderTopColor: colors.accent1,
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}
+            ></div>
+          </div>
+          <p style={{ color: colors.secondary }}>Loading your profile...</p>
         </div>
       </div>
     );

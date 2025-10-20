@@ -76,19 +76,50 @@ export async function POST(req: NextRequest) {
     return new Response('Unauthorized', { status: 401 });
   }
 
+  // Parse request body to check for excludeCompletedCoaching flag
+  let excludeCompletedCoaching = false;
+  try {
+    const body = await req.json();
+    excludeCompletedCoaching = body.excludeCompletedCoaching || false;
+  } catch {
+    // No body or invalid JSON - proceed with default
+  }
+
   // Find most recent session that hasn't ended
-  const { data: session, error: sessionError } = await supabase
+  // Exclude completed coaching/discovery sessions from default app launch
+  let query = supabase
     .from('agent_sessions')
-    .select('id, mode, time_budget_minutes, current_phase, session_type')
+    .select('id, mode, time_budget_minutes, current_phase, session_type, status')
     .eq('user_id', user.id)
     .is('ended_at', null)
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order('started_at', { ascending: false });
+
+  // If excludeCompletedCoaching, filter out completed coaching/discovery sessions
+  if (excludeCompletedCoaching) {
+    // Get all active sessions, then filter in code to handle complex OR logic
+    query = query.limit(10); // Get last 10 sessions to check
+  } else {
+    query = query.limit(1);
+  }
+
+  const { data: sessions, error: sessionError } = await query;
 
   if (sessionError) {
     console.error('Session fetch error', sessionError);
     return Response.json({ message: 'Failed to fetch session' }, { status: 500 });
+  }
+
+  // Filter sessions if excludeCompletedCoaching is enabled
+  let session = null;
+  if (excludeCompletedCoaching && sessions && sessions.length > 0) {
+    // Find first session that is NOT a completed coaching or discovery session
+    session = sessions.find(s => {
+      const isCoachingOrDiscovery = s.session_type === 'coaching' || s.session_type === 'discovery';
+      const isComplete = s.status === 'complete';
+      return !(isCoachingOrDiscovery && isComplete);
+    }) || null;
+  } else if (sessions && sessions.length > 0) {
+    session = sessions[0];
   }
 
   // No active session found
@@ -120,6 +151,7 @@ export async function POST(req: NextRequest) {
       timeBudgetMinutes: session.time_budget_minutes,
       currentPhase: session.current_phase,
       sessionType: session.session_type,
+      status: session.status,
       lastMessageAt: lastMessageTime
     },
     messages: (conversations || []).map(c => ({

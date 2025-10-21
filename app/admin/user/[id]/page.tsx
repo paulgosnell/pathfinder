@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
-import { createBrowserClient } from '@supabase/ssr';
 import { logAdminAction } from '@/lib/admin/auth';
 
 export default function UserProfilePage() {
@@ -17,55 +16,23 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     async function fetchUser() {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-
       try {
         setLoading(true);
 
-        // Get user data
-        const { data: user, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single();
+        // Fetch from API route (uses service role, bypasses RLS)
+        const response = await fetch(`/api/admin/user/${userId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user');
+        }
+        const data = await response.json();
 
-        if (userError) throw userError;
-
-        // Get user profile
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-
-        // Get sessions
-        const { data: sessions, error: sessionsError } = await supabase
-          .from('agent_sessions')
-          .select(`
-            *,
-            conversations:agent_conversations(id)
-          `)
-          .eq('user_id', userId)
-          .order('started_at', { ascending: false });
-
-        if (sessionsError) throw sessionsError;
-
-        // Get performance
-        const { data: performance, error: perfError } = await supabase
-          .from('agent_performance')
-          .select('*')
-          .eq('user_id', userId);
-
-        if (perfError) throw perfError;
-
+        // Format data to match expected structure
         setUserData({
-          user,
-          profile: profile || null,
-          sessions: sessions || [],
-          performance: performance || [],
+          user: data.user,
+          profile: data.profile,
+          sessions: data.sessions,
+          performance: data.performance,
+          metrics: data.metrics
         });
 
         // Log admin action
@@ -115,11 +82,7 @@ export default function UserProfilePage() {
     );
   }
 
-  const { user, profile, sessions, performance } = userData;
-
-  const totalCost = performance.reduce((sum: number, p: any) => sum + (Number(p.total_cost) || 0), 0);
-  const totalTokens = performance.reduce((sum: number, p: any) => sum + p.total_tokens, 0);
-  const totalMessages = sessions.reduce((sum: number, s: any) => sum + (s.conversations?.length || 0), 0);
+  const { user, profile, sessions, performance, metrics } = userData;
 
   return (
     <AdminProtectedRoute>
@@ -181,14 +144,10 @@ export default function UserProfilePage() {
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-navy mb-4">Usage Stats</h2>
                 <div className="space-y-3">
-                  <InfoRow label="Total Sessions" value={sessions.length} />
-                  <InfoRow label="Total Messages" value={totalMessages} />
-                  <InfoRow label="Total Tokens" value={totalTokens.toLocaleString()} />
-                  <InfoRow label="Total Cost" value={`$${totalCost.toFixed(4)}`} />
-                  <InfoRow
-                    label="Avg Messages/Session"
-                    value={sessions.length ? Math.round(totalMessages / sessions.length) : 0}
-                  />
+                  <InfoRow label="Total Sessions" value={metrics.totalSessions} />
+                  <InfoRow label="Total Tokens" value={metrics.totalTokens.toLocaleString()} />
+                  <InfoRow label="Total Cost" value={`$${metrics.totalCost.toFixed(4)}`} />
+                  <InfoRow label="Avg Response Time" value={`${metrics.avgResponseTime}ms`} />
                 </div>
               </div>
 

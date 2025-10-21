@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { BORDER_RADIUS } from '@/lib/styles/spacing';
 import { calculateProfileCompleteness, getProgressMessage, type ProfileCompleteness } from '@/lib/profile/completeness';
@@ -12,6 +13,11 @@ interface DiscoveryBannerProps {
    * e.g. "Complete discovery to populate your profile automatically"
    */
   contextMessage?: string;
+
+  /**
+   * Current session type - hides banner if already in discovery session
+   */
+  currentSessionType?: string;
 }
 
 /**
@@ -21,15 +27,19 @@ interface DiscoveryBannerProps {
  * Now tracks partial completion and shows progress percentage.
  *
  * Used on:
- * - Chat page (dismissible)
+ * - Chat page (dismissible, hidden during discovery sessions)
  * - Profile settings page (always shown if not completed)
  * - Family page (always shown if not completed)
  */
-export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
+export function DiscoveryBanner({ contextMessage, currentSessionType }: DiscoveryBannerProps) {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [completeness, setCompleteness] = useState<ProfileCompleteness | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Check URL params for session type (more reliable than prop during initial render)
+  const urlSessionType = searchParams.get('sessionType');
 
   useEffect(() => {
     const checkDiscoveryStatus = async () => {
@@ -62,8 +72,21 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
     checkDiscoveryStatus();
   }, [user]);
 
-  // Don't show if discovery is completed (100%) or still loading or dismissed
-  if (loading || !completeness || completeness.completionPercentage === 100 || dismissed) {
+  // Don't show if:
+  // - Still loading
+  // - No completeness data
+  // - Discovery is completed (100%)
+  // - User dismissed it
+  // - Currently in a discovery session (check both URL param and prop)
+  const isInDiscoverySession = urlSessionType === 'discovery' || currentSessionType === 'discovery';
+
+  if (
+    loading ||
+    !completeness ||
+    completeness.completionPercentage === 100 ||
+    dismissed ||
+    isInDiscoverySession
+  ) {
     return null;
   }
 
@@ -80,7 +103,7 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
           ? '2px solid rgba(227, 234, 221, 0.4)'
           : '2px solid rgba(240, 217, 218, 0.4)',
         position: 'relative',
-        marginBottom: '24px'
+        marginBottom: '12px'
       }}
     >
       {/* Close button */}
@@ -176,7 +199,10 @@ export function DiscoveryBanner({ contextMessage }: DiscoveryBannerProps) {
 
       {/* Action button */}
       <a
-        href="/chat?new=true&sessionType=discovery"
+        href={isStarted
+          ? "/chat?sessionType=discovery"  // RESUME existing discovery - no new=true
+          : "/chat?new=true&sessionType=discovery"  // START fresh discovery
+        }
         style={{
           display: 'inline-block',
           padding: '8px 16px',

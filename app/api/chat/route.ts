@@ -2,10 +2,12 @@ import { NextRequest } from 'next/server';
 import { createCrisisToolsAgent } from '@/lib/agents/crisis-tools-agent';
 import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
 import { createDiscoveryAgent } from '@/lib/agents/discovery-agent';
+import { createPartialDiscoveryAgent } from '@/lib/agents/partial-discovery-agent';
 import { sessionManager } from '@/lib/session/manager';
 import { performanceTracker } from '@/lib/monitoring/performance-tracker';
 import { createServerClient } from '@/lib/supabase/server-client';
 import { createServiceClient } from '@/lib/supabase/service-client';
+import { calculateProfileCompleteness } from '@/lib/profile/completeness';
 
 const CRISIS_KEYWORDS = [
   'suicide',
@@ -250,67 +252,101 @@ export async function POST(req: NextRequest) {
     ).length || 0;
 
     if (session.sessionType === 'discovery') {
-      // Route to Discovery Agent
-      console.log('   🧭 Using Discovery Agent for onboarding');
-      const discoveryAgent = createDiscoveryAgent();
+      // Check if this is partial discovery (user has some data already) or full discovery
+      console.log('   🔍 Checking profile completeness for discovery routing...');
+      const profileCompleteness = await calculateProfileCompleteness(userId);
+      const isPartialDiscovery = profileCompleteness.completionPercentage > 0 && profileCompleteness.completionPercentage < 100;
 
-      // Calculate discovery progress
-      const exchangeCount = conversationHistory?.filter(m => m.role === 'assistant').length || 0;
-      const hasChildBasics = conversationHistory?.some(m =>
-        m.role === 'assistant' && (m.content.toLowerCase().includes('name') || m.content.toLowerCase().includes('age'))
-      ) || false;
-      const hasDiagnosis = conversationHistory?.some(m =>
-        m.role === 'assistant' && m.content.toLowerCase().includes('diagnos')
-      ) || false;
-      const hasChallenges = conversationHistory?.some(m =>
-        m.role === 'assistant' && m.content.toLowerCase().includes('challenge')
-      ) || false;
+      console.log(`   📊 Profile completeness: ${profileCompleteness.completionPercentage}%`);
+      console.log(`   🎯 Discovery mode: ${isPartialDiscovery ? 'PARTIAL (resume)' : 'FULL (start fresh)'}`);
 
-      // More reliable family context detection - check if we've asked about family setup
-      const hasFamilyContext = conversationHistory?.some(m =>
-        m.role === 'assistant' && (
-          m.content.toLowerCase().includes('family setup') ||
-          m.content.toLowerCase().includes('single parent') ||
-          m.content.toLowerCase().includes('co-parenting')
-        )
-      ) || false;
+      if (isPartialDiscovery) {
+        // Route to Partial Discovery Agent - only ask for missing fields
+        console.log('   🔄 Using Partial Discovery Agent (resume mode)');
+        console.log(`   📋 Missing fields: ${profileCompleteness.missingFields.join(', ')}`);
 
-      // User has responded to family context question
-      const familyContextAnswered = hasFamilyContext && conversationHistory?.some((m, idx) => {
-        const prevMessage = idx > 0 ? conversationHistory[idx - 1] : null;
-        return m.role === 'user' && prevMessage?.role === 'assistant' && (
-          prevMessage.content.toLowerCase().includes('family setup') ||
-          prevMessage.content.toLowerCase().includes('single parent') ||
-          prevMessage.content.toLowerCase().includes('co-parenting')
-        );
-      }) || false;
+        const partialDiscoveryAgent = createPartialDiscoveryAgent();
 
-      // Ready to save if we have basic info AND family context has been answered
-      const readyToComplete = exchangeCount >= 8 && hasChildBasics && hasDiagnosis && hasChallenges && familyContextAnswered;
-
-      console.log(`   📊 Discovery Progress: exchanges=${exchangeCount}, basics=${hasChildBasics}, diagnosis=${hasDiagnosis}, challenges=${hasChallenges}, familyContext=${familyContextAnswered}, ready=${readyToComplete}`);
-
-      agentResult = await discoveryAgent(message, {
-        userId,
-        sessionId: session.id,
-        conversationHistory: conversationHistory || [],
-        discoveryProgress: {
-          exchangeCount,
-          hasChildBasics,
-          hasDiagnosis,
-          hasChallenges,
-          hasContext: familyContextAnswered,
-          readyToComplete
-        }
-      });
-
-      // Check if discovery was completed (tool was executed successfully)
-      const discoveryToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updateDiscoveryProfile');
-      if (discoveryToolResult && (discoveryToolResult as any).result?.success) {
-        console.log('✅ Discovery completed successfully - marking session as complete');
-        await sessionManager.updateSession(session.id, {
-          status: 'complete'
+        agentResult = await partialDiscoveryAgent(message, {
+          userId,
+          sessionId: session.id,
+          conversationHistory: conversationHistory || [],
+          profileCompleteness,
+          existingUserProfile: userProfile,
+          existingChildProfiles: childProfiles || []
         });
+
+        // Check if partial discovery was completed
+        const updateToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updatePartialDiscoveryProfile');
+        if (updateToolResult && (updateToolResult as any).result?.success) {
+          console.log('✅ Partial discovery completed successfully - marking session as complete');
+          await sessionManager.updateSession(session.id, {
+            status: 'complete'
+          });
+        }
+      } else {
+        // Route to Full Discovery Agent - starting from scratch
+        console.log('   🧭 Using Full Discovery Agent (start fresh)');
+        const discoveryAgent = createDiscoveryAgent();
+
+        // Calculate discovery progress
+        const exchangeCount = conversationHistory?.filter(m => m.role === 'assistant').length || 0;
+        const hasChildBasics = conversationHistory?.some(m =>
+          m.role === 'assistant' && (m.content.toLowerCase().includes('name') || m.content.toLowerCase().includes('age'))
+        ) || false;
+        const hasDiagnosis = conversationHistory?.some(m =>
+          m.role === 'assistant' && m.content.toLowerCase().includes('diagnos')
+        ) || false;
+        const hasChallenges = conversationHistory?.some(m =>
+          m.role === 'assistant' && m.content.toLowerCase().includes('challenge')
+        ) || false;
+
+        // More reliable family context detection - check if we've asked about family setup
+        const hasFamilyContext = conversationHistory?.some(m =>
+          m.role === 'assistant' && (
+            m.content.toLowerCase().includes('family setup') ||
+            m.content.toLowerCase().includes('single parent') ||
+            m.content.toLowerCase().includes('co-parenting')
+          )
+        ) || false;
+
+        // User has responded to family context question
+        const familyContextAnswered = hasFamilyContext && conversationHistory?.some((m, idx) => {
+          const prevMessage = idx > 0 ? conversationHistory[idx - 1] : null;
+          return m.role === 'user' && prevMessage?.role === 'assistant' && (
+            prevMessage.content.toLowerCase().includes('family setup') ||
+            prevMessage.content.toLowerCase().includes('single parent') ||
+            prevMessage.content.toLowerCase().includes('co-parenting')
+          );
+        }) || false;
+
+        // Ready to save if we have basic info AND family context has been answered
+        const readyToComplete = exchangeCount >= 8 && hasChildBasics && hasDiagnosis && hasChallenges && familyContextAnswered;
+
+        console.log(`   📊 Discovery Progress: exchanges=${exchangeCount}, basics=${hasChildBasics}, diagnosis=${hasDiagnosis}, challenges=${hasChallenges}, familyContext=${familyContextAnswered}, ready=${readyToComplete}`);
+
+        agentResult = await discoveryAgent(message, {
+          userId,
+          sessionId: session.id,
+          conversationHistory: conversationHistory || [],
+          discoveryProgress: {
+            exchangeCount,
+            hasChildBasics,
+            hasDiagnosis,
+            hasChallenges,
+            hasContext: familyContextAnswered,
+            readyToComplete
+          }
+        });
+
+        // Check if discovery was completed (tool was executed successfully)
+        const discoveryToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updateDiscoveryProfile');
+        if (discoveryToolResult && (discoveryToolResult as any).result?.success) {
+          console.log('✅ Discovery completed successfully - marking session as complete');
+          await sessionManager.updateSession(session.id, {
+            status: 'complete'
+          });
+        }
       }
     } else {
       // Route to Standard Coaching Agent (for all other session types)

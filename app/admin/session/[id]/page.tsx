@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
-import { getSessionDetails } from '@/lib/admin/queries';
 import { logAdminAction } from '@/lib/admin/auth';
 
 export default function SessionDetailsPage() {
@@ -19,7 +18,13 @@ export default function SessionDetailsPage() {
     async function fetchSession() {
       try {
         setLoading(true);
-        const data = await getSessionDetails(sessionId);
+
+        // Fetch from API route (uses service role, bypasses RLS)
+        const response = await fetch(`/api/admin/session/${sessionId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch session');
+        }
+        const data = await response.json();
         setSessionData(data);
 
         // Log admin action

@@ -412,13 +412,33 @@ export default function ChatPage() {
           subtitle="Your AI parenting coach"
         />
 
-        {/* Chat Area - scrollable between header and input */}
+        {/* Discovery Banner - Fixed at top below header */}
+        <div
+          style={{
+            position: 'fixed',
+            top: SPACING.contentTopMargin,
+            left: 0,
+            right: 0,
+            backgroundColor: '#F9F7F3',
+            zIndex: 40,
+            padding: '12px 16px 0 16px',
+            boxShadow: '0 2px 8px rgba(42, 63, 90, 0.05)'
+          }}
+        >
+          <DiscoveryBanner
+            contextMessage="Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support."
+            currentSessionType={sessionType}
+          />
+        </div>
+
+        {/* Chat Area - scrollable between header/banner and input */}
         <div
           ref={chatAreaRef}
           className="flex-grow relative overflow-y-auto"
           style={{
             backgroundColor: '#F9F7F3',
             marginTop: SPACING.contentTopMargin,
+            paddingTop: '120px', // Space for fixed discovery banner (adjust based on banner height)
             paddingBottom: '88px', // Height of fixed input area
             WebkitOverflowScrolling: 'touch', // Enable momentum scrolling on iOS
             touchAction: 'pan-y', // Allow vertical scrolling, prevent other gestures
@@ -432,13 +452,6 @@ export default function ChatPage() {
               backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='a' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath filter='url(%23a)' opacity='.05' d='M0 0h200v200H0z'/%3E%3C/svg%3E\")"
             }}
           ></div>
-
-          {/* Discovery Banner */}
-          <div className="relative z-10 px-4 pt-4">
-            <DiscoveryBanner
-              contextMessage="Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support."
-            />
-          </div>
 
           {/* Messages - with proper padding and margin */}
           <div className="relative z-10 flex flex-col px-4" style={{ gap: '20px', paddingTop: '24px', paddingBottom: '24px' }}>

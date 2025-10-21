@@ -18,11 +18,18 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
+    console.log('[Analytics API] Fetching analytics for last', days, 'days, starting from:', startDate.toISOString());
+
     // Total visits
-    const { count: totalVisits } = await supabase
+    const { count: totalVisits, error: totalVisitsError } = await supabase
       .from('page_visits')
       .select('*', { count: 'exact', head: true })
       .gte('visited_at', startDate.toISOString());
+
+    if (totalVisitsError) {
+      console.error('[Analytics API] Error fetching total visits:', totalVisitsError);
+      throw totalVisitsError;
+    }
 
     // Unique visitors
     const { data: uniqueVisitorsData } = await supabase
@@ -99,7 +106,7 @@ export async function GET(request: NextRequest) {
       .select('*')
       .gte('last_activity_at', fiveMinutesAgo.toISOString());
 
-    return NextResponse.json({
+    const result = {
       overview: {
         totalVisits: totalVisits || 0,
         uniqueVisitors,
@@ -118,9 +125,12 @@ export async function GET(request: NextRequest) {
           : '0.00',
       },
       realTimeVisitors: realtimeData?.length || 0
-    });
+    };
+
+    console.log('[Analytics API] Success, returning:', JSON.stringify(result, null, 2));
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Analytics API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
+    console.error('[Analytics API] Fatal error:', error);
+    return NextResponse.json({ error: 'Failed to fetch analytics', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

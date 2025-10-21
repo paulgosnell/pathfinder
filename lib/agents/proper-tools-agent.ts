@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { CHECK_IN_PROMPT } from './check-in-prompt';
+import { getCheckInPrompt } from './check-in-prompt';
 
 export interface ChildProfile {
   childName: string;
@@ -54,12 +54,6 @@ export interface AgentContext {
   };
 }
 
-/**
- * Generate check-in mode system prompt (casual conversation)
- */
-function getCheckInPrompt(context: AgentContext): string {
-  return CHECK_IN_PROMPT;
-}
 
 /**
  * Generate coaching mode system prompt (full GROW model)

@@ -73,20 +73,20 @@ export default function AdminDashboard() {
       <div style={{ minHeight: '100vh', backgroundColor: '#F9F7F3' }}>
         {/* Header */}
         <header style={{ backgroundColor: 'white', borderBottom: '1px solid rgba(215, 205, 236, 0.2)' }}>
-          <div style={{ paddingLeft: '48px', paddingRight: '48px', paddingTop: '32px', paddingBottom: '32px' }}>
+          <div style={{ paddingLeft: '48px', paddingRight: '48px', paddingTop: '16px', paddingBottom: '12px' }}>
             {/* Title Section */}
-            <div style={{ marginBottom: '32px' }}>
-              <h1 style={{ color: '#2A3F5A', fontSize: '40px', margin: 0, fontWeight: '700', letterSpacing: '-0.5px' }}>
+            <div style={{ marginBottom: '12px' }}>
+              <h1 style={{ color: '#2A3F5A', fontSize: '24px', margin: 0, fontWeight: '700', letterSpacing: '-0.5px' }}>
                 Coaching Intelligence Center
               </h1>
-              <p style={{ color: '#586C8E', fontSize: '17px', margin: '6px 0 0 0' }}>
+              <p style={{ color: '#586C8E', fontSize: '13px', margin: '2px 0 0 0' }}>
                 Real-time monitoring and coaching analytics
               </p>
             </div>
 
             {/* Header Controls */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-              <div style={{ color: '#586C8E', fontSize: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ color: '#586C8E', fontSize: '13px' }}>
                 Last updated: {lastRefresh.toLocaleTimeString()}
               </div>
               <button
@@ -96,25 +96,25 @@ export default function AdminDashboard() {
                   background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
                   color: 'white',
                   border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  fontSize: '15px',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   opacity: loading ? 0.6 : 1,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '6px',
                   transition: 'all 0.2s'
                 }}
               >
-                <RefreshCw size={18} />
+                <RefreshCw size={14} />
                 {loading ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
 
             {/* Navigation Tabs */}
-            <nav style={{ display: 'flex', gap: '32px', borderTop: '1px solid rgba(215, 205, 236, 0.15)', paddingTop: '20px' }}>
+            <nav style={{ display: 'flex', gap: '24px', borderTop: '1px solid rgba(215, 205, 236, 0.15)', paddingTop: '10px' }}>
               {tabs.map((tab) => (
                 <button
                   key={tab}
@@ -123,13 +123,13 @@ export default function AdminDashboard() {
                     background: 'none',
                     border: 'none',
                     padding: 0,
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontWeight: '600',
                     color: activeTab === tab ? '#2A3F5A' : '#586C8E',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    borderBottom: activeTab === tab ? '3px solid #B7D3D8' : 'none',
-                    paddingBottom: '12px',
+                    borderBottom: activeTab === tab ? '2px solid #B7D3D8' : 'none',
+                    paddingBottom: '8px',
                     textTransform: 'capitalize'
                   }}
                 >

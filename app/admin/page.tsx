@@ -27,13 +27,32 @@ export default function AdminDashboard() {
     try {
       const [dashboardRes, analyticsRes] = await Promise.all([
         fetch('/api/admin/dashboard'),
-        fetch('/api/admin/analytics?days=7')
+        fetch('/api/admin/analytics?days=30')
       ]);
 
-      if (!dashboardRes.ok || !analyticsRes.ok) throw new Error('Failed to fetch');
+      if (!dashboardRes.ok) {
+        console.error('Dashboard API error:', await dashboardRes.text());
+        throw new Error('Failed to fetch dashboard data');
+      }
+
+      if (!analyticsRes.ok) {
+        console.error('Analytics API error:', await analyticsRes.text());
+        throw new Error('Failed to fetch analytics data');
+      }
 
       const dashboardData = await dashboardRes.json();
       const analyticsData = await analyticsRes.json();
+
+      console.log('[Admin] Dashboard data loaded:', {
+        hasMetrics: !!dashboardData.executiveMetrics,
+        sessionCount: dashboardData.activeSessions?.length || 0,
+        userCount: dashboardData.users?.length || 0
+      });
+      console.log('[Admin] Analytics data loaded:', {
+        hasOverview: !!analyticsData.overview,
+        totalVisits: analyticsData.overview?.totalVisits || 0,
+        realTimeVisitors: analyticsData.realTimeVisitors || 0
+      });
 
       setExecutiveMetrics(dashboardData.executiveMetrics);
       setActiveSessions(dashboardData.activeSessions);
@@ -48,7 +67,7 @@ export default function AdminDashboard() {
 
       await logAdminAction('view_dashboard', 'dashboard', undefined, { tab: activeTab });
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('[Admin] Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -262,13 +281,21 @@ function OverviewTab({ metrics, quality, trends }: any) {
 }
 
 function AnalyticsTab({ overview, realTimeVisitors }: any) {
-  if (!overview) return null;
+  if (!overview) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 32px', color: '#586C8E' }}>
+        <AlertTriangle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+        <p style={{ fontSize: '16px', fontWeight: '600' }}>No analytics data available</p>
+        <p style={{ fontSize: '14px', marginTop: '8px' }}>Analytics data may be loading or unavailable for the selected time period.</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
-        <MetricCard label="Total Visits" value={overview.totalVisits.toLocaleString()} sublabel="Last 7 Days" icon={<BarChart3 size={32} />} color="#B7D3D8" />
-        <MetricCard label="Unique Visitors" value={overview.uniqueVisitors.toLocaleString()} sublabel="Last 7 Days" icon={<Users size={32} />} color="#D7CDEC" />
+        <MetricCard label="Total Visits" value={overview.totalVisits.toLocaleString()} sublabel="Last 30 Days" icon={<BarChart3 size={32} />} color="#B7D3D8" />
+        <MetricCard label="Unique Visitors" value={overview.uniqueVisitors.toLocaleString()} sublabel="Last 30 Days" icon={<Users size={32} />} color="#D7CDEC" />
         <MetricCard label="LLM Traffic" value={overview.llmTraffic} sublabel="Bot Visits" icon={<TrendingUp size={32} />} color="#E6A897" />
         <MetricCard label="Real-Time" value={realTimeVisitors} sublabel="Now" icon={<Activity size={32} />} color="#E3EADD" />
       </div>

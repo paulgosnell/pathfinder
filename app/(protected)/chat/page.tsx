@@ -13,6 +13,7 @@ import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { DiscoveryBanner } from '@/components/DiscoveryBanner';
 import ContinuationPrompt from '@/components/ContinuationPrompt';
 import { SPACING } from '@/lib/styles/spacing';
+import { calculateProfileCompleteness } from '@/lib/profile/completeness';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -67,7 +68,43 @@ export default function ChatPage() {
   const initialTimeBudget = urlTimeBudget || (coachingMode ? 30 : 15);
 
   // Helper function to get first message based on session type
-  const getFirstMessage = (type: SessionType): string => {
+  const getFirstMessage = async (type: SessionType): Promise<string> => {
+    // For discovery sessions, check if this is partial (resume) or full (new)
+    if (type === 'discovery' && user) {
+      try {
+        const completeness = await calculateProfileCompleteness(user.id);
+
+        // If partial discovery (user has some data), create personalized greeting
+        if (completeness.completionPercentage > 0 && completeness.completionPercentage < 100) {
+          // Build acknowledgment of what we know
+          const knownInfo: string[] = [];
+          if (completeness.hasChildren) {
+            knownInfo.push("your child's name");
+          }
+          if (completeness.hasParentInfo) {
+            knownInfo.push("your family setup");
+          }
+          if (completeness.hasChildDetails) {
+            knownInfo.push("some challenges and strengths");
+          }
+
+          const acknowledgment = knownInfo.length > 0
+            ? `I see you already told me about ${knownInfo.join(', ')}. `
+            : '';
+
+          // List what we still need (max 3 items for brevity)
+          const missing = completeness.missingFields.slice(0, 3).join(', ');
+          const moreMissing = completeness.missingFields.length > 3 ? ', and a couple more things' : '';
+
+          return `${acknowledgment}Let me get the remaining information to complete your profile. We still need: ${missing}${moreMissing}. Let's start with the first one - ready?`;
+        }
+      } catch (error) {
+        console.error('Failed to check profile completeness:', error);
+        // Fall through to default discovery message
+      }
+    }
+
+    // Default messages for each type
     switch (type) {
       case 'discovery':
         return "Welcome! Let me get some basic information so I can personalize your experience. How many children do you have?";
@@ -106,10 +143,11 @@ export default function ChatPage() {
       try {
         // If user clicked "New Chat", start fresh with initial message
         if (isNewSession) {
+          const firstMessage = await getFirstMessage(sessionType);
           setMessages([
             {
               role: 'assistant',
-              content: getFirstMessage(sessionType)
+              content: firstMessage
             }
           ]);
           setLoadingSession(false);
@@ -190,19 +228,21 @@ export default function ChatPage() {
         }
 
         // No existing session - start fresh with message based on session type
+        const firstMessage = await getFirstMessage(sessionType);
         setMessages([
           {
             role: 'assistant',
-            content: getFirstMessage(sessionType)
+            content: firstMessage
           }
         ]);
       } catch (error) {
         console.error('Failed to load session:', error);
         // On error, still start with message based on session type
+        const firstMessage = await getFirstMessage(sessionType);
         setMessages([
           {
             role: 'assistant',
-            content: getFirstMessage(sessionType)
+            content: firstMessage
           }
         ]);
       } finally {
@@ -256,12 +296,13 @@ export default function ChatPage() {
     setShowContinuationPrompt(false);
   };
 
-  const handleStartNew = () => {
+  const handleStartNew = async () => {
     // Start fresh check-in (default session type)
+    const firstMessage = await getFirstMessage('check-in');
     setMessages([
       {
         role: 'assistant',
-        content: getFirstMessage('check-in')
+        content: firstMessage
       }
     ]);
     setSessionId(undefined);

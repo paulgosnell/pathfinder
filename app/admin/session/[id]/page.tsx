@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { logAdminAction } from '@/lib/admin/auth';
+import { ArrowLeft, Clock } from 'lucide-react';
 
 export default function SessionDetailsPage() {
   const params = useParams();
@@ -45,10 +46,24 @@ export default function SessionDetailsPage() {
   if (loading) {
     return (
       <AdminProtectedRoute>
-        <div className="min-h-screen bg-cream flex items-center justify-center">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal mb-4"></div>
-            <p className="text-slate">Loading session details...</p>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+          * { font-family: 'Atkinson Hyperlegible', sans-serif; }
+          h1, h2, h3, h4, h5, h6 { font-family: 'Quicksand', sans-serif; font-weight: 600; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
+        <div style={{ minHeight: '100vh', backgroundColor: '#F9F7F3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: '3px solid transparent',
+              borderTopColor: '#B7D3D8',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }} />
+            <p style={{ color: '#586C8E' }}>Loading session details...</p>
           </div>
         </div>
       </AdminProtectedRoute>
@@ -58,15 +73,33 @@ export default function SessionDetailsPage() {
   if (error || !sessionData) {
     return (
       <AdminProtectedRoute>
-        <div className="min-h-screen bg-cream flex items-center justify-center">
-          <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center">
-            <h2 className="text-2xl font-semibold text-navy mb-4">Error</h2>
-            <p className="text-slate mb-6">{error || 'Session not found'}</p>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+          * { font-family: 'Atkinson Hyperlegible', sans-serif; }
+          h1, h2, h3, h4, h5, h6 { font-family: 'Quicksand', sans-serif; font-weight: 600; }
+        `}</style>
+        <div style={{ minHeight: '100vh', backgroundColor: '#F9F7F3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '480px', width: '100%', background: 'white', borderRadius: '10px', padding: '32px', textAlign: 'center', border: '1px solid rgba(215, 205, 236, 0.2)' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#2A3F5A', marginBottom: '16px' }}>Error</h2>
+            <p style={{ color: '#586C8E', marginBottom: '24px' }}>{error || 'Session not found'}</p>
             <button
               onClick={() => router.push('/admin')}
-              className="px-6 py-3 bg-teal text-white rounded-lg font-medium hover:bg-opacity-90"
+              style={{
+                background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
             >
-              ← Back to Dashboard
+              <ArrowLeft size={16} />
+              Back to Dashboard
             </button>
           </div>
         </div>
@@ -84,43 +117,54 @@ export default function SessionDetailsPage() {
 
   return (
     <AdminProtectedRoute>
-      <div className="min-h-screen bg-cream">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+        * { font-family: 'Atkinson Hyperlegible', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Quicksand', sans-serif; font-weight: 600; }
+      `}</style>
+      <div style={{ minHeight: '100vh', backgroundColor: '#F9F7F3' }}>
         {/* Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <header style={{ backgroundColor: 'white', borderBottom: '1px solid rgba(215, 205, 236, 0.2)' }}>
+          <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 48px' }}>
             <button
               onClick={() => router.push('/admin')}
-              className="text-teal hover:underline text-sm mb-4"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#B7D3D8',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginBottom: '12px',
+                padding: 0
+              }}
             >
-              ← Back to Dashboard
+              <ArrowLeft size={16} />
+              Back to Dashboard
             </button>
-            <h1 className="text-2xl font-bold text-navy">Session Details</h1>
-            <p className="text-sm text-slate mt-1">
-              Session ID: {sessionId.substring(0, 16)}...
+            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#2A3F5A', margin: 0, letterSpacing: '-0.5px' }}>
+              Session Details
+            </h1>
+            <p style={{ fontSize: '13px', color: '#586C8E', marginTop: '4px', fontFamily: 'monospace' }}>
+              {sessionId}
             </p>
           </div>
-        </div>
+        </header>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 48px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
             {/* Left Column: Session Info & Coaching State */}
-            <div className="space-y-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Session Metadata */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-navy mb-4">Session Info</h2>
-                <div className="space-y-3">
+              <Card title="Session Info">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <InfoRow label="User ID" value={`User#${session.user_id.substring(0, 8)}`} />
                   <InfoRow
                     label="Mode"
-                    value={
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        session.mode === 'voice'
-                          ? 'bg-lavender bg-opacity-20 text-navy'
-                          : 'bg-teal bg-opacity-20 text-navy'
-                      }`}>
-                        {session.mode === 'voice' ? '🎤 Voice' : '💬 Chat'}
-                      </span>
-                    }
+                    value={<Badge text={session.mode === 'voice' ? '🎤 Voice' : '💬 Chat'} color={session.mode === 'voice' ? '#D7CDEC' : '#B7D3D8'} />}
                   />
                   <InfoRow label="Started" value={new Date(session.started_at).toLocaleString()} />
                   {session.ended_at && (
@@ -128,47 +172,29 @@ export default function SessionDetailsPage() {
                   )}
                   <InfoRow
                     label="Status"
-                    value={
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        session.ended_at
-                          ? 'bg-gray-200 text-gray-700'
-                          : 'bg-teal bg-opacity-20 text-teal'
-                      }`}>
-                        {session.ended_at ? 'Completed' : 'Active'}
-                      </span>
-                    }
+                    value={<Badge text={session.ended_at ? 'Completed' : 'Active'} color={session.ended_at ? '#586C8E' : '#B7D3D8'} />}
                   />
                   <InfoRow
                     label="Crisis Level"
-                    value={
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        session.crisis_level === 'none'
-                          ? 'bg-gray-200 text-gray-700'
-                          : 'bg-coral bg-opacity-20 text-coral'
-                      }`}>
-                        {session.crisis_level}
-                      </span>
-                    }
+                    value={<Badge text={session.crisis_level} color={session.crisis_level === 'none' ? '#E3EADD' : '#E6A897'} />}
                   />
                 </div>
-              </div>
+              </Card>
 
               {/* GROW Phase Progression */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-navy mb-4">GROW Phase</h2>
-                <div className="space-y-2">
+              <Card title="GROW Phase">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <PhaseIndicator phase="goal" currentPhase={session.current_phase} />
                   <PhaseIndicator phase="reality" currentPhase={session.current_phase} />
                   <PhaseIndicator phase="options" currentPhase={session.current_phase} />
                   <PhaseIndicator phase="will" currentPhase={session.current_phase} />
                   <PhaseIndicator phase="closing" currentPhase={session.current_phase} />
                 </div>
-              </div>
+              </Card>
 
               {/* Coaching State Indicators */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-navy mb-4">Coaching State</h2>
-                <div className="space-y-3">
+              <Card title="Coaching State">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <StateIndicator
                     label="Reality Depth"
                     value={`${session.reality_exploration_depth}/10`}
@@ -192,11 +218,11 @@ export default function SessionDetailsPage() {
                 </div>
 
                 {session.strengths_identified && session.strengths_identified.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <h3 className="text-sm font-medium text-slate mb-2">Strengths Identified</h3>
-                    <div className="flex flex-wrap gap-2">
+                  <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(215, 205, 236, 0.2)' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: '600', color: '#586C8E', marginBottom: '12px' }}>Strengths Identified</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {session.strengths_identified.map((strength: string, idx: number) => (
-                        <span key={idx} className="px-2 py-1 bg-sage bg-opacity-20 rounded text-xs text-navy">
+                        <span key={idx} style={{ background: 'rgba(227, 234, 221, 0.4)', padding: '6px 12px', borderRadius: '14px', fontSize: '12px', color: '#2A3F5A', fontWeight: '500' }}>
                           {strength}
                         </span>
                       ))}
@@ -205,71 +231,86 @@ export default function SessionDetailsPage() {
                 )}
 
                 {session.parent_generated_ideas && session.parent_generated_ideas.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <h3 className="text-sm font-medium text-slate mb-2">Parent Ideas</h3>
-                    <ul className="space-y-1">
+                  <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(215, 205, 236, 0.2)' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: '600', color: '#586C8E', marginBottom: '12px' }}>Parent Ideas</h3>
+                    <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {session.parent_generated_ideas.map((idea: string, idx: number) => (
-                        <li key={idx} className="text-sm text-navy">• {idea}</li>
+                        <li key={idx} style={{ fontSize: '14px', color: '#2A3F5A', lineHeight: '1.5' }}>{idea}</li>
                       ))}
                     </ul>
                   </div>
                 )}
-              </div>
+              </Card>
 
               {/* Performance Metrics */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-navy mb-4">Performance</h2>
-                <div className="space-y-3">
+              <Card title="Performance">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <InfoRow label="Total Tokens" value={totalTokens.toLocaleString()} />
                   <InfoRow label="Total Cost" value={`$${totalCost.toFixed(4)}`} />
                   <InfoRow label="Avg Response Time" value={`${avgResponseTime}ms`} />
                   <InfoRow label="API Calls" value={performance.length} />
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Right Column: Conversation Transcript */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-navy mb-4">
-                  Conversation Transcript ({conversations.length} messages)
-                </h2>
-                <div className="space-y-4 max-h-[800px] overflow-y-auto">
-                  {conversations.map((msg: any, idx: number) => (
+            <div>
+              <Card title={`Conversation Transcript (${conversations.length} messages)`}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '900px', overflowY: 'auto', paddingRight: '8px' }}>
+                  {conversations.map((msg: any) => (
                     <div
                       key={msg.id}
-                      className={`p-4 rounded-xl ${
-                        msg.role === 'user'
-                          ? 'bg-gray-50 border-l-4 border-teal'
+                      style={{
+                        padding: '20px',
+                        borderRadius: '10px',
+                        border: '1px solid rgba(215, 205, 236, 0.2)',
+                        background: msg.role === 'user'
+                          ? 'rgba(183, 211, 216, 0.08)'
                           : msg.role === 'assistant'
-                          ? 'bg-lavender bg-opacity-10 border-l-4 border-lavender'
-                          : 'bg-sage bg-opacity-10 border-l-4 border-sage'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`text-xs font-semibold uppercase ${
+                          ? 'rgba(215, 205, 236, 0.08)'
+                          : 'rgba(227, 234, 221, 0.08)',
+                        borderLeft: `4px solid ${
                           msg.role === 'user'
-                            ? 'text-teal'
+                            ? '#B7D3D8'
                             : msg.role === 'assistant'
-                            ? 'text-lavender'
-                            : 'text-sage'
-                        }`}>
+                            ? '#D7CDEC'
+                            : '#E3EADD'
+                        }`
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          color: msg.role === 'user'
+                            ? '#B7D3D8'
+                            : msg.role === 'assistant'
+                            ? '#D7CDEC'
+                            : '#E3EADD'
+                        }}>
                           {msg.role}
                         </span>
-                        <span className="text-xs text-slate">
+                        <span style={{ fontSize: '12px', color: '#586C8E', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={12} />
                           {new Date(msg.created_at).toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-sm text-navy whitespace-pre-wrap">{msg.content}</p>
+                      <p style={{ fontSize: '14px', color: '#2A3F5A', lineHeight: '1.6', whiteSpace: 'pre-wrap', margin: 0 }}>
+                        {msg.content}
+                      </p>
 
                       {msg.tool_calls && msg.tool_calls.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <p className="text-xs font-medium text-slate mb-2">Tool Calls:</p>
+                        <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(215, 205, 236, 0.2)' }}>
+                          <p style={{ fontSize: '11px', fontWeight: '600', color: '#586C8E', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Tool Calls
+                          </p>
                           {msg.tool_calls.map((tool: any, toolIdx: number) => (
-                            <div key={toolIdx} className="text-xs bg-white rounded p-2 mb-1">
-                              <span className="font-mono text-sage">{tool.name}</span>
+                            <div key={toolIdx} style={{ fontSize: '12px', background: 'white', borderRadius: '6px', padding: '12px', marginBottom: '8px', border: '1px solid rgba(215, 205, 236, 0.2)' }}>
+                              <span style={{ fontFamily: 'monospace', color: '#E3EADD', fontWeight: '600' }}>{tool.name}</span>
                               {tool.args && (
-                                <pre className="mt-1 text-[10px] text-slate overflow-x-auto">
+                                <pre style={{ marginTop: '8px', fontSize: '11px', color: '#586C8E', overflowX: 'auto', fontFamily: 'monospace' }}>
                                   {JSON.stringify(tool.args, null, 2)}
                                 </pre>
                               )}
@@ -280,7 +321,7 @@ export default function SessionDetailsPage() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>
@@ -290,12 +331,41 @@ export default function SessionDetailsPage() {
 }
 
 // Helper Components
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: 'white', borderRadius: '10px', border: '1px solid rgba(215, 205, 236, 0.2)' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(215, 205, 236, 0.15)' }}>
+        <h2 style={{ color: '#2A3F5A', fontSize: '16px', margin: 0, fontWeight: '600' }}>{title}</h2>
+      </div>
+      <div style={{ padding: '24px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function InfoRow({ label, value }: { label: string; value: any }) {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-sm text-slate">{label}</span>
-      <span className="text-sm font-medium text-navy">{value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontSize: '13px', color: '#586C8E', fontWeight: '500' }}>{label}</span>
+      <span style={{ fontSize: '13px', fontWeight: '600', color: '#2A3F5A' }}>{value}</span>
     </div>
+  );
+}
+
+function Badge({ text, color }: { text: string; color?: string }) {
+  return (
+    <span style={{
+      background: `${color || '#E3EADD'}40`,
+      color: '#2A3F5A',
+      padding: '4px 10px',
+      borderRadius: '14px',
+      fontSize: '11px',
+      fontWeight: '600',
+      textTransform: 'capitalize'
+    }}>
+      {text}
+    </span>
   );
 }
 
@@ -308,21 +378,19 @@ function PhaseIndicator({ phase, currentPhase }: { phase: string; currentPhase: 
   const isCompleted = phaseIndex < currentIndex;
 
   return (
-    <div className="flex items-center space-x-2">
-      <div className={`w-3 h-3 rounded-full ${
-        isActive
-          ? 'bg-teal'
-          : isCompleted
-          ? 'bg-sage'
-          : 'bg-gray-300'
-      }`} />
-      <span className={`text-sm capitalize ${
-        isActive
-          ? 'text-teal font-semibold'
-          : isCompleted
-          ? 'text-sage'
-          : 'text-slate'
-      }`}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{
+        width: '12px',
+        height: '12px',
+        borderRadius: '50%',
+        background: isActive ? '#B7D3D8' : isCompleted ? '#E3EADD' : 'rgba(88, 108, 142, 0.2)'
+      }} />
+      <span style={{
+        fontSize: '14px',
+        textTransform: 'capitalize',
+        color: isActive ? '#B7D3D8' : isCompleted ? '#E3EADD' : '#586C8E',
+        fontWeight: isActive ? '600' : '500'
+      }}>
         {phase}
       </span>
     </div>
@@ -331,9 +399,9 @@ function PhaseIndicator({ phase, currentPhase }: { phase: string; currentPhase: 
 
 function StateIndicator({ label, value, good }: { label: string; value: string; good: boolean }) {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-sm text-slate">{label}</span>
-      <span className={`text-sm font-semibold ${good ? 'text-teal' : 'text-coral'}`}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontSize: '13px', color: '#586C8E', fontWeight: '500' }}>{label}</span>
+      <span style={{ fontSize: '13px', fontWeight: '700', color: good ? '#B7D3D8' : '#E6A897' }}>
         {value}
       </span>
     </div>

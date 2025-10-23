@@ -128,7 +128,8 @@ export async function POST(req: NextRequest) {
       const interactionMode = context?.interactionMode || 'check-in';
       const timeBudgetMinutes = context?.timeBudgetMinutes;
       const sessionType = context?.sessionType;  // NEW: explicit session type from frontend
-      session = await sessionManager.createSession(userId, interactionMode, timeBudgetMinutes, undefined, sessionType);
+      const forceNew = context?.forceNew || false;  // NEW: force new session (auto-close old ones)
+      session = await sessionManager.createSession(userId, interactionMode, timeBudgetMinutes, undefined, sessionType, forceNew);
       sessionId = session.id;
     }
 

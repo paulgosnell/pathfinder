@@ -337,7 +337,8 @@ export default function ChatPage() {
             sessionId: sessionId,
             sessionType: sessionType,
             interactionMode: interactionMode, // Use state variable (from URL params)
-            timeBudgetMinutes: timeBudgetMinutes // Use state variable (from URL params)
+            timeBudgetMinutes: timeBudgetMinutes, // Use state variable (from URL params)
+            forceNew: isNewSession // NEW: Tell backend to start fresh session (auto-close old ones)
           }
         })
       });

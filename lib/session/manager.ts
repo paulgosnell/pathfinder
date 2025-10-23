@@ -35,18 +35,27 @@ class SessionManager {
     interactionMode: 'check-in' | 'coaching' = 'check-in',  // Default to check-in mode
     timeBudgetMinutes?: number,
     scheduledFor?: Date,
-    sessionType?: string  // NEW: explicit session type (discovery, quick-tip, etc.)
+    sessionType?: string,  // NEW: explicit session type (discovery, quick-tip, etc.)
+    forceNew: boolean = false  // NEW: force new session (auto-close old active sessions)
   ): Promise<SessionState> {
     // Use explicit session type if provided, otherwise infer from interaction mode
     const finalSessionType = sessionType || (interactionMode === 'coaching' ? 'coaching' : 'quick-tip');
 
     // CRITICAL: Check for existing active discovery session
-    // Discovery should only happen once - if active discovery exists, return that session
+    // If forceNew is true, auto-complete any old discovery sessions to start fresh
+    // If forceNew is false, resume existing discovery session
     if (finalSessionType === 'discovery') {
       const existingDiscovery = await dbChats.getActiveDiscoverySession(userId);
       if (existingDiscovery) {
-        console.log(`⚠️ Active discovery session already exists: ${existingDiscovery.id}`);
-        return existingDiscovery;
+        if (forceNew) {
+          // User wants to start fresh - auto-complete the old discovery session
+          console.log(`🔄 Auto-completing old discovery session ${existingDiscovery.id} to start fresh`);
+          await this.closeSession(existingDiscovery.id);
+        } else {
+          // Resume existing discovery session
+          console.log(`⚠️ Active discovery session already exists: ${existingDiscovery.id} - resuming`);
+          return existingDiscovery;
+        }
       }
     }
 

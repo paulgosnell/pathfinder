@@ -167,10 +167,9 @@ export async function POST(req: NextRequest) {
     // Check if report has data
     if (report_type === 'monthly_progress' || report_type === 'comprehensive') {
       const hasData =
-        reportContent.checkins?.total_entries ||
-        reportContent.sessions?.total ||
-        reportContent.strategies?.successful?.length ||
-        reportContent.strategies?.unsuccessful?.length;
+        ('checkins' in reportContent && reportContent.checkins?.total_entries) ||
+        ('sessions' in reportContent && reportContent.sessions?.total) ||
+        ('strategies' in reportContent && (reportContent.strategies?.successful?.length || reportContent.strategies?.unsuccessful?.length));
 
       if (!hasData) {
         return Response.json(

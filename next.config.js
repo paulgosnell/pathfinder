@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // App directory is now stable in Next.js 15, no experimental flag needed
+  webpack: (config, { isServer }) => {
+    // Externalize jspdf and related packages for server-side builds
+    // These are client-only libraries
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('jspdf', 'jspdf-autotable');
+    }
+    return config;
+  },
   async headers() {
     return [
       {

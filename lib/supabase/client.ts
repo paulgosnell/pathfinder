@@ -217,3 +217,33 @@ export interface ChildProfile {
   created_at?: string | null;
   last_updated?: string | null;
 }
+
+// Daily Check-in interface for tracking child's daily state
+export interface DailyCheckIn {
+  id: string;
+  user_id: string;
+  child_id: string;
+  checkin_date: string; // YYYY-MM-DD format
+  sleep_quality: number | null; // 1-10
+  attention_focus: number | null; // 1-10
+  emotional_regulation: number | null; // 1-10
+  behavior_quality: number | null; // 1-10
+  notes: string | null;
+  submitted_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Check-in statistics interface
+export interface CheckInStats {
+  averageScore: number; // Average of 4 dimensions
+  trend: 'improving' | 'declining' | 'stable';
+  bestDay: string | null; // Day of week
+  worstDay: string | null; // Day of week
+  dimensionAverages: {
+    sleep: number;
+    attention: number;
+    emotional: number;
+    behavior: number;
+  };
+}

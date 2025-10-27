@@ -5,9 +5,9 @@
 
 export const SPACING = {
   // Fixed header
-  headerHeight: '72px',             // Fixed AppHeader height
+  headerHeight: '72px',             // Fixed AppHeader minHeight (not including padding)
   headerPaddingTop: '96px',         // Header height + top spacing (72px + 24px)
-  contentTopMargin: '102px',        // Margin-top for content below fixed header (72px + 40px breathing room)
+  contentTopMargin: '110px',        // Margin-top for content below fixed header (72px minHeight + 32px padding + 6px breathing room)
 
   // Content padding (inside mobile device)
   contentPadding: '16px',           // Standard screen padding

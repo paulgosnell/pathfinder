@@ -11,12 +11,15 @@ import { Card } from '@/components/layouts/Card';
 import { Button } from '@/components/layouts/Button';
 import { getUserReports, type GeneratedReport, type ReportType } from '@/lib/database/reports';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '@/lib/styles/spacing';
+import { ReportGenerationModal } from '@/components/ReportGenerationModal';
 
 export default function ReportsPage() {
   const { user } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [reports, setReports] = useState<GeneratedReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -39,8 +42,13 @@ export default function ReportsPage() {
   };
 
   const handleGenerateReport = (type: ReportType) => {
-    // Show coming soon message
-    alert('Report generation coming soon! This feature is currently in development.');
+    setSelectedReportType(type);
+    setShowModal(true);
+  };
+
+  const handleReportSuccess = () => {
+    // Reload reports list
+    loadReports();
   };
 
   const getReportIcon = (type: ReportType) => {
@@ -100,6 +108,16 @@ export default function ReportsPage() {
           title="Reports"
           subtitle="Share progress with professionals"
         />
+
+        {/* Report Generation Modal */}
+        {selectedReportType && (
+          <ReportGenerationModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            reportType={selectedReportType}
+            onSuccess={handleReportSuccess}
+          />
+        )}
 
         <div className="flex-grow overflow-y-auto" style={{ backgroundColor: '#F9F7F3' }}>
           <ContentContainer>
@@ -312,12 +330,36 @@ interface ReportCardProps {
 
 function ReportCard({ report, icon, onReload }: ReportCardProps) {
   const [showActions, setShowActions] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
-  const handleDownload = () => {
-    if (report.pdf_url) {
-      window.open(report.pdf_url, '_blank');
-    } else {
-      alert('PDF not yet generated for this report');
+  const handleDownload = async () => {
+    setDownloadingPdf(true);
+    try {
+      const response = await fetch(`/api/reports/${report.id}/pdf`);
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Get the blob from the response
+      const blob = await response.blob();
+
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${report.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('PDF download error:', error);
+      alert('Failed to download PDF. Please try again.');
+    } finally {
+      setDownloadingPdf(false);
     }
   };
 
@@ -400,17 +442,17 @@ function ReportCard({ report, icon, onReload }: ReportCardProps) {
       <div style={{ display: 'flex', gap: '8px' }}>
         <button
           onClick={handleDownload}
-          disabled={!report.pdf_url}
+          disabled={downloadingPdf}
           style={{
             flex: 1,
             padding: '10px 16px',
             borderRadius: BORDER_RADIUS.small,
             border: '1px solid rgba(215, 205, 236, 0.3)',
-            backgroundColor: report.pdf_url ? 'white' : 'rgba(215, 205, 236, 0.2)',
-            color: report.pdf_url ? '#586C8E' : '#7F8FA6',
+            backgroundColor: downloadingPdf ? 'rgba(215, 205, 236, 0.2)' : 'white',
+            color: downloadingPdf ? '#7F8FA6' : '#586C8E',
             fontSize: '13px',
             fontWeight: 600,
-            cursor: report.pdf_url ? 'pointer' : 'not-allowed',
+            cursor: downloadingPdf ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -418,20 +460,20 @@ function ReportCard({ report, icon, onReload }: ReportCardProps) {
             transition: 'all 0.2s',
           }}
           onMouseEnter={(e) => {
-            if (report.pdf_url) {
+            if (!downloadingPdf) {
               e.currentTarget.style.borderColor = 'rgba(215, 205, 236, 0.5)';
               e.currentTarget.style.backgroundColor = 'rgba(215, 205, 236, 0.1)';
             }
           }}
           onMouseLeave={(e) => {
-            if (report.pdf_url) {
+            if (!downloadingPdf) {
               e.currentTarget.style.borderColor = 'rgba(215, 205, 236, 0.3)';
               e.currentTarget.style.backgroundColor = 'white';
             }
           }}
         >
           <Download size={16} />
-          PDF
+          {downloadingPdf ? 'Generating...' : 'PDF'}
         </button>
 
         <button

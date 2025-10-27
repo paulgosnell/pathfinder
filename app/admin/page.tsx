@@ -5,7 +5,7 @@ import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { logAdminAction } from '@/lib/admin/auth';
 import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw } from 'lucide-react';
 
-type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist';
+type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -21,13 +21,16 @@ export default function AdminDashboard() {
   const [allSessions, setAllSessions] = useState<any[]>([]);
   const [analyticsOverview, setAnalyticsOverview] = useState<any>(null);
   const [realTimeVisitors, setRealTimeVisitors] = useState<number>(0);
+  const [feedbackData, setFeedbackData] = useState<any[]>([]);
+  const [feedbackStats, setFeedbackStats] = useState<any>(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [dashboardRes, analyticsRes] = await Promise.all([
+      const [dashboardRes, analyticsRes, feedbackRes] = await Promise.all([
         fetch('/api/admin/dashboard'),
-        fetch('/api/admin/analytics?days=30')
+        fetch('/api/admin/analytics?days=30'),
+        fetch('/api/admin/feedback')
       ]);
 
       if (!dashboardRes.ok) {
@@ -42,6 +45,7 @@ export default function AdminDashboard() {
 
       const dashboardData = await dashboardRes.json();
       const analyticsData = await analyticsRes.json();
+      const feedbackDataResponse = feedbackRes.ok ? await feedbackRes.json() : { feedback: [], stats: null };
 
       console.log('[Admin] Dashboard data loaded:', {
         hasMetrics: !!dashboardData.executiveMetrics,
@@ -53,6 +57,10 @@ export default function AdminDashboard() {
         totalVisits: analyticsData.overview?.totalVisits || 0,
         realTimeVisitors: analyticsData.realTimeVisitors || 0
       });
+      console.log('[Admin] Feedback data loaded:', {
+        feedbackCount: feedbackDataResponse.feedback?.length || 0,
+        avgRating: feedbackDataResponse.stats?.avgRating || 0
+      });
 
       setExecutiveMetrics(dashboardData.executiveMetrics);
       setActiveSessions(dashboardData.activeSessions);
@@ -63,6 +71,8 @@ export default function AdminDashboard() {
       setAllSessions(dashboardData.allSessions);
       setAnalyticsOverview(analyticsData.overview);
       setRealTimeVisitors(analyticsData.realTimeVisitors);
+      setFeedbackData(feedbackDataResponse.feedback || []);
+      setFeedbackStats(feedbackDataResponse.stats);
       setLastRefresh(new Date());
 
       await logAdminAction('view_dashboard', 'dashboard', undefined, { tab: activeTab });
@@ -79,7 +89,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist'];
+  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback'];
 
   return (
     <AdminProtectedRoute>
@@ -185,6 +195,7 @@ export default function AdminDashboard() {
               {activeTab === 'sessions' && <SessionsTab sessions={allSessions} />}
               {activeTab === 'users' && <UsersTab users={users} />}
               {activeTab === 'waitlist' && <WaitlistTab signups={waitlist} />}
+              {activeTab === 'feedback' && <FeedbackTab feedback={feedbackData} stats={feedbackStats} />}
             </>
           )}
         </main>
@@ -533,6 +544,210 @@ function SelectField({ label, value, onChange, options }: { label: string; value
           <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
         ))}
       </select>
+    </div>
+  );
+}
+
+function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
+  const [filter, setFilter] = useState({ rating: 'all', hasSession: 'all' });
+  const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set());
+
+  const filteredFeedback = feedback.filter(f => {
+    if (filter.rating !== 'all') {
+      if (filter.rating === 'low' && (f.rating < 1 || f.rating > 3)) return false;
+      if (filter.rating === 'medium' && (f.rating < 4 || f.rating > 6)) return false;
+      if (filter.rating === 'high' && (f.rating < 7 || f.rating > 8)) return false;
+      if (filter.rating === 'excellent' && (f.rating < 9 || f.rating > 10)) return false;
+    }
+    if (filter.hasSession !== 'all') {
+      if (filter.hasSession === 'yes' && !f.session_id) return false;
+      if (filter.hasSession === 'no' && f.session_id) return false;
+    }
+    return true;
+  });
+
+  const getRatingColor = (rating: number) => {
+    if (rating >= 9) return '#B7D3D8'; // Green
+    if (rating >= 7) return '#E3EADD'; // Light green
+    if (rating >= 4) return '#F0D9DA'; // Yellow/orange
+    return '#E6A897'; // Red
+  };
+
+  const toggleExpanded = (id: string) => {
+    const newSet = new Set(expandedFeedback);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setExpandedFeedback(newSet);
+  };
+
+  const truncateText = (text: string, maxLength: number = 100) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  if (!stats) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 32px', color: '#586C8E' }}>
+        <MessageSquare size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+        <p style={{ fontSize: '16px', fontWeight: '600' }}>No feedback data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      {/* Summary Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+        <MetricCard
+          label="Total Feedback"
+          value={stats.totalFeedback}
+          sublabel="All Time"
+          icon={<MessageSquare size={32} />}
+          color="#B7D3D8"
+        />
+        <MetricCard
+          label="Average Rating"
+          value={stats.avgRating.toFixed(1)}
+          sublabel={`${stats.ratingDistribution.excellent} Excellent`}
+          icon={<TrendingUp size={32} />}
+          color={stats.avgRating >= 8 ? '#B7D3D8' : stats.avgRating >= 6 ? '#E3EADD' : '#E6A897'}
+        />
+        <MetricCard
+          label="Response Rate"
+          value={`${stats.responseRate}%`}
+          sublabel={`${stats.totalFeedback}/${stats.totalSessions} Sessions`}
+          icon={<Activity size={32} />}
+          color="#D7CDEC"
+        />
+        <MetricCard
+          label="Latest Feedback"
+          value={stats.latestFeedback ? new Date(stats.latestFeedback).toLocaleDateString() : 'N/A'}
+          sublabel={stats.latestFeedback ? new Date(stats.latestFeedback).toLocaleTimeString() : ''}
+          icon={<BarChart3 size={32} />}
+          color="#E3EADD"
+        />
+      </div>
+
+      {/* Rating Distribution */}
+      <Card title="Rating Distribution">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+          <StatItem label="1-3 (Low)" value={stats.ratingDistribution.low} />
+          <StatItem label="4-6 (Medium)" value={stats.ratingDistribution.medium} />
+          <StatItem label="7-8 (High)" value={stats.ratingDistribution.high} />
+          <StatItem label="9-10 (Excellent)" value={stats.ratingDistribution.excellent} />
+        </div>
+      </Card>
+
+      {/* Filters */}
+      <Card title="Filters">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
+          <SelectField
+            label="Rating Range"
+            value={filter.rating}
+            onChange={(v) => setFilter({ ...filter, rating: v })}
+            options={['all', 'low', 'medium', 'high', 'excellent']}
+          />
+          <SelectField
+            label="Has Session Link"
+            value={filter.hasSession}
+            onChange={(v) => setFilter({ ...filter, hasSession: v })}
+            options={['all', 'yes', 'no']}
+          />
+        </div>
+      </Card>
+
+      {/* Feedback Table */}
+      <Card title={`Feedback (${filteredFeedback.length})`}>
+        {filteredFeedback.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 32px', color: '#586C8E' }}>No feedback matches filters</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px' }}>
+            <thead>
+              <tr style={{ background: 'rgba(227, 234, 221, 0.3)', borderBottom: '1px solid rgba(215, 205, 236, 0.2)' }}>
+                <th style={{ textAlign: 'left', padding: '16px', fontWeight: '600', color: '#2A3F5A' }}>User</th>
+                <th style={{ textAlign: 'center', padding: '16px', fontWeight: '600', color: '#2A3F5A' }}>Rating</th>
+                <th style={{ textAlign: 'left', padding: '16px', fontWeight: '600', color: '#2A3F5A' }}>Feedback</th>
+                <th style={{ textAlign: 'left', padding: '16px', fontWeight: '600', color: '#2A3F5A' }}>Session</th>
+                <th style={{ textAlign: 'left', padding: '16px', fontWeight: '600', color: '#2A3F5A' }}>Submitted</th>
+                <th style={{ textAlign: 'center', padding: '16px', fontWeight: '600', color: '#2A3F5A' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFeedback.map((item, idx) => {
+                const isExpanded = expandedFeedback.has(item.id);
+                const displayText = isExpanded ? item.feedback_text : truncateText(item.feedback_text, 80);
+
+                return (
+                  <tr key={item.id} style={{ borderBottom: '1px solid rgba(215, 205, 236, 0.1)', backgroundColor: idx % 2 === 0 ? 'rgba(227, 234, 221, 0.05)' : 'transparent' }}>
+                    <td style={{ padding: '16px', color: '#2A3F5A', fontFamily: 'monospace', fontSize: '13px' }}>
+                      <a href={`/admin/user/${item.user_id}`} style={{ color: '#B7D3D8', textDecoration: 'none' }}>
+                        {item.user_id.substring(0, 8)}...
+                      </a>
+                    </td>
+                    <td style={{ textAlign: 'center', padding: '16px' }}>
+                      <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        backgroundColor: getRatingColor(item.rating),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '700',
+                        color: '#2A3F5A',
+                        fontSize: '16px',
+                        margin: '0 auto'
+                      }}>
+                        {item.rating}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px', color: '#2A3F5A', maxWidth: '400px' }}>
+                      {displayText}
+                      {item.feedback_text.length > 80 && (
+                        <button
+                          onClick={() => toggleExpanded(item.id)}
+                          style={{
+                            marginLeft: '8px',
+                            color: '#B7D3D8',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          {isExpanded ? 'Show less' : 'Show more'}
+                        </button>
+                      )}
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      {item.session_id ? (
+                        <a href={`/admin/session/${item.session_id}`} style={{ color: '#B7D3D8', fontWeight: '600', textDecoration: 'none' }}>
+                          View Session
+                        </a>
+                      ) : (
+                        <span style={{ color: '#586C8E', fontSize: '13px' }}>N/A</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '16px', color: '#586C8E', fontSize: '14px' }}>
+                      {new Date(item.submitted_at).toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: 'center', padding: '16px' }}>
+                      <a href={`/admin/user/${item.user_id}`} style={{ color: '#B7D3D8', fontWeight: '600', textDecoration: 'none' }}>
+                        View User
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </Card>
     </div>
   );
 }

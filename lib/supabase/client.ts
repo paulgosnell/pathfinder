@@ -92,6 +92,19 @@ export interface AgentPerformance {
   created_at?: string | null;
 }
 
+export interface UserFeedback {
+  id: string;
+  user_id: string;
+  session_id?: string | null;
+  rating: number;
+  feedback_text: string;
+  context?: any | null;
+  user_agent?: string | null;
+  page_url?: string | null;
+  submitted_at?: string | null;
+  created_at?: string | null;
+}
+
 export interface UserProfile {
   id: string;
   user_id?: string | null;

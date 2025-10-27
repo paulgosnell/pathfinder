@@ -12,8 +12,10 @@ import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
 import { DiscoveryBanner } from '@/components/DiscoveryBanner';
 import ContinuationPrompt from '@/components/ContinuationPrompt';
+import { FeedbackModal } from '@/components/FeedbackModal';
 import { SPACING } from '@/lib/styles/spacing';
 import { calculateProfileCompleteness } from '@/lib/profile/completeness';
+import { MessageSquare } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -118,6 +120,7 @@ export default function ChatPage() {
   };
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [loadingSession, setLoadingSession] = useState(true);
   const [sessionId, setSessionId] = useState<string>();
   const [sessionType, setSessionType] = useState<SessionType>(initialSessionType);
@@ -445,6 +448,7 @@ export default function ChatPage() {
         <NavigationDrawer
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
+          onOpenFeedback={() => setIsFeedbackModalOpen(true)}
         />
 
         {/* Header - Fixed at top */}
@@ -711,6 +715,48 @@ export default function ChatPage() {
             </div>
           </div>
         )}
+
+        {/* Floating Feedback Button */}
+        <button
+          onClick={() => setIsFeedbackModalOpen(true)}
+          aria-label="Give feedback"
+          style={{
+            position: 'fixed',
+            right: '20px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'linear-gradient(to right, #D7CDEC, #B7D3D8)',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(42, 63, 90, 0.2)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+            transition: 'all 0.2s',
+            color: '#2A3F5A'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(42, 63, 90, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(42, 63, 90, 0.2)';
+          }}
+        >
+          <MessageSquare size={24} />
+        </button>
+
+        {/* Feedback Modal */}
+        <FeedbackModal
+          isOpen={isFeedbackModalOpen}
+          onClose={() => setIsFeedbackModalOpen(false)}
+          sessionId={sessionId}
+        />
       </div>
     </MobileDeviceMockup>
   );

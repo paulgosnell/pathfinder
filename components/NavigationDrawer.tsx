@@ -1,6 +1,6 @@
 'use client';
 
-import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar as CalendarIcon, TrendingUp, BookOpen, ClipboardList, FileText, Sparkles } from 'lucide-react';
+import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar as CalendarIcon, TrendingUp, BookOpen, ClipboardList, FileText, Sparkles, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,9 +9,10 @@ import CoachingBookingModal from './CoachingBookingModal';
 interface NavigationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenFeedback?: () => void;
 }
 
-export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
+export default function NavigationDrawer({ isOpen, onClose, onOpenFeedback }: NavigationDrawerProps) {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -273,6 +274,45 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           <NavLink href="/profile" icon={<User size={20} />} onClick={onClose}>
             Profile Settings
           </NavLink>
+
+          {onOpenFeedback && (
+            <button
+              onClick={() => {
+                onOpenFeedback();
+                onClose();
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 24px',
+                color: '#586C8E',
+                textDecoration: 'none',
+                fontSize: '15px',
+                fontWeight: 500,
+                transition: 'all 0.2s',
+                borderLeft: '3px solid transparent',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(227, 234, 221, 0.3)';
+                e.currentTarget.style.borderLeftColor = '#D7CDEC';
+                e.currentTarget.style.color = '#2A3F5A';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderLeftColor = 'transparent';
+                e.currentTarget.style.color = '#586C8E';
+              }}
+            >
+              <MessageSquare size={20} />
+              <span>Give Feedback</span>
+            </button>
+          )}
         </nav>
 
         {/* Logout Button */}

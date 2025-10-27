@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import { Button } from './layouts/Button';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '@/lib/styles/spacing';
 import { X } from 'lucide-react';
@@ -19,7 +19,10 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +103,7 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: SPACING.medium,
+        padding: SPACING.contentPadding,
       }}
       onClick={onClose}
     >
@@ -108,7 +111,7 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
         style={{
           backgroundColor: 'white',
           borderRadius: BORDER_RADIUS.large,
-          padding: SPACING.large,
+          padding: SPACING.cardPaddingLarge,
           maxWidth: '500px',
           width: '100%',
           boxShadow: SHADOWS.card,
@@ -121,8 +124,8 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: SPACING.medium,
-            right: SPACING.medium,
+            top: SPACING.contentPadding,
+            right: SPACING.contentPadding,
             background: 'none',
             border: 'none',
             cursor: 'pointer',
@@ -137,13 +140,13 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
         </button>
 
         {submitSuccess ? (
-          <div style={{ textAlign: 'center', padding: SPACING.large }}>
+          <div style={{ textAlign: 'center', padding: SPACING.cardPaddingLarge }}>
             <h2
               style={{
                 fontSize: '24px',
                 fontWeight: 700,
                 color: '#2A3F5A',
-                marginBottom: SPACING.medium,
+                marginBottom: SPACING.contentPadding,
               }}
             >
               Thank you!
@@ -159,7 +162,7 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
                 fontSize: '24px',
                 fontWeight: 700,
                 color: '#2A3F5A',
-                marginBottom: SPACING.small,
+                marginBottom: SPACING.labelMargin,
               }}
             >
               Share Your Feedback
@@ -169,7 +172,7 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
               style={{
                 color: '#586C8E',
                 fontSize: '14px',
-                marginBottom: SPACING.large,
+                marginBottom: SPACING.cardPaddingLarge,
                 lineHeight: 1.5,
               }}
             >
@@ -177,14 +180,14 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
             </p>
 
             {/* Rating */}
-            <div style={{ marginBottom: SPACING.large }}>
+            <div style={{ marginBottom: SPACING.cardPaddingLarge }}>
               <label
                 style={{
                   display: 'block',
                   fontSize: '12px',
                   fontWeight: 700,
                   color: '#586C8E',
-                  marginBottom: SPACING.small,
+                  marginBottom: SPACING.labelMargin,
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
                 }}
@@ -234,14 +237,14 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
             </div>
 
             {/* Feedback text */}
-            <div style={{ marginBottom: SPACING.large }}>
+            <div style={{ marginBottom: SPACING.cardPaddingLarge }}>
               <label
                 style={{
                   display: 'block',
                   fontSize: '12px',
                   fontWeight: 700,
                   color: '#586C8E',
-                  marginBottom: SPACING.small,
+                  marginBottom: SPACING.labelMargin,
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
                 }}
@@ -278,10 +281,10 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
             {error && (
               <div
                 style={{
-                  padding: SPACING.small,
+                  padding: SPACING.labelMargin,
                   backgroundColor: 'rgba(230, 168, 151, 0.1)',
                   borderRadius: BORDER_RADIUS.small,
-                  marginBottom: SPACING.medium,
+                  marginBottom: SPACING.contentPadding,
                 }}
               >
                 <p style={{ color: '#E6A897', fontSize: '14px', margin: 0 }}>

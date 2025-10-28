@@ -164,7 +164,22 @@ export default function SessionDetailsPage() {
                   <InfoRow label="User ID" value={`User#${session.user_id.substring(0, 8)}`} />
                   <InfoRow
                     label="Session Type"
-                    value={<Badge text={session.interaction_mode === 'coaching' ? '🎯 Coaching Session' : '✅ Check-in'} color={session.interaction_mode === 'coaching' ? '#D7CDEC' : '#E3EADD'} />}
+                    value={<Badge
+                      text={
+                        session.session_type === 'discovery' ? '🔍 Discovery' :
+                        session.session_type === 'crisis' ? '🚨 Crisis' :
+                        session.session_type === 'strategy' ? '📋 Strategy Session' :
+                        session.interaction_mode === 'coaching' ? '🎯 Coaching Session' :
+                        '✅ Check-in'
+                      }
+                      color={
+                        session.session_type === 'discovery' ? '#D7CDEC' :
+                        session.session_type === 'crisis' ? '#E6A897' :
+                        session.session_type === 'strategy' ? '#B7D3D8' :
+                        session.interaction_mode === 'coaching' ? '#D7CDEC' :
+                        '#E3EADD'
+                      }
+                    />}
                   />
                   <InfoRow
                     label="Mode"

@@ -163,6 +163,10 @@ export default function SessionDetailsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <InfoRow label="User ID" value={`User#${session.user_id.substring(0, 8)}`} />
                   <InfoRow
+                    label="Session Type"
+                    value={<Badge text={session.interaction_mode === 'coaching' ? '🎯 Coaching Session' : '✅ Check-in'} color={session.interaction_mode === 'coaching' ? '#D7CDEC' : '#E3EADD'} />}
+                  />
+                  <InfoRow
                     label="Mode"
                     value={<Badge text={session.mode === 'voice' ? '🎤 Voice' : '💬 Chat'} color={session.mode === 'voice' ? '#D7CDEC' : '#B7D3D8'} />}
                   />
@@ -181,41 +185,51 @@ export default function SessionDetailsPage() {
                 </div>
               </Card>
 
-              {/* GROW Phase Progression */}
-              <Card title="GROW Phase">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <PhaseIndicator phase="goal" currentPhase={session.current_phase} />
-                  <PhaseIndicator phase="reality" currentPhase={session.current_phase} />
-                  <PhaseIndicator phase="options" currentPhase={session.current_phase} />
-                  <PhaseIndicator phase="will" currentPhase={session.current_phase} />
-                  <PhaseIndicator phase="closing" currentPhase={session.current_phase} />
-                </div>
-              </Card>
+              {/* GROW Phase Progression - Only show for coaching sessions */}
+              {session.interaction_mode === 'coaching' && (
+                <Card title="GROW Phase">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <PhaseIndicator phase="goal" currentPhase={session.current_phase} />
+                    <PhaseIndicator phase="reality" currentPhase={session.current_phase} />
+                    <PhaseIndicator phase="options" currentPhase={session.current_phase} />
+                    <PhaseIndicator phase="will" currentPhase={session.current_phase} />
+                    <PhaseIndicator phase="closing" currentPhase={session.current_phase} />
+                  </div>
+                </Card>
+              )}
 
-              {/* Coaching State Indicators */}
-              <Card title="Coaching State">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <StateIndicator
-                    label="Reality Depth"
-                    value={`${session.reality_exploration_depth}/10`}
-                    good={session.reality_exploration_depth >= 10}
-                  />
-                  <StateIndicator
-                    label="Emotions Reflected"
-                    value={session.emotions_reflected ? 'Yes' : 'No'}
-                    good={session.emotions_reflected}
-                  />
-                  <StateIndicator
-                    label="Exceptions Explored"
-                    value={session.exceptions_explored ? 'Yes' : 'No'}
-                    good={session.exceptions_explored}
-                  />
-                  <StateIndicator
-                    label="Ready for Options"
-                    value={session.ready_for_options ? 'Yes' : 'No'}
-                    good={session.ready_for_options}
-                  />
-                </div>
+              {/* Session Metrics - Show different content for check-ins vs coaching */}
+              <Card title={session.interaction_mode === 'coaching' ? 'Coaching State' : 'Check-in Summary'}>
+                {session.interaction_mode === 'coaching' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <StateIndicator
+                      label="Reality Depth"
+                      value={`${session.reality_exploration_depth}/10`}
+                      good={session.reality_exploration_depth >= 10}
+                    />
+                    <StateIndicator
+                      label="Emotions Reflected"
+                      value={session.emotions_reflected ? 'Yes' : 'No'}
+                      good={session.emotions_reflected}
+                    />
+                    <StateIndicator
+                      label="Exceptions Explored"
+                      value={session.exceptions_explored ? 'Yes' : 'No'}
+                      good={session.exceptions_explored}
+                    />
+                    <StateIndicator
+                      label="Ready for Options"
+                      value={session.ready_for_options ? 'Yes' : 'No'}
+                      good={session.ready_for_options}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <InfoRow label="Duration" value={session.ended_at ? `${Math.round((new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()) / 60000)} minutes` : `${session.time_elapsed_minutes || 0} minutes (ongoing)`} />
+                    <InfoRow label="Messages" value={conversations.length} />
+                    <InfoRow label="Time Budget" value={`${session.time_budget_minutes} minutes`} />
+                  </div>
+                )}
 
                 {session.strengths_identified && session.strengths_identified.length > 0 && (
                   <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(215, 205, 236, 0.2)' }}>

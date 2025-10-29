@@ -285,10 +285,31 @@ TONE:
               };
             } catch (error) {
               console.error('[Discovery Agent] Failed to save profile:', error);
+
+              // IMPROVED ERROR HANDLING: Check if data was partially saved
+              // If children were saved but parent profile failed, that's a partial success
+              const supabase = createServiceClient();
+              const { data: savedProfile } = await supabase
+                .from('user_profiles')
+                .select('discovery_completed')
+                .eq('user_id', context.userId)
+                .single();
+
+              const { data: savedChildren } = await supabase
+                .from('child_profiles')
+                .select('id, child_name')
+                .eq('user_id', context.userId);
+
+              const partialSuccess = savedProfile?.discovery_completed || (savedChildren && savedChildren.length > 0);
+
               return {
                 success: false,
-                message: 'Failed to save profile',
-                error: error instanceof Error ? error.message : 'Unknown error'
+                message: partialSuccess
+                  ? 'Your information was saved, but there was a minor issue. Your profile is ready to use!'
+                  : 'Failed to save profile - please try again or contact support',
+                error: error instanceof Error ? error.message : 'Unknown error',
+                partialSuccess: partialSuccess,
+                savedChildCount: savedChildren?.length || 0
               };
             }
           }
@@ -307,7 +328,8 @@ TONE:
       if (toolOutput?.success) {
         responseText = `Perfect! I've saved all the information about ${toolOutput.profileSummary?.children?.map((c: any) => c.name).join(' and ') || 'your children'}. Your profile is complete! 🎉\n\nYou can now start coaching sessions or explore other features.`;
       } else {
-        responseText = `I tried to save your information but encountered an error: ${toolOutput?.error || 'Unknown error'}. Please try again or contact support.`;
+        // Use improved error message that distinguishes partial vs total failure
+        responseText = toolOutput?.message || `I tried to save your information but encountered an error: ${toolOutput?.error || 'Unknown error'}. Please try again or contact support.`;
       }
     }
 

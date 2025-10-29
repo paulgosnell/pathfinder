@@ -246,6 +246,7 @@ export async function POST(req: NextRequest) {
     console.log(`🤖 Running agent for session type: ${session.sessionType}...`);
 
     let agentResult: any;
+    let discoveryJustCompleted = false; // Track if discovery was completed this turn
 
     // Calculate Reality phase depth (non-crisis messages in current session)
     const realityDepth = conversationHistory?.filter(m =>
@@ -277,13 +278,31 @@ export async function POST(req: NextRequest) {
           existingChildProfiles: childProfiles || []
         });
 
-        // Check if partial discovery was completed
+        // Check if partial discovery was completed - verify BOTH tool result AND database
         const updateToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updatePartialDiscoveryProfile');
-        if (updateToolResult && (updateToolResult as any).result?.success) {
-          console.log('✅ Partial discovery completed successfully - marking session as complete');
+        const toolReportedSuccess = updateToolResult && (updateToolResult as any).result?.success;
+
+        // CRITICAL FIX: Check database to see if discovery actually completed
+        const { data: profileCheck } = await supabase
+          .from('user_profiles')
+          .select('discovery_completed, discovery_completed_at')
+          .eq('user_id', userId)
+          .single();
+
+        const discoveryActuallyCompleted = profileCheck?.discovery_completed === true;
+
+        if (toolReportedSuccess || discoveryActuallyCompleted) {
+          if (discoveryActuallyCompleted && !toolReportedSuccess) {
+            console.log('⚠️  Partial discovery data saved but tool reported error - force-closing session anyway');
+          } else {
+            console.log('✅ Partial discovery completed successfully - marking session as complete');
+          }
+
           await sessionManager.updateSession(session.id, {
             status: 'complete'
           });
+
+          discoveryJustCompleted = true; // Set flag for frontend
         }
       } else {
         // Route to Full Discovery Agent - starting from scratch
@@ -340,13 +359,33 @@ export async function POST(req: NextRequest) {
           }
         });
 
-        // Check if discovery was completed (tool was executed successfully)
+        // Check if discovery was completed - verify BOTH tool result AND database
+        // (Tool might report failure but data was still saved - see bug report)
         const discoveryToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updateDiscoveryProfile');
-        if (discoveryToolResult && (discoveryToolResult as any).result?.success) {
-          console.log('✅ Discovery completed successfully - marking session as complete');
+        const toolReportedSuccess = discoveryToolResult && (discoveryToolResult as any).result?.success;
+
+        // CRITICAL FIX: Check database to see if discovery actually completed
+        // even if tool reported an error (data might have been saved before error occurred)
+        const { data: profileCheck } = await supabase
+          .from('user_profiles')
+          .select('discovery_completed, discovery_completed_at')
+          .eq('user_id', userId)
+          .single();
+
+        const discoveryActuallyCompleted = profileCheck?.discovery_completed === true;
+
+        if (toolReportedSuccess || discoveryActuallyCompleted) {
+          if (discoveryActuallyCompleted && !toolReportedSuccess) {
+            console.log('⚠️  Discovery data saved but tool reported error - force-closing session anyway');
+          } else {
+            console.log('✅ Discovery completed successfully - marking session as complete');
+          }
+
           await sessionManager.updateSession(session.id, {
             status: 'complete'
           });
+
+          discoveryJustCompleted = true; // Set flag for frontend
         }
       }
     } else {
@@ -487,6 +526,7 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({
       message: agentResult.text,
       sessionId: session.id,
+      sessionCompleted: discoveryJustCompleted, // NEW: Tell frontend if discovery just completed
       usage: {
         totalTokens: agentResult.usage?.totalTokens,
         cost: performanceTracker.calculateCost(

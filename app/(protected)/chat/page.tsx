@@ -352,6 +352,22 @@ export default function ChatPage() {
         throw new Error(data?.message || 'Unexpected response from chat API');
       }
 
+      // CRITICAL FIX: Check if discovery session was just completed
+      if (data.sessionCompleted && sessionType === 'discovery') {
+        // Discovery is done! Show success message and redirect to new check-in
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: data.message + '\n\n✨ Your discovery session is complete! Starting a new conversation...',
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+
+        // Wait 2 seconds then redirect to new check-in session
+        setTimeout(() => {
+          window.location.href = '/chat?new=true&sessionType=check-in';
+        }, 2000);
+        return; // Don't process further
+      }
+
       if (data.sessionId && !sessionId) {
         setSessionId(data.sessionId);
         setCurrentSession(data.sessionId, 'chat');

@@ -129,7 +129,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true });
+    // CRITICAL FIX: Check if this is a discovery session that just completed
+    // (Same logic as chat mode - check database for discovery_completed=true)
+    const { data: sessionData } = await supabaseAdmin
+      .from('agent_sessions')
+      .select('session_type, status')
+      .eq('id', sessionId)
+      .single();
+
+    let discoveryCompleted = false;
+
+    if (sessionData?.session_type === 'discovery' && sessionData?.status !== 'complete') {
+      // Check if discovery was actually completed in database
+      const { data: profileCheck } = await supabaseAdmin
+        .from('user_profiles')
+        .select('discovery_completed, discovery_completed_at')
+        .eq('user_id', userId)
+        .single();
+
+      if (profileCheck?.discovery_completed === true) {
+        console.log(`🎤 [Voice] Discovery completed for user ${userId} - closing session ${sessionId}`);
+
+        // Mark session as complete
+        await supabaseAdmin
+          .from('agent_sessions')
+          .update({ status: 'complete', ended_at: new Date().toISOString() })
+          .eq('id', sessionId);
+
+        discoveryCompleted = true;
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      discoveryCompleted // Tell frontend if discovery just finished
+    });
   } catch (error) {
     return NextResponse.json(
       { error: 'Internal server error' },

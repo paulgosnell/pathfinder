@@ -104,7 +104,7 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
     onMessage: async (message) => {
       // Save transcript to database
       try {
-        await fetch('/api/voice-transcript', {
+        const response = await fetch('/api/voice-transcript', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -114,6 +114,22 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
             content: message.message,
           }),
         });
+
+        // CRITICAL FIX: Check if discovery just completed
+        if (response.ok) {
+          const data = await response.json();
+          if (data.discoveryCompleted && sessionType === 'discovery') {
+            console.log('🎤 Discovery completed! Redirecting to new check-in...');
+
+            // Stop the current conversation
+            conversation.endSession();
+
+            // Show success message and redirect after 2 seconds
+            setTimeout(() => {
+              window.location.href = '/voice?new=true&sessionType=check-in';
+            }, 2000);
+          }
+        }
       } catch (err) {
         console.error('Failed to save voice transcript:', err);
         // Don't show error to user - transcript saving shouldn't disrupt conversation

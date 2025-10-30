@@ -35,6 +35,10 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
   const [userContext, setUserContext] = useState<VoiceUserContext | null>(null);
   const [isLoadingContext, setIsLoadingContext] = useState(true);
 
+  // Track if context fetch is in flight AND if we've already fetched successfully
+  const isFetchingContextRef = useRef(false);
+  const hasLoadedContextRef = useRef(false);
+
   // Generate stable session ID (browser-compatible UUID)
   const sessionIdRef = useRef<string>('');
 
@@ -63,11 +67,27 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
         return;
       }
 
+      // Prevent duplicate requests - skip if already loaded successfully
+      if (hasLoadedContextRef.current) {
+        console.log('⏩ Context already loaded, skipping fetch');
+        setIsLoadingContext(false);
+        return;
+      }
+
+      // Prevent duplicate requests - skip if already fetching
+      if (isFetchingContextRef.current) {
+        console.log('⏩ Skipping duplicate context fetch (already in progress)');
+        return;
+      }
+
+      isFetchingContextRef.current = true;
+
       try {
         const response = await fetch('/api/voice-context');
         if (response.ok) {
           const data = await response.json();
           setUserContext(data);
+          hasLoadedContextRef.current = true; // Mark as successfully loaded
           console.log('✅ Loaded user context for voice agent:', {
             hasProfile: !!data.userProfile,
             childCount: data.childProfiles?.length || 0,
@@ -80,11 +100,12 @@ export function ElevenLabsVoiceAssistant({ sessionType, timeBudgetMinutes }: Ele
         console.error('Error loading user context:', err);
       } finally {
         setIsLoadingContext(false);
+        isFetchingContextRef.current = false;
       }
     }
 
     loadUserContext();
-  }, [user]);
+  }, [user?.id]); // Only re-run if user ID changes, not on every user object update
 
   const conversation = useConversation({
     onConnect: () => {

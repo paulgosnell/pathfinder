@@ -198,9 +198,9 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
               <div
                 style={{
                   display: 'flex',
-                  gap: '6px',
-                  flexWrap: 'nowrap',
-                  justifyContent: 'space-between',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
                 }}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
@@ -209,9 +209,8 @@ export function FeedbackModal({ isOpen, onClose, sessionId }: FeedbackModalProps
                     type="button"
                     onClick={() => setRating(num)}
                     style={{
-                      flex: '1',
-                      minWidth: '40px',
-                      maxWidth: '46px',
+                      flex: '0 0 auto',
+                      width: '44px',
                       height: '44px',
                       borderRadius: BORDER_RADIUS.medium,
                       border: rating === num ? '2px solid #D7CDEC' : '2px solid #E3EADD',

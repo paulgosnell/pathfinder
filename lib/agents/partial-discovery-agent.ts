@@ -58,8 +58,10 @@ export const createPartialDiscoveryAgent = () => {
     console.log(`[Partial Discovery Agent] Existing children:`, context.existingChildProfiles.length);
 
     // Determine if we should auto-save (collected all missing fields)
+    // DISABLED: Don't auto-trigger saves - let the agent decide when to call the tool
+    // The agent should only call updatePartialDiscoveryProfile when user has provided actual data
     const exchangeCount = context.conversationHistory?.filter(m => m.role === 'assistant').length || 0;
-    const shouldAutoSave = exchangeCount >= 3 && context.profileCompleteness.missingFields.length <= 1;
+    const shouldAutoSave = false; // Never auto-save, agent must explicitly choose to save
 
     // Build context about what we already have
     const existingDataSummary = buildExistingDataSummary(
@@ -232,7 +234,7 @@ TONE:
 
                   // Build update object with only provided fields
                   const childUpdates: any = {
-                    updated_at: new Date().toISOString()
+                    last_updated: new Date().toISOString()
                   };
 
                   if (childUpdate.childAge) childUpdates.child_age = childUpdate.childAge;

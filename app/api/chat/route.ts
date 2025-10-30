@@ -278,31 +278,35 @@ export async function POST(req: NextRequest) {
           existingChildProfiles: childProfiles || []
         });
 
-        // Check if partial discovery was completed - verify BOTH tool result AND database
+        // Check if partial discovery was completed - ONLY if tool was called in THIS exchange
         const updateToolResult = agentResult.toolResults?.find((r: any) => r.toolName === 'updatePartialDiscoveryProfile');
-        const toolReportedSuccess = updateToolResult && (updateToolResult as any).result?.success;
+        const toolWasCalledThisExchange = updateToolResult !== undefined;
 
-        // CRITICAL FIX: Check database to see if discovery actually completed
-        const { data: profileCheck } = await supabase
-          .from('user_profiles')
-          .select('discovery_completed, discovery_completed_at')
-          .eq('user_id', userId)
-          .single();
+        if (toolWasCalledThisExchange) {
+          const toolReportedSuccess = (updateToolResult as any).result?.success;
 
-        const discoveryActuallyCompleted = profileCheck?.discovery_completed === true;
+          // Double-check database to verify completion
+          const { data: profileCheck } = await supabase
+            .from('user_profiles')
+            .select('discovery_completed, discovery_completed_at')
+            .eq('user_id', userId)
+            .single();
 
-        if (toolReportedSuccess || discoveryActuallyCompleted) {
-          if (discoveryActuallyCompleted && !toolReportedSuccess) {
-            console.log('⚠️  Partial discovery data saved but tool reported error - force-closing session anyway');
-          } else {
-            console.log('✅ Partial discovery completed successfully - marking session as complete');
+          const discoveryActuallyCompleted = profileCheck?.discovery_completed === true;
+
+          if (toolReportedSuccess || discoveryActuallyCompleted) {
+            if (discoveryActuallyCompleted && !toolReportedSuccess) {
+              console.log('⚠️  Partial discovery data saved but tool reported error - force-closing session anyway');
+            } else {
+              console.log('✅ Partial discovery completed successfully - marking session as complete');
+            }
+
+            await sessionManager.updateSession(session.id, {
+              status: 'complete'
+            });
+
+            discoveryJustCompleted = true; // Set flag for frontend
           }
-
-          await sessionManager.updateSession(session.id, {
-            status: 'complete'
-          });
-
-          discoveryJustCompleted = true; // Set flag for frontend
         }
       } else {
         // Route to Full Discovery Agent - starting from scratch

@@ -199,10 +199,7 @@ export function DiscoveryBanner({ contextMessage, currentSessionType }: Discover
 
       {/* Action button */}
       <a
-        href={isStarted
-          ? "/chat?sessionType=discovery"  // RESUME existing discovery - no new=true
-          : "/chat?new=true&sessionType=discovery"  // START fresh discovery
-        }
+        href="/chat?new=true&sessionType=discovery"  // Always start new discovery session
         style={{
           display: 'inline-block',
           padding: '8px 16px',

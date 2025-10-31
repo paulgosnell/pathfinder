@@ -146,7 +146,33 @@ export default function ChatPage() {
       try {
         // If user clicked "New Chat", start fresh with initial message
         if (isNewSession) {
-          const firstMessage = await getFirstMessage(sessionType);
+          // CRITICAL FIX: Create session immediately to prevent redirect loops
+          // Force new session creation by calling API with forceNew=true
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: 'START_SESSION', // Special message to initialize session
+              context: {
+                userId: user.id,
+                sessionType: sessionType,
+                interactionMode: initialInteractionMode,
+                timeBudgetMinutes: initialTimeBudget,
+                forceNew: true // Force new session (close any old discovery sessions)
+              }
+            })
+          });
+
+          const data = await response.json();
+
+          // Set session ID immediately
+          if (data.sessionId) {
+            setSessionId(data.sessionId);
+            setCurrentSession(data.sessionId, 'chat');
+          }
+
+          // Show first message (either from API or default)
+          const firstMessage = data.message || await getFirstMessage(sessionType);
           setMessages([
             {
               role: 'assistant',
@@ -240,6 +266,18 @@ export default function ChatPage() {
         ]);
       } catch (error) {
         console.error('Failed to load session:', error);
+
+        // Log detailed error information for debugging
+        if (error instanceof Error) {
+          console.error('Session load error details:', {
+            message: error.message,
+            stack: error.stack,
+            userId: user?.id,
+            isNewSession: isNewSession,
+            sessionType: sessionType
+          });
+        }
+
         // On error, still start with message based on session type
         const firstMessage = await getFirstMessage(sessionType);
         setMessages([
@@ -390,9 +428,33 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Chat error:', error);
+
+      // Provide more helpful error messages based on error type
+      let errorMessage = "I'm having trouble connecting right now. Please try again in a moment.";
+
+      if (error instanceof Error) {
+        // Log detailed error for debugging
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          sessionId: sessionId,
+          sessionType: sessionType,
+          userId: user?.id
+        });
+
+        // Show specific error messages for common issues
+        if (error.message.includes('401') || error.message.includes('Authentication')) {
+          errorMessage = "Your session has expired. Please refresh the page and sign in again.";
+        } else if (error.message.includes('500')) {
+          errorMessage = "The server encountered an error. Please try again in a moment, or contact support if this persists.";
+        } else if (error.message.includes('timeout')) {
+          errorMessage = "The request timed out. Please check your connection and try again.";
+        }
+      }
+
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "I'm having trouble connecting right now. Please try again in a moment."
+        content: errorMessage
       }]);
     } finally {
       setLoading(false);

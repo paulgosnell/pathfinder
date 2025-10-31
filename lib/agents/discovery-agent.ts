@@ -286,6 +286,25 @@ TONE:
             } catch (error) {
               console.error('[Discovery Agent] Failed to save profile:', error);
 
+              // Extract detailed error message from Supabase error objects or standard Errors
+              let errorMessage = 'Unknown error';
+              if (error && typeof error === 'object') {
+                // Supabase errors have 'message' property
+                if ('message' in error && typeof error.message === 'string') {
+                  errorMessage = error.message;
+                }
+                // Fallback to stringifying the error object
+                else {
+                  try {
+                    errorMessage = JSON.stringify(error);
+                  } catch {
+                    errorMessage = String(error);
+                  }
+                }
+              } else {
+                errorMessage = String(error);
+              }
+
               // IMPROVED ERROR HANDLING: Check if data was partially saved
               // If children were saved but parent profile failed, that's a partial success
               const supabase = createServiceClient();
@@ -307,7 +326,7 @@ TONE:
                 message: partialSuccess
                   ? 'Your information was saved, but there was a minor issue. Your profile is ready to use!'
                   : 'Failed to save profile - please try again or contact support',
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: errorMessage,
                 partialSuccess: partialSuccess,
                 savedChildCount: savedChildren?.length || 0
               };

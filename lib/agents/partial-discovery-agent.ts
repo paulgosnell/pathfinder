@@ -287,10 +287,30 @@ TONE:
               };
             } catch (error) {
               console.error('[Partial Discovery Agent] Failed to update profile:', error);
+
+              // Extract detailed error message from Supabase error objects or standard Errors
+              let errorMessage = 'Unknown error';
+              if (error && typeof error === 'object') {
+                // Supabase errors have 'message' property
+                if ('message' in error && typeof error.message === 'string') {
+                  errorMessage = error.message;
+                }
+                // Fallback to stringifying the error object
+                else {
+                  try {
+                    errorMessage = JSON.stringify(error);
+                  } catch {
+                    errorMessage = String(error);
+                  }
+                }
+              } else {
+                errorMessage = String(error);
+              }
+
               return {
                 success: false,
                 message: 'Failed to update profile',
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: errorMessage
               };
             }
           }

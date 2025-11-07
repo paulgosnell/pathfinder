@@ -19,11 +19,13 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabaseAdmin();
 
     // Fetch all feedback with user info and session info
+    // Note: Specify foreign key explicitly because user_feedback has multiple FKs to users table
     const { data: feedback, error } = await supabase
       .from('user_feedback')
       .select(`
         *,
-        user:users(id, created_at),
+        user:user_id(id, created_at),
+        reviewed_by_user:reviewed_by(id, created_at),
         session:agent_sessions(id, mode, session_type, started_at)
       `)
       .order('submitted_at', { ascending: false });

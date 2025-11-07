@@ -30,7 +30,16 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[Admin] Error fetching feedback:', error);
-      throw error;
+      console.error('[Admin] Error details:', JSON.stringify(error, null, 2));
+      return NextResponse.json(
+        {
+          error: 'Failed to fetch feedback data',
+          details: error.message || 'Unknown error',
+          feedback: [],
+          stats: null
+        },
+        { status: 500 }
+      );
     }
 
     // Calculate aggregate stats
@@ -71,10 +80,16 @@ export async function GET(request: NextRequest) {
         totalSessions
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Admin] Error in feedback API:', error);
+    console.error('[Admin] Error stack:', error?.stack);
     return NextResponse.json(
-      { error: 'Failed to fetch feedback data' },
+      {
+        error: 'Failed to fetch feedback data',
+        details: error?.message || String(error),
+        feedback: [],
+        stats: null
+      },
       { status: 500 }
     );
   }

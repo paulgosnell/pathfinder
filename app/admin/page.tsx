@@ -45,7 +45,12 @@ export default function AdminDashboard() {
 
       const dashboardData = await dashboardRes.json();
       const analyticsData = await analyticsRes.json();
-      const feedbackDataResponse = feedbackRes.ok ? await feedbackRes.json() : { feedback: [], stats: null };
+      let feedbackDataResponse: { feedback: any[]; stats: any } = { feedback: [], stats: null };
+      if (feedbackRes.ok) {
+        feedbackDataResponse = await feedbackRes.json();
+      } else {
+        console.error('[Admin] Feedback API error:', feedbackRes.status, await feedbackRes.text());
+      }
 
       console.log('[Admin] Dashboard data loaded:', {
         hasMetrics: !!dashboardData.executiveMetrics,
@@ -59,7 +64,8 @@ export default function AdminDashboard() {
       });
       console.log('[Admin] Feedback data loaded:', {
         feedbackCount: feedbackDataResponse.feedback?.length || 0,
-        avgRating: feedbackDataResponse.stats?.avgRating || 0
+        avgRating: feedbackDataResponse.stats?.avgRating || 0,
+        hasStats: !!feedbackDataResponse.stats
       });
 
       setExecutiveMetrics(dashboardData.executiveMetrics);
@@ -589,14 +595,32 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
     return text.substring(0, maxLength) + '...';
   };
 
-  if (!stats) {
+  if (!feedback || feedback.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 32px', color: '#586C8E' }}>
         <MessageSquare size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
         <p style={{ fontSize: '16px', fontWeight: '600' }}>No feedback data available</p>
+        <p style={{ fontSize: '14px', marginTop: '8px' }}>Feedback will appear here once users submit ratings.</p>
       </div>
     );
   }
+
+  // Use default stats if unavailable
+  const safeStats = stats || {
+    totalFeedback: feedback.length,
+    avgRating: feedback.length > 0
+      ? feedback.reduce((sum: number, f: any) => sum + f.rating, 0) / feedback.length
+      : 0,
+    ratingDistribution: {
+      low: feedback.filter((f: any) => f.rating >= 1 && f.rating <= 3).length,
+      medium: feedback.filter((f: any) => f.rating >= 4 && f.rating <= 6).length,
+      high: feedback.filter((f: any) => f.rating >= 7 && f.rating <= 8).length,
+      excellent: feedback.filter((f: any) => f.rating >= 9 && f.rating <= 10).length,
+    },
+    latestFeedback: feedback[0]?.submitted_at || null,
+    responseRate: 0,
+    totalSessions: 0
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -604,29 +628,29 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
         <MetricCard
           label="Total Feedback"
-          value={stats.totalFeedback}
+          value={safeStats.totalFeedback}
           sublabel="All Time"
           icon={<MessageSquare size={32} />}
           color="#B7D3D8"
         />
         <MetricCard
           label="Average Rating"
-          value={stats.avgRating.toFixed(1)}
-          sublabel={`${stats.ratingDistribution.excellent} Excellent`}
+          value={safeStats.avgRating.toFixed(1)}
+          sublabel={`${safeStats.ratingDistribution.excellent} Excellent`}
           icon={<TrendingUp size={32} />}
-          color={stats.avgRating >= 8 ? '#B7D3D8' : stats.avgRating >= 6 ? '#E3EADD' : '#E6A897'}
+          color={safeStats.avgRating >= 8 ? '#B7D3D8' : safeStats.avgRating >= 6 ? '#E3EADD' : '#E6A897'}
         />
         <MetricCard
           label="Response Rate"
-          value={`${stats.responseRate}%`}
-          sublabel={`${stats.totalFeedback}/${stats.totalSessions} Sessions`}
+          value={`${safeStats.responseRate}%`}
+          sublabel={`${safeStats.totalFeedback}/${safeStats.totalSessions} Sessions`}
           icon={<Activity size={32} />}
           color="#D7CDEC"
         />
         <MetricCard
           label="Latest Feedback"
-          value={stats.latestFeedback ? new Date(stats.latestFeedback).toLocaleDateString() : 'N/A'}
-          sublabel={stats.latestFeedback ? new Date(stats.latestFeedback).toLocaleTimeString() : ''}
+          value={safeStats.latestFeedback ? new Date(safeStats.latestFeedback).toLocaleDateString() : 'N/A'}
+          sublabel={safeStats.latestFeedback ? new Date(safeStats.latestFeedback).toLocaleTimeString() : ''}
           icon={<BarChart3 size={32} />}
           color="#E3EADD"
         />
@@ -635,10 +659,10 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
       {/* Rating Distribution */}
       <Card title="Rating Distribution">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
-          <StatItem label="1-3 (Low)" value={stats.ratingDistribution.low} />
-          <StatItem label="4-6 (Medium)" value={stats.ratingDistribution.medium} />
-          <StatItem label="7-8 (High)" value={stats.ratingDistribution.high} />
-          <StatItem label="9-10 (Excellent)" value={stats.ratingDistribution.excellent} />
+          <StatItem label="1-3 (Low)" value={safeStats.ratingDistribution.low} />
+          <StatItem label="4-6 (Medium)" value={safeStats.ratingDistribution.medium} />
+          <StatItem label="7-8 (High)" value={safeStats.ratingDistribution.high} />
+          <StatItem label="9-10 (Excellent)" value={safeStats.ratingDistribution.excellent} />
         </div>
       </Card>
 

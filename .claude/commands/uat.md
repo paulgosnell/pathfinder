@@ -39,7 +39,9 @@ You: "Logged. Keep dumping or ready to triage?"
 
 ## Database Access (Supabase MCP)
 
-**SQL Query to Pull Feedback:**
+**IMPORTANT**: The `/uat` command now filters out already-reviewed feedback by default to avoid duplicate work.
+
+**Default Query (Unreviewed Only):**
 ```sql
 SELECT
   id,
@@ -51,14 +53,23 @@ SELECT
   user_id,
   session_id
 FROM user_feedback
+WHERE reviewed = FALSE OR reviewed IS NULL
 ORDER BY submitted_at DESC;
 ```
+
+**Alternative Queries** (see `docs/feedback/uat-queries.sql`):
+- Query 2: View feedback by triage tier
+- Query 3: View unfixed Tier 1/2 issues only
+- Query 4: View fixed feedback (verify fixes)
+- Query 5: Summary stats
+- Query 6: Recent activity (last 7 days)
 
 **What to show user:**
 - Rating (1-10)
 - Feedback text (exact words)
 - Page/context (chat, voice, etc.)
 - Submitted date/time
+- Review status (NEW if unreviewed)
 
 ## Raw Notes File
 

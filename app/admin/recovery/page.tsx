@@ -25,7 +25,12 @@ export default function AdminRecoveryPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data?.message || 'Failed to generate recovery link');
+        // Display detailed error information for debugging
+        const errorMessage = data?.message || 'Failed to generate recovery link';
+        const errorDetails = data?.error ? `\n\nDetails: ${data.error}` : '';
+        const errorSuggestion = data?.suggestion ? `\n\n${data.suggestion}` : '';
+        const errorCode = data?.code ? `\n\nError code: ${data.code}` : '';
+        setError(errorMessage + errorDetails + errorSuggestion + errorCode);
         return;
       }
 
@@ -143,7 +148,9 @@ export default function AdminRecoveryPage() {
               backgroundColor: 'rgba(230, 168, 151, 0.1)',
               border: '1px solid rgba(230, 168, 151, 0.4)',
               color: '#E6A897',
-              fontSize: '0.875rem'
+              fontSize: '0.875rem',
+              whiteSpace: 'pre-wrap',
+              fontFamily: "'Courier New', monospace"
             }}>
               {error}
             </div>

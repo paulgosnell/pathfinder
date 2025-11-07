@@ -25,12 +25,7 @@ export default function AdminRecoveryPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Display detailed error information for debugging
-        const errorMessage = data?.message || 'Failed to generate recovery link';
-        const errorDetails = data?.error ? `\n\nDetails: ${data.error}` : '';
-        const errorSuggestion = data?.suggestion ? `\n\n${data.suggestion}` : '';
-        const errorCode = data?.code ? `\n\nError code: ${data.code}` : '';
-        setError(errorMessage + errorDetails + errorSuggestion + errorCode);
+        setError(data?.message || 'Failed to generate recovery link');
         return;
       }
 
@@ -86,7 +81,7 @@ export default function AdminRecoveryPage() {
           fontSize: '0.875rem',
           marginBottom: '2rem'
         }}>
-          Use this tool when email delivery fails. Generate a recovery link and share it directly with the user.
+          Generate a password recovery link to manually share with users when email delivery fails.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -208,7 +203,7 @@ export default function AdminRecoveryPage() {
                 color: '#586C8E',
                 lineHeight: '1.5'
               }}>
-                Share this link with the user via SMS, WhatsApp, or other secure channel. The link will allow them to set a new password.
+                Share this link with the user via SMS, WhatsApp, or other secure channel. The link expires in 1 hour.
               </p>
             </div>
           )}

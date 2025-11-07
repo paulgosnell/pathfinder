@@ -347,41 +347,222 @@ function AnalyticsTab({ overview, realTimeVisitors }: any) {
 }
 
 function LiveMonitorTab({ sessions }: { sessions: any[] }) {
+  // Calculate real-time metrics from active sessions
+  const now = Date.now();
+  const oneHourAgo = now - (60 * 60 * 1000);
+
+  // Active sessions metrics
+  const totalActive = sessions.length;
+  const chatActive = sessions.filter(s => s.mode === 'chat').length;
+  const voiceActive = sessions.filter(s => s.mode === 'voice').length;
+
+  // Average metrics across active sessions
+  const avgDuration = sessions.length > 0
+    ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length)
+    : 0;
+  const avgDepth = sessions.length > 0
+    ? (sessions.reduce((sum, s) => sum + (s.reality_exploration_depth || 0), 0) / sessions.length).toFixed(1)
+    : '0.0';
+  const avgMessages = sessions.length > 0
+    ? Math.round(sessions.reduce((sum, s) => sum + s.messageCount, 0) / sessions.length)
+    : 0;
+
+  // Phase distribution
+  const phaseDistribution = {
+    goal: sessions.filter(s => s.current_phase === 'goal').length,
+    reality: sessions.filter(s => s.current_phase === 'reality').length,
+    options: sessions.filter(s => s.current_phase === 'options').length,
+    will: sessions.filter(s => s.current_phase === 'will').length,
+    closing: sessions.filter(s => s.current_phase === 'closing').length
+  };
+
+  // Quality indicators
+  const deepCoachingSessions = sessions.filter(s => s.reality_exploration_depth >= 10).length;
+  const qualityPercent = sessions.length > 0
+    ? Math.round((deepCoachingSessions / sessions.length) * 100)
+    : 0;
+
+  // Recent activity (sessions with activity in last hour)
+  const recentActivity = sessions.filter(s => {
+    const lastActivity = new Date(s.lastActivity).getTime();
+    return lastActivity >= oneHourAgo;
+  }).length;
+
   return (
-    <Card title={`Active Sessions (${sessions.length})`}>
-      {sessions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 32px', color: '#586C8E' }}>No active sessions</div>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px' }}>
-          <thead>
-            <tr style={{ background: 'rgba(227, 234, 221, 0.3)', borderBottom: '1px solid rgba(215, 205, 236, 0.2)' }}>
-              <th style={{ textAlign: 'left', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>User</th>
-              <th style={{ textAlign: 'left', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Mode</th>
-              <th style={{ textAlign: 'left', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Phase</th>
-              <th style={{ textAlign: 'center', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Depth</th>
-              <th style={{ textAlign: 'center', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Msgs</th>
-              <th style={{ textAlign: 'center', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Dur</th>
-              <th style={{ textAlign: 'left', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Last Activity</th>
-              <th style={{ textAlign: 'center', padding: '16px 16px', fontWeight: '600', color: '#2A3F5A' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map((session, idx) => (
-              <tr key={session.id} style={{ borderBottom: '1px solid rgba(215, 205, 236, 0.1)', backgroundColor: idx % 2 === 0 ? 'rgba(227, 234, 221, 0.05)' : 'transparent' }}>
-                <td style={{ padding: '16px', color: '#2A3F5A', fontWeight: '500' }}>User#{session.user_id ? session.user_id.substring(0, 8) : 'unknown'}</td>
-                <td style={{ padding: '16px' }}><Badge text={session.mode} /></td>
-                <td style={{ padding: '16px' }}><Badge text={session.current_phase} /></td>
-                <td style={{ textAlign: 'center', padding: '16px', color: session.reality_exploration_depth >= 10 ? '#B7D3D8' : '#E6A897', fontWeight: '600' }}>{session.reality_exploration_depth}/10</td>
-                <td style={{ textAlign: 'center', padding: '16px', color: '#586C8E' }}>{session.messageCount}</td>
-                <td style={{ textAlign: 'center', padding: '16px', color: '#586C8E' }}>{session.duration}m</td>
-                <td style={{ padding: '16px', color: '#586C8E', fontSize: '14px' }}>{new Date(session.lastActivity).toLocaleTimeString()}</td>
-                <td style={{ textAlign: 'center', padding: '16px' }}><a href={`/admin/session/${session.id}`} style={{ color: '#B7D3D8', fontWeight: '600', textDecoration: 'none' }}>View</a></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </Card>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      {/* Real-time Status Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+        <MetricCard
+          label="Active Now"
+          value={totalActive}
+          sublabel="Live Sessions"
+          icon={<Activity size={32} />}
+          color="#B7D3D8"
+        />
+        <MetricCard
+          label="Avg Session Time"
+          value={`${avgDuration}m`}
+          sublabel="Current Active"
+          icon={<TrendingUp size={32} />}
+          color="#D7CDEC"
+        />
+        <MetricCard
+          label="Deep Coaching"
+          value={`${qualityPercent}%`}
+          sublabel={`${deepCoachingSessions}/${totalActive} sessions`}
+          icon={<BarChart3 size={32} />}
+          color={qualityPercent >= 60 ? '#E3EADD' : '#E6A897'}
+        />
+        <MetricCard
+          label="Activity (1hr)"
+          value={recentActivity}
+          sublabel="Recent Messages"
+          icon={<MessageSquare size={32} />}
+          color="#E6A897"
+        />
+      </div>
+
+      {/* Current Load */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <Card title="Current Load">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+            <StatItem label="Avg Messages" value={avgMessages} />
+            <StatItem label="Avg Depth" value={avgDepth} />
+            <StatItem label="Avg Duration" value={`${avgDuration}m`} />
+          </div>
+        </Card>
+
+        <Card title="Mode Split">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#586C8E', fontSize: '14px' }}>Chat</span>
+              <span style={{ color: '#2A3F5A', fontSize: '24px', fontWeight: '700' }}>{chatActive}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#586C8E', fontSize: '14px' }}>Voice</span>
+              <span style={{ color: '#2A3F5A', fontSize: '24px', fontWeight: '700' }}>{voiceActive}</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Phase Distribution */}
+      <Card title="Coaching Phases (Active Sessions)">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '24px' }}>
+          <PhaseCard label="Goal" count={phaseDistribution.goal} color="#B7D3D8" />
+          <PhaseCard label="Reality" count={phaseDistribution.reality} color="#D7CDEC" />
+          <PhaseCard label="Options" count={phaseDistribution.options} color="#E3EADD" />
+          <PhaseCard label="Will" count={phaseDistribution.will} color="#F0D9DA" />
+          <PhaseCard label="Closing" count={phaseDistribution.closing} color="#E6A897" />
+        </div>
+      </Card>
+
+      {/* System Health */}
+      <Card title="System Health">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <HealthIndicator
+            label="Session Load"
+            status={totalActive < 10 ? 'good' : totalActive < 20 ? 'warning' : 'critical'}
+            value={`${totalActive} active sessions`}
+          />
+          <HealthIndicator
+            label="Coaching Quality"
+            status={qualityPercent >= 60 ? 'good' : qualityPercent >= 40 ? 'warning' : 'critical'}
+            value={`${qualityPercent}% reaching deep exploration`}
+          />
+          <HealthIndicator
+            label="Activity Level"
+            status={recentActivity > 0 ? 'good' : 'warning'}
+            value={`${recentActivity} sessions active in last hour`}
+          />
+        </div>
+      </Card>
+
+      {/* Quick Links */}
+      <Card title="Quick Actions">
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); window.location.href = '/admin?tab=sessions'; }}
+            style={{
+              flex: 1,
+              padding: '16px',
+              background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+              color: 'white',
+              borderRadius: '8px',
+              textAlign: 'center',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontSize: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <Eye size={18} />
+            View All Sessions ({totalActive} active)
+          </a>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// Helper component for phase cards
+function PhaseCard({ label, count, color }: { label: string; count: number; color: string }) {
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${color}15, ${color}25)`,
+      border: `1px solid ${color}40`,
+      borderRadius: '10px',
+      padding: '20px',
+      textAlign: 'center'
+    }}>
+      <div style={{ fontSize: '32px', fontWeight: '700', color: '#2A3F5A', marginBottom: '8px' }}>
+        {count}
+      </div>
+      <div style={{ fontSize: '13px', color: '#586C8E', fontWeight: '600' }}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+// Helper component for health indicators
+function HealthIndicator({ label, status, value }: { label: string; status: 'good' | 'warning' | 'critical'; value: string }) {
+  const colors = {
+    good: '#B7D3D8',
+    warning: '#E6A897',
+    critical: '#E6A897'
+  };
+  const icons = {
+    good: <CheckCircle size={20} />,
+    warning: <AlertCircle size={20} />,
+    critical: <XCircle size={20} />
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '16px',
+      background: `${colors[status]}10`,
+      border: `1px solid ${colors[status]}40`,
+      borderRadius: '8px'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ color: colors[status] }}>
+          {icons[status]}
+        </div>
+        <div>
+          <div style={{ color: '#2A3F5A', fontWeight: '600', fontSize: '15px' }}>{label}</div>
+          <div style={{ color: '#586C8E', fontSize: '13px', marginTop: '2px' }}>{value}</div>
+        </div>
+      </div>
+      <Badge text={status.toUpperCase()} />
+    </div>
   );
 }
 

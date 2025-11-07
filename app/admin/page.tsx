@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { logAdminAction } from '@/lib/admin/auth';
-import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw } from 'lucide-react';
+import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye } from 'lucide-react';
 
-type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback';
+type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback'];
+  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'knowledge'];
 
   return (
     <AdminProtectedRoute>
@@ -196,6 +196,7 @@ export default function AdminDashboard() {
               {activeTab === 'users' && <UsersTab users={users} />}
               {activeTab === 'waitlist' && <WaitlistTab signups={waitlist} />}
               {activeTab === 'feedback' && <FeedbackTab feedback={feedbackData} stats={feedbackStats} />}
+              {activeTab === 'knowledge' && <KnowledgeTab />}
             </>
           )}
         </main>
@@ -748,6 +749,616 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
           </table>
         )}
       </Card>
+    </div>
+  );
+}
+
+// ============================================================================
+// KNOWLEDGE BASE TAB - RAG Content Management
+// ============================================================================
+
+function KnowledgeTab() {
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [processingDocs, setProcessingDocs] = useState<any[]>([]);
+  const [flaggedChunks, setFlaggedChunks] = useState<any[]>([]);
+  const [knowledgeBaseChunks, setKnowledgeBaseChunks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
+
+  // Mock data for now - will connect to API later
+  useEffect(() => {
+    // Simulate loading
+    setTimeout(() => {
+      setDocuments([
+        { id: '1', title: 'Dr Barkley ADHD Guide.pdf', status: 'completed', chunks: 142, approved: 128, flagged: 12, rejected: 2, uploadedAt: '2025-11-07T10:00:00Z' },
+        { id: '2', title: 'Morning Routines Research.md', status: 'processing', chunks: 0, uploadedAt: '2025-11-07T11:30:00Z' }
+      ]);
+      setProcessingDocs([
+        { id: '2', title: 'Morning Routines Research.md', progress: 45, stage: 'Quality filtering chunks...' }
+      ]);
+      setFlaggedChunks([
+        { id: 'c1', text: 'Consider implementing a reward system for positive behaviors. Rewards can be effective when used consistently...', source: 'Dr Barkley ADHD Guide.pdf', confidence: 0.65, reasoning: 'Generic advice that may not be ADHD-specific enough' },
+        { id: 'c2', text: 'Consistency is key when managing ADHD behaviors...', source: 'Dr Barkley ADHD Guide.pdf', confidence: 0.58, reasoning: 'Lacks specific actionable steps' }
+      ]);
+      setKnowledgeBaseChunks([
+        { id: 'kb1', text: 'Break homework into 15-minute chunks using a visible timer. Research shows ADHD children perform better with time-boxed tasks...', source: 'Dr Barkley ADHD Guide.pdf', tags: ['homework', 'time-management'], confidence: 0.92 },
+        { id: 'kb2', text: 'Morning routines should include movement breaks. ADHD brains need physical activity to regulate attention...', source: 'Morning Routines Research.md', tags: ['morning-routine', 'exercise'], confidence: 0.88 }
+      ]);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  function handleFileUpload(files: FileList) {
+    console.log('Files to upload:', files);
+    // Will implement API call later
+    alert(`Would upload ${files.length} file(s)`);
+  }
+
+  function handleURLSubmit(url: string) {
+    console.log('URL to process:', url);
+    // Will implement API call later
+    alert(`Would process URL: ${url}`);
+  }
+
+  function handleApproveChunk(chunkId: string) {
+    console.log('Approve chunk:', chunkId);
+    setFlaggedChunks(prev => prev.filter(c => c.id !== chunkId));
+  }
+
+  function handleRejectChunk(chunkId: string) {
+    console.log('Reject chunk:', chunkId);
+    setFlaggedChunks(prev => prev.filter(c => c.id !== chunkId));
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '3px solid transparent',
+            borderTopColor: '#B7D3D8',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#586C8E' }}>Loading knowledge base...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      {/* Stats Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+        <MetricCard
+          label="Total Documents"
+          value={documents.length}
+          sublabel="Uploaded"
+          icon={<FileText size={32} />}
+          color="#B7D3D8"
+        />
+        <MetricCard
+          label="Knowledge Chunks"
+          value={knowledgeBaseChunks.length}
+          sublabel="Approved & Ready"
+          icon={<Database size={32} />}
+          color="#D7CDEC"
+        />
+        <MetricCard
+          label="Needs Review"
+          value={flaggedChunks.length}
+          sublabel="Flagged Content"
+          icon={<AlertCircle size={32} />}
+          color="#E6A897"
+        />
+        <MetricCard
+          label="Processing"
+          value={processingDocs.length}
+          sublabel="In Queue"
+          icon={<RefreshCw size={32} />}
+          color="#E3EADD"
+        />
+      </div>
+
+      {/* Upload Section */}
+      <Card title="Upload Content">
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+            <button
+              onClick={() => setUploadMode('file')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                background: uploadMode === 'file' ? 'linear-gradient(135deg, #D7CDEC, #B7D3D8)' : '#E3EADD',
+                color: uploadMode === 'file' ? 'white' : '#586C8E',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Upload size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+              Upload Files
+            </button>
+            <button
+              onClick={() => setUploadMode('url')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                background: uploadMode === 'url' ? 'linear-gradient(135deg, #D7CDEC, #B7D3D8)' : '#E3EADD',
+                color: uploadMode === 'url' ? 'white' : '#586C8E',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <FileText size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+              Add URL
+            </button>
+          </div>
+
+          {uploadMode === 'file' ? (
+            <FileUploadZone onUpload={handleFileUpload} />
+          ) : (
+            <URLInputForm onSubmit={handleURLSubmit} />
+          )}
+        </div>
+
+        <div style={{
+          padding: '16px',
+          background: 'rgba(183, 211, 216, 0.1)',
+          borderRadius: '8px',
+          border: '1px solid rgba(183, 211, 216, 0.3)'
+        }}>
+          <p style={{ color: '#2A3F5A', fontSize: '14px', fontWeight: '600', margin: '0 0 8px 0' }}>
+            <AlertCircle size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+            AI Quality Filtering
+          </p>
+          <p style={{ color: '#586C8E', fontSize: '13px', margin: 0 }}>
+            All uploaded content is automatically evaluated by AI. High-quality, ADHD-specific guidance is auto-approved.
+            Generic or potentially harmful content is filtered out. Medium-confidence content is flagged for your review below.
+          </p>
+        </div>
+      </Card>
+
+      {/* Processing Queue */}
+      {processingDocs.length > 0 && (
+        <Card title="Processing Queue">
+          <ProcessingQueue documents={processingDocs} />
+        </Card>
+      )}
+
+      {/* Review Queue */}
+      {flaggedChunks.length > 0 && (
+        <Card title="Needs Review - Medium Confidence Content">
+          <p style={{ color: '#586C8E', fontSize: '14px', marginBottom: '16px' }}>
+            These chunks scored 0.5-0.7 confidence. Review and approve/reject manually.
+          </p>
+          <ReviewQueue
+            chunks={flaggedChunks}
+            onApprove={handleApproveChunk}
+            onReject={handleRejectChunk}
+          />
+        </Card>
+      )}
+
+      {/* Source Documents Table */}
+      <Card title="Source Documents">
+        <SourceDocumentsTable documents={documents} />
+      </Card>
+
+      {/* Knowledge Base Browser */}
+      <Card title="Knowledge Base - Approved Chunks">
+        <KnowledgeBaseBrowser chunks={knowledgeBaseChunks} />
+      </Card>
+    </div>
+  );
+}
+
+// Helper Component: File Upload Zone
+function FileUploadZone({ onUpload }: { onUpload: (files: FileList) => void }) {
+  const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  return (
+    <div
+      onClick={() => inputRef?.click()}
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files) {
+          onUpload(e.dataTransfer.files);
+        }
+      }}
+      style={{
+        border: `2px dashed ${isDragging ? '#B7D3D8' : '#D7CDEC'}`,
+        borderRadius: '10px',
+        padding: '48px',
+        textAlign: 'center',
+        cursor: 'pointer',
+        background: isDragging ? 'rgba(183, 211, 216, 0.1)' : 'rgba(215, 205, 236, 0.05)',
+        transition: 'all 0.2s'
+      }}
+    >
+      <Upload size={48} style={{ color: isDragging ? '#B7D3D8' : '#D7CDEC', marginBottom: '16px' }} />
+      <p style={{ color: '#2A3F5A', fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
+        {isDragging ? 'Drop files here' : 'Drop files here or click to upload'}
+      </p>
+      <p style={{ color: '#586C8E', fontSize: '14px', margin: 0 }}>
+        Supports: PDF, Markdown, Text files
+      </p>
+      <input
+        ref={(el) => setInputRef(el)}
+        type="file"
+        multiple
+        accept=".pdf,.md,.txt"
+        style={{ display: 'none' }}
+        onChange={(e) => e.target.files && onUpload(e.target.files)}
+      />
+    </div>
+  );
+}
+
+// Helper Component: URL Input Form
+function URLInputForm({ onSubmit }: { onSubmit: (url: string) => void }) {
+  const [url, setUrl] = useState('');
+
+  return (
+    <div style={{ display: 'flex', gap: '12px' }}>
+      <input
+        type="url"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="https://example.com/article or https://youtube.com/watch?v=..."
+        style={{
+          flex: 1,
+          padding: '12px 16px',
+          border: '1px solid rgba(215, 205, 236, 0.3)',
+          borderRadius: '6px',
+          fontSize: '14px',
+          color: '#2A3F5A'
+        }}
+      />
+      <button
+        onClick={() => {
+          if (url) {
+            onSubmit(url);
+            setUrl('');
+          }
+        }}
+        disabled={!url}
+        style={{
+          padding: '12px 24px',
+          borderRadius: '6px',
+          border: 'none',
+          background: url ? 'linear-gradient(135deg, #D7CDEC, #B7D3D8)' : '#E3EADD',
+          color: 'white',
+          fontWeight: '600',
+          cursor: url ? 'pointer' : 'not-allowed',
+          opacity: url ? 1 : 0.5,
+          transition: 'all 0.2s'
+        }}
+      >
+        Add URL
+      </button>
+    </div>
+  );
+}
+
+// Helper Component: Processing Queue
+function ProcessingQueue({ documents }: { documents: any[] }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {documents.map((doc) => (
+        <div
+          key={doc.id}
+          style={{
+            padding: '16px',
+            background: 'rgba(227, 234, 221, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(227, 234, 221, 0.3)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <RefreshCw size={20} style={{ color: '#B7D3D8', animation: 'spin 2s linear infinite' }} />
+              <div>
+                <p style={{ color: '#2A3F5A', fontSize: '15px', fontWeight: '600', margin: 0 }}>
+                  {doc.title}
+                </p>
+                <p style={{ color: '#586C8E', fontSize: '13px', margin: '4px 0 0 0' }}>
+                  {doc.stage}
+                </p>
+              </div>
+            </div>
+            <span style={{ color: '#B7D3D8', fontSize: '18px', fontWeight: '700' }}>
+              {doc.progress}%
+            </span>
+          </div>
+          <div style={{
+            width: '100%',
+            height: '6px',
+            background: 'rgba(183, 211, 216, 0.2)',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${doc.progress}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, #D7CDEC, #B7D3D8)',
+              transition: 'width 0.3s ease'
+            }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Helper Component: Review Queue
+function ReviewQueue({
+  chunks,
+  onApprove,
+  onReject
+}: {
+  chunks: any[];
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {chunks.map((chunk) => (
+        <div
+          key={chunk.id}
+          style={{
+            padding: '20px',
+            background: 'rgba(230, 168, 151, 0.05)',
+            borderRadius: '8px',
+            border: '1px solid rgba(230, 168, 151, 0.2)'
+          }}
+        >
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+              <span style={{
+                color: '#586C8E',
+                fontSize: '13px',
+                background: 'rgba(215, 205, 236, 0.2)',
+                padding: '4px 10px',
+                borderRadius: '12px'
+              }}>
+                {chunk.source}
+              </span>
+              <span style={{
+                color: '#E6A897',
+                fontSize: '14px',
+                fontWeight: '700'
+              }}>
+                {(chunk.confidence * 100).toFixed(0)}% confidence
+              </span>
+            </div>
+            <p style={{ color: '#2A3F5A', fontSize: '15px', lineHeight: '1.6', margin: '12px 0' }}>
+              {chunk.text}
+            </p>
+            <div style={{
+              padding: '12px',
+              background: 'rgba(183, 211, 216, 0.1)',
+              borderRadius: '6px',
+              marginTop: '12px'
+            }}>
+              <p style={{ color: '#586C8E', fontSize: '13px', margin: 0 }}>
+                <strong>AI Reasoning:</strong> {chunk.reasoning}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => onApprove(chunk.id)}
+              style={{
+                flex: 1,
+                padding: '10px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #B7D3D8, #E3EADD)',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s'
+              }}
+            >
+              <CheckCircle size={18} />
+              Approve & Add to Knowledge Base
+            </button>
+            <button
+              onClick={() => onReject(chunk.id)}
+              style={{
+                flex: 1,
+                padding: '10px 16px',
+                borderRadius: '6px',
+                border: '1px solid rgba(230, 168, 151, 0.3)',
+                background: 'white',
+                color: '#E6A897',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s'
+              }}
+            >
+              <XCircle size={18} />
+              Reject & Discard
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Helper Component: Source Documents Table
+function SourceDocumentsTable({ documents }: { documents: any[] }) {
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+      <thead>
+        <tr style={{ background: 'rgba(227, 234, 221, 0.3)', borderBottom: '1px solid rgba(215, 205, 236, 0.2)' }}>
+          <th style={{ textAlign: 'left', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Document</th>
+          <th style={{ textAlign: 'center', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Status</th>
+          <th style={{ textAlign: 'center', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Chunks</th>
+          <th style={{ textAlign: 'center', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Approved</th>
+          <th style={{ textAlign: 'center', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Flagged</th>
+          <th style={{ textAlign: 'center', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Rejected</th>
+          <th style={{ textAlign: 'left', padding: '14px 16px', fontWeight: '600', color: '#2A3F5A' }}>Uploaded</th>
+        </tr>
+      </thead>
+      <tbody>
+        {documents.map((doc, idx) => (
+          <tr
+            key={doc.id}
+            style={{
+              borderBottom: '1px solid rgba(215, 205, 236, 0.1)',
+              backgroundColor: idx % 2 === 0 ? 'rgba(227, 234, 221, 0.05)' : 'transparent'
+            }}
+          >
+            <td style={{ padding: '14px 16px', color: '#2A3F5A' }}>
+              <FileText size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle', color: '#B7D3D8' }} />
+              {doc.title}
+            </td>
+            <td style={{ textAlign: 'center', padding: '14px 16px' }}>
+              <Badge
+                text={doc.status}
+              />
+            </td>
+            <td style={{ textAlign: 'center', padding: '14px 16px', color: '#586C8E' }}>{doc.chunks || 0}</td>
+            <td style={{ textAlign: 'center', padding: '14px 16px', color: '#B7D3D8', fontWeight: '600' }}>{doc.approved || 0}</td>
+            <td style={{ textAlign: 'center', padding: '14px 16px', color: '#E6A897', fontWeight: '600' }}>{doc.flagged || 0}</td>
+            <td style={{ textAlign: 'center', padding: '14px 16px', color: '#586C8E' }}>{doc.rejected || 0}</td>
+            <td style={{ padding: '14px 16px', color: '#586C8E', fontSize: '13px' }}>
+              {new Date(doc.uploadedAt).toLocaleString()}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// Helper Component: Knowledge Base Browser
+function KnowledgeBaseBrowser({ chunks }: { chunks: any[] }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
+
+  const allTags = ['all', ...Array.from(new Set(chunks.flatMap(c => c.tags)))];
+
+  const filteredChunks = chunks.filter(chunk => {
+    const matchesSearch = !searchTerm || chunk.text.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTag = selectedTag === 'all' || chunk.tags.includes(selectedTag);
+    return matchesSearch && matchesTag;
+  });
+
+  return (
+    <div>
+      {/* Filters */}
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <input
+          type="text"
+          placeholder="Search chunks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            flex: 1,
+            padding: '10px 16px',
+            border: '1px solid rgba(215, 205, 236, 0.3)',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#2A3F5A'
+          }}
+        />
+        <select
+          value={selectedTag}
+          onChange={(e) => setSelectedTag(e.target.value)}
+          style={{
+            padding: '10px 16px',
+            border: '1px solid rgba(215, 205, 236, 0.3)',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#2A3F5A',
+            cursor: 'pointer'
+          }}
+        >
+          {allTags.map(tag => (
+            <option key={tag} value={tag}>
+              {tag === 'all' ? 'All Topics' : tag}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Chunks List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {filteredChunks.map((chunk) => (
+          <div
+            key={chunk.id}
+            style={{
+              padding: '16px',
+              background: 'rgba(183, 211, 216, 0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(183, 211, 216, 0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {chunk.tags.map((tag: string) => (
+                  <span
+                    key={tag}
+                    style={{
+                      background: 'rgba(215, 205, 236, 0.3)',
+                      color: '#2A3F5A',
+                      padding: '4px 10px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <span style={{
+                color: '#B7D3D8',
+                fontSize: '13px',
+                fontWeight: '700'
+              }}>
+                {(chunk.confidence * 100).toFixed(0)}%
+              </span>
+            </div>
+            <p style={{ color: '#2A3F5A', fontSize: '14px', lineHeight: '1.6', margin: '0 0 10px 0' }}>
+              {chunk.text}
+            </p>
+            <p style={{ color: '#586C8E', fontSize: '12px', margin: 0 }}>
+              Source: {chunk.source}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {filteredChunks.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 32px', color: '#586C8E' }}>
+          <Database size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+          <p style={{ fontSize: '16px', fontWeight: '600' }}>No chunks found</p>
+          <p style={{ fontSize: '14px', marginTop: '8px' }}>Try adjusting your search or filters</p>
+        </div>
+      )}
     </div>
   );
 }

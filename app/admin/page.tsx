@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { logAdminAction } from '@/lib/admin/auth';
-import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye, Settings, Key } from 'lucide-react';
 
-type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge';
+type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge' | 'tools';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'knowledge'];
+  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'knowledge', 'tools'];
 
   return (
     <AdminProtectedRoute>
@@ -203,6 +203,7 @@ export default function AdminDashboard() {
               {activeTab === 'waitlist' && <WaitlistTab signups={waitlist} />}
               {activeTab === 'feedback' && <FeedbackTab feedback={feedbackData} stats={feedbackStats} />}
               {activeTab === 'knowledge' && <KnowledgeTab />}
+              {activeTab === 'tools' && <AdminToolsTab />}
             </>
           )}
         </main>
@@ -1383,6 +1384,108 @@ function KnowledgeBaseBrowser({ chunks }: { chunks: any[] }) {
           <p style={{ fontSize: '14px', marginTop: '8px' }}>Try adjusting your search or filters</p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// ADMIN TOOLS TAB - Administrative utilities
+// ============================================================================
+
+function AdminToolsTab() {
+  const tools = [
+    {
+      id: 'recovery-link',
+      title: 'Generate Recovery Link',
+      description: 'Create a password recovery link to manually share with users when email delivery fails.',
+      icon: <Key size={32} />,
+      color: '#B7D3D8',
+      href: '/admin/recovery'
+    }
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+        {tools.map((tool) => (
+          <a
+            key={tool.id}
+            href={tool.href}
+            style={{
+              textDecoration: 'none',
+              background: 'white',
+              border: '1px solid rgba(215, 205, 236, 0.2)',
+              borderRadius: '10px',
+              padding: '32px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              transition: 'all 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(42, 63, 90, 0.12)';
+              e.currentTarget.style.borderColor = tool.color;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = 'rgba(215, 205, 236, 0.2)';
+            }}
+          >
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '12px',
+              background: `${tool.color}25`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: tool.color
+            }}>
+              {tool.icon}
+            </div>
+            <div>
+              <h3 style={{
+                color: '#2A3F5A',
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: '0 0 8px 0'
+              }}>
+                {tool.title}
+              </h3>
+              <p style={{
+                color: '#586C8E',
+                fontSize: '14px',
+                margin: 0,
+                lineHeight: '1.6'
+              }}>
+                {tool.description}
+              </p>
+            </div>
+            <div style={{
+              marginTop: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: tool.color,
+              fontSize: '14px',
+              fontWeight: '600'
+            }}>
+              Open Tool
+              <span style={{ fontSize: '18px' }}>→</span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <Card title="About Admin Tools">
+        <p style={{ color: '#586C8E', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
+          This section contains administrative utilities for managing user accounts, system settings, and other operational tasks.
+          Additional tools will be added here as needed.
+        </p>
+      </Card>
     </div>
   );
 }

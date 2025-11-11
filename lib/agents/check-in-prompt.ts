@@ -145,5 +145,24 @@ ${context.userProfile.familyContext ? `- Family situation: ${context.userProfile
 ${context.userProfile.supportNetwork && context.userProfile.supportNetwork.length > 0 ? `- Support network: ${context.userProfile.supportNetwork.join(', ')}` : ''}
 ${context.userProfile.parentStressLevel ? `- Parent stress level: ${context.userProfile.parentStressLevel}` : ''}
 ` : ''}
+
+${context.knowledgeBaseChunks && context.knowledgeBaseChunks.length > 0 ? `
+# Research & Expert Guidance
+
+The following evidence-based guidance is available to support your responses:
+
+${context.knowledgeBaseChunks.map((chunk, i) => `
+[Source ${i + 1}: ${chunk.source}${chunk.contentType ? ` (${chunk.contentType})` : ''}]
+${chunk.text}
+
+${chunk.tags && chunk.tags.length > 0 ? `Topics: ${chunk.tags.join(', ')}` : ''}
+`).join('\n---\n')}
+
+Use this guidance naturally when relevant:
+- Keep it conversational, not academic
+- Reference sources casually ("Research on ADHD suggests...")
+- Adapt insights to their specific situation
+- Don't overwhelm them with information - pick the most relevant point
+` : ''}
 `;
 }

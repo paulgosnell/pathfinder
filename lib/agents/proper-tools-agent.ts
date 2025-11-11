@@ -24,6 +24,15 @@ export interface ChildProfile {
   isPrimary?: boolean | null;
 }
 
+export interface KnowledgeBaseChunk {
+  text: string;
+  source: string;
+  url?: string;
+  tags?: string[];
+  contentType?: string;
+  similarity?: number;
+}
+
 export interface AgentContext {
   userId: string;
   sessionId: string;
@@ -52,6 +61,8 @@ export interface AgentContext {
     timeElapsedMinutes: number;
     timeExtensionOffered: boolean;
   };
+  // NEW: Knowledge base chunks (research/expert guidance)
+  knowledgeBaseChunks?: KnowledgeBaseChunk[];
 }
 
 
@@ -261,6 +272,26 @@ ${context.sessionState.timeBudgetMinutes === 50 ? '- Full session: 10-15+ Realit
 
 ${(context.sessionState.timeBudgetMinutes - context.sessionState.timeElapsedMinutes) <= 5 && !context.sessionState.timeExtensionOffered ?
 '⚠️ APPROACHING TIME LIMIT: Consider using requestTimeExtension tool if parent seems engaged and needs more time' : ''}
+` : ''}
+
+${context.knowledgeBaseChunks && context.knowledgeBaseChunks.length > 0 ? `
+# Research & Expert Guidance
+
+The following evidence-based guidance is available to support your coaching:
+
+${context.knowledgeBaseChunks.map((chunk, i) => `
+[Source ${i + 1}: ${chunk.source}${chunk.contentType ? ` (${chunk.contentType})` : ''}]
+${chunk.text}
+
+${chunk.tags && chunk.tags.length > 0 ? `Topics: ${chunk.tags.join(', ')}` : ''}
+`).join('\n---\n')}
+
+Use this guidance to inform your coaching, but remember:
+- These are frameworks and strategies, not rigid rules
+- Every child and family is unique
+- Help the parent adapt these insights to their specific situation
+- Don't just recite research - use it to deepen exploration with curiosity
+- Reference sources naturally when relevant ("Research on ADHD suggests...")
 ` : ''}`;
 }
 

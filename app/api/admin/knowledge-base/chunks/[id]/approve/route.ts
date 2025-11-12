@@ -17,8 +17,9 @@ function getSupabaseAdmin() {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
+  const { params } = context as { params: { id: string } };
   try {
     const supabase = getSupabaseAdmin();
     const chunkId = params.id;

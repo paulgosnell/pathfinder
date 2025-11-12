@@ -1,4 +1,4 @@
-import pdf from 'pdf-parse';
+import * as pdf from 'pdf-parse';
 import { JSDOM } from 'jsdom';
 
 export type FileType = 'pdf' | 'md' | 'txt' | 'url' | 'youtube';

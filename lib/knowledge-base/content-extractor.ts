@@ -1,4 +1,3 @@
-import pdfModule from 'pdf-parse';
 import { JSDOM } from 'jsdom';
 
 export type FileType = 'pdf' | 'md' | 'txt' | 'url' | 'youtube';
@@ -37,6 +36,7 @@ export async function extractContent(
 
 async function extractFromPDF(file: File): Promise<ExtractionResult> {
   const buffer = await file.arrayBuffer();
+  const pdfModule = await import('pdf-parse');
   const pdfFn = (pdfModule as any).default ?? pdfModule;
   const data = await pdfFn(Buffer.from(buffer));
 

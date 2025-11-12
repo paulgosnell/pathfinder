@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'tools'];
+  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'knowledge', 'tools'];
 
   return (
     <AdminProtectedRoute>
@@ -203,6 +203,7 @@ export default function AdminDashboard() {
               {activeTab === 'users' && <UsersTab users={users} />}
               {activeTab === 'waitlist' && <WaitlistTab signups={waitlist} />}
               {activeTab === 'feedback' && <FeedbackTab feedback={feedbackData} stats={feedbackStats} />}
+              {activeTab === 'knowledge' && <KnowledgeTab />}
               {activeTab === 'tools' && <AdminToolsTab />}
             </>
           )}
@@ -963,7 +964,7 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
 // KNOWLEDGE BASE TAB - REMOVED (Not in use)
 // ============================================================================
 
-function KnowledgeTab_DISABLED() {
+function KnowledgeTab() {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<any[]>([]);
   const [processingDocs, setProcessingDocs] = useState<any[]>([]);

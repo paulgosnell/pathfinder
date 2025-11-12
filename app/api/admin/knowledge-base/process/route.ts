@@ -121,8 +121,8 @@ export async function POST(request: NextRequest) {
           const contradictionResult = await detectContradictions(
             chunk.text,
             similarChunks.map(sc => ({
-              text: sc.chunk_text,
-              source: sc.source_document_name
+              text: sc.text,
+              source: sc.source
             }))
           );
 

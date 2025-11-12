@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server-client';
 import { createServiceClient } from '@/lib/supabase/service-client';
 import { calculateProfileCompleteness } from '@/lib/profile/completeness';
 import { searchKnowledgeBase, extractTopics } from '@/lib/knowledge-base/search';
+import type { KnowledgeChunk } from '@/lib/knowledge-base/search';
 
 const CRISIS_KEYWORDS = [
   'suicide',
@@ -399,7 +400,7 @@ export async function POST(req: NextRequest) {
 
       // STEP 4.5: Search knowledge base for relevant research/guidance
       console.log('📚 Searching knowledge base for relevant content...');
-      let knowledgeBaseChunks = [];
+      let knowledgeBaseChunks: KnowledgeChunk[] = [];
       try {
         // Extract topics from user message
         const detectedTopics = extractTopics(message);

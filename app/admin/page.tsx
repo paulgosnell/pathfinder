@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { logAdminAction } from '@/lib/admin/auth';
+import { useAuth } from '@/lib/auth/auth-context';
 import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye, Settings, Key } from 'lucide-react';
 
 type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge' | 'tools';
@@ -964,56 +965,165 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
 // ============================================================================
 
 function KnowledgeTab() {
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<any[]>([]);
   const [processingDocs, setProcessingDocs] = useState<any[]>([]);
   const [flaggedChunks, setFlaggedChunks] = useState<any[]>([]);
   const [knowledgeBaseChunks, setKnowledgeBaseChunks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for now - will connect to API later
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setDocuments([
-        { id: '1', title: 'Dr Barkley ADHD Guide.pdf', status: 'completed', chunks: 142, approved: 128, flagged: 12, rejected: 2, uploadedAt: '2025-11-07T10:00:00Z' },
-        { id: '2', title: 'Morning Routines Research.md', status: 'processing', chunks: 0, uploadedAt: '2025-11-07T11:30:00Z' }
+  // Fetch knowledge base data from APIs
+  async function fetchKnowledgeBaseData() {
+    if (!user) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [docsRes, flaggedRes, chunksRes] = await Promise.all([
+        fetch('/api/admin/knowledge-base/documents'),
+        fetch('/api/admin/knowledge-base/flagged'),
+        fetch('/api/admin/knowledge-base/chunks?status=approved&limit=100')
       ]);
-      setProcessingDocs([
-        { id: '2', title: 'Morning Routines Research.md', progress: 45, stage: 'Quality filtering chunks...' }
-      ]);
-      setFlaggedChunks([
-        { id: 'c1', text: 'Consider implementing a reward system for positive behaviors. Rewards can be effective when used consistently...', source: 'Dr Barkley ADHD Guide.pdf', confidence: 0.65, reasoning: 'Generic advice that may not be ADHD-specific enough' },
-        { id: 'c2', text: 'Consistency is key when managing ADHD behaviors...', source: 'Dr Barkley ADHD Guide.pdf', confidence: 0.58, reasoning: 'Lacks specific actionable steps' }
-      ]);
-      setKnowledgeBaseChunks([
-        { id: 'kb1', text: 'Break homework into 15-minute chunks using a visible timer. Research shows ADHD children perform better with time-boxed tasks...', source: 'Dr Barkley ADHD Guide.pdf', tags: ['homework', 'time-management'], confidence: 0.92 },
-        { id: 'kb2', text: 'Morning routines should include movement breaks. ADHD brains need physical activity to regulate attention...', source: 'Morning Routines Research.md', tags: ['morning-routine', 'exercise'], confidence: 0.88 }
-      ]);
+
+      if (!docsRes.ok || !flaggedRes.ok || !chunksRes.ok) {
+        throw new Error('Failed to fetch knowledge base data');
+      }
+
+      const docsData = await docsRes.json();
+      const flaggedData = await flaggedRes.json();
+      const chunksData = await chunksRes.json();
+
+      setDocuments(docsData.documents || []);
+      setFlaggedChunks(flaggedData.flagged || []);
+      setKnowledgeBaseChunks(chunksData.chunks || []);
+
+      // Filter processing docs
+      const processing = docsData.documents.filter((d: any) => d.processing_status === 'processing');
+      setProcessingDocs(processing);
+
+    } catch (err: any) {
+      console.error('Failed to fetch knowledge base data:', err);
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-
-  function handleFileUpload(files: FileList) {
-    console.log('Files to upload:', files);
-    // Will implement API call later
-    alert(`Would upload ${files.length} file(s)`);
+    }
   }
 
-  function handleURLSubmit(url: string) {
-    console.log('URL to process:', url);
-    // Will implement API call later
-    alert(`Would process URL: ${url}`);
+  useEffect(() => {
+    fetchKnowledgeBaseData();
+
+    // Poll for updates every 10 seconds (for processing status)
+    const interval = setInterval(fetchKnowledgeBaseData, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  async function handleFileUpload(files: FileList) {
+    if (!user) {
+      alert('You must be logged in to upload files');
+      return;
+    }
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+    formData.append('adminUserId', user.id);
+
+    try {
+      const response = await fetch('/api/admin/knowledge-base/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      console.log('Upload successful:', result);
+
+      // Refresh data
+      await fetchKnowledgeBaseData();
+      alert(`Successfully uploaded ${files.length} file(s). Processing has started.`);
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      alert(`Upload failed: ${err.message}`);
+    }
   }
 
-  function handleApproveChunk(chunkId: string) {
-    console.log('Approve chunk:', chunkId);
-    setFlaggedChunks(prev => prev.filter(c => c.id !== chunkId));
+  async function handleURLSubmit(url: string) {
+    if (!user) {
+      alert('You must be logged in to submit URLs');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/knowledge-base/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, adminUserId: user.id })
+      });
+
+      if (!response.ok) {
+        throw new Error('URL submission failed');
+      }
+
+      const result = await response.json();
+      console.log('URL submission successful:', result);
+
+      // Refresh data
+      await fetchKnowledgeBaseData();
+      alert(`Successfully submitted URL. Processing has started.`);
+    } catch (err: any) {
+      console.error('URL submission error:', err);
+      alert(`URL submission failed: ${err.message}`);
+    }
   }
 
-  function handleRejectChunk(chunkId: string) {
-    console.log('Reject chunk:', chunkId);
-    setFlaggedChunks(prev => prev.filter(c => c.id !== chunkId));
+  async function handleApproveChunk(chunkId: string) {
+    try {
+      const response = await fetch(`/api/admin/knowledge-base/chunks/${chunkId}/approve`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to approve chunk');
+      }
+
+      // Remove from flagged chunks
+      setFlaggedChunks(prev => prev.filter(c => c.id !== chunkId));
+
+      // Refresh data to show in approved list
+      await fetchKnowledgeBaseData();
+    } catch (err: any) {
+      console.error('Approve error:', err);
+      alert(`Failed to approve chunk: ${err.message}`);
+    }
+  }
+
+  async function handleRejectChunk(chunkId: string) {
+    const reason = prompt('Reason for rejection (optional):');
+
+    try {
+      const response = await fetch(`/api/admin/knowledge-base/chunks/${chunkId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason || 'Rejected by admin' })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reject chunk');
+      }
+
+      // Remove from flagged chunks
+      setFlaggedChunks(prev => prev.filter(c => c.id !== chunkId));
+    } catch (err: any) {
+      console.error('Reject error:', err);
+      alert(`Failed to reject chunk: ${err.message}`);
+    }
   }
 
   if (loading) {
@@ -1031,6 +1141,32 @@ function KnowledgeTab() {
           }} />
           <p style={{ color: '#586C8E' }}>Loading knowledge base...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <AlertCircle size={48} style={{ color: '#E6A897', margin: '0 auto 16px' }} />
+        <p style={{ color: '#2A3F5A', fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
+          Failed to load knowledge base
+        </p>
+        <p style={{ color: '#586C8E', fontSize: '14px', marginBottom: '16px' }}>{error}</p>
+        <button
+          onClick={() => fetchKnowledgeBaseData()}
+          style={{
+            padding: '12px 24px',
+            borderRadius: '6px',
+            border: 'none',
+            background: 'linear-gradient(135deg, #D7CDEC, #B7D3D8)',
+            color: 'white',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }

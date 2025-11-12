@@ -8,6 +8,7 @@ import { performanceTracker } from '@/lib/monitoring/performance-tracker';
 import { createServerClient } from '@/lib/supabase/server-client';
 import { createServiceClient } from '@/lib/supabase/service-client';
 import { calculateProfileCompleteness } from '@/lib/profile/completeness';
+import { searchKnowledgeBase, extractTopics } from '@/lib/knowledge-base/search';
 
 const CRISIS_KEYWORDS = [
   'suicide',
@@ -395,8 +396,41 @@ export async function POST(req: NextRequest) {
     } else {
       // Route to Standard Coaching Agent (for all other session types)
       console.log(`   🧠 Using Standard Coaching Agent (${session.sessionType})`);
+
+      // STEP 4.5: Search knowledge base for relevant research/guidance
+      console.log('📚 Searching knowledge base for relevant content...');
+      let knowledgeBaseChunks = [];
+      try {
+        // Extract topics from user message
+        const detectedTopics = extractTopics(message);
+        console.log(`   Detected topics: ${detectedTopics.join(', ') || 'none'}`);
+
+        // Determine age relevance from child profiles
+        const ageRelevance = childProfiles && childProfiles.length > 0
+          ? childProfiles.map((c: any) => c.child_age_range).filter(Boolean)
+          : undefined;
+
+        // Search knowledge base
+        knowledgeBaseChunks = await searchKnowledgeBase(message, {
+          limit: 5,
+          threshold: 0.75,
+          filters: {
+            topic_tags: detectedTopics.length > 0 ? detectedTopics : undefined,
+            age_relevance: ageRelevance
+          }
+        });
+
+        console.log(`   Found ${knowledgeBaseChunks.length} relevant knowledge chunks`);
+        if (knowledgeBaseChunks.length > 0) {
+          console.log(`   Top result: ${knowledgeBaseChunks[0].source_document_name} (similarity: ${knowledgeBaseChunks[0].similarity.toFixed(2)})`);
+        }
+      } catch (err) {
+        console.error('❌ Knowledge base search error:', err);
+        // Continue without knowledge base context
+      }
+
       const therapeuticAgent = createProperToolsAgent();
-      console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history`);
+      console.log(`   Agent context: ${conversationHistory?.length || 0} messages in history, ${knowledgeBaseChunks.length} KB chunks`);
 
       agentResult = await therapeuticAgent(message, {
         userId: userId,
@@ -445,7 +479,16 @@ export async function POST(req: NextRequest) {
           timeBudgetMinutes: session.timeBudgetMinutes,
           timeElapsedMinutes: session.timeElapsedMinutes,
           timeExtensionOffered: session.timeExtensionOffered
-        } : undefined
+        } : undefined,
+        // NEW: Pass knowledge base chunks (research/expert guidance)
+        knowledgeBaseChunks: knowledgeBaseChunks.length > 0 ? knowledgeBaseChunks.map((chunk: any) => ({
+          text: chunk.chunk_text,
+          source: chunk.source_document_name,
+          url: chunk.source_url,
+          tags: chunk.topic_tags,
+          contentType: chunk.content_type,
+          similarity: chunk.similarity
+        })) : undefined
       });
     }
 

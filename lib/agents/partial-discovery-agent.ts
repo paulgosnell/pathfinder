@@ -119,7 +119,7 @@ MISSING: Child Details (age, challenges, strengths)
 
 ${!context.profileCompleteness.hasSchoolInfo ? `
 MISSING: School Information
-→ Ask: "Tell me about ${context.existingChildProfiles[0]?.child_name || 'your child'}'s school - what type of school and what grade? Do they have any support like an IEP or 504 plan?"
+→ Ask: "Tell me about ${context.existingChildProfiles[0]?.child_name || 'your child'}'s school - what type of school and what grade/year are they in? Do they have any support like an IEP, EHCP, or learning support plan?"
 ` : ''}
 
 ${!context.profileCompleteness.hasTreatmentInfo ? `
@@ -173,9 +173,9 @@ TONE:
               mainChallenges: z.array(z.string()).optional().describe('Challenges if newly provided'),
               strengths: z.array(z.string()).optional().describe('Strengths if newly provided'),
               schoolType: z.string().optional().describe('School type if newly provided'),
-              gradeLevel: z.string().optional().describe('Grade level if newly provided'),
-              hasIEP: z.boolean().optional().describe('IEP status if newly provided'),
-              has504Plan: z.boolean().optional().describe('504 plan status if newly provided'),
+              gradeLevel: z.string().optional().describe('Grade level or Year if newly provided'),
+              hasIEP: z.boolean().optional().describe('IEP/EHCP status if newly provided'),
+              has504Plan: z.boolean().optional().describe('504/Support plan status if newly provided'),
               medicationStatus: z.string().optional().describe('Medication if newly provided'),
               therapyStatus: z.string().optional().describe('Therapy if newly provided'),
             })).optional().describe('Updates for existing child profiles'),
@@ -376,7 +376,7 @@ function buildExistingDataSummary(
 
   if (completeness.hasSchoolInfo && childProfiles.length > 0) {
     const child = childProfiles[0];
-    lines.push(`✅ School: ${child.school_type || 'Info on file'}${child.grade_level ? `, grade ${child.grade_level}` : ''}`);
+    lines.push(`✅ School: ${child.school_type || 'Info on file'}${child.grade_level ? `, grade/year ${child.grade_level}` : ''}`);
   }
 
   if (completeness.hasTreatmentInfo && childProfiles.length > 0) {

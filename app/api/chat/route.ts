@@ -77,11 +77,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { message, context } = body;
-    
+
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({
         message: "I didn't receive your message properly. Could you please try again?"
-      }), { 
+      }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -94,18 +94,18 @@ export async function POST(req: NextRequest) {
     // Check for authenticated user - REQUIRED
     const supabase = await createServerClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    
+
     if (!authUser) {
       return new Response(JSON.stringify({
         message: "Authentication required. Please sign in to continue."
-      }), { 
+      }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       });
     }
-    
+
     userId = authUser.id;
-    
+
     // Ensure user record exists
     const serviceClient = createServiceClient();
     const { error: userError } = await serviceClient
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
       console.log('🚨 Running crisis detection...');
       const crisisAgent = createCrisisToolsAgent();
       const crisisResult = await crisisAgent(message, []);
-      
+
       const crisisToolResult = crisisResult?.toolResults?.find(
         result => result.toolName === 'assessCrisis'
       );
@@ -156,10 +156,10 @@ export async function POST(req: NextRequest) {
 
       if (crisisAssessment && ['high', 'critical'].includes(crisisAssessment.riskLevel)) {
         console.log(`🆘 CRISIS DETECTED: ${crisisAssessment.riskLevel}`);
-        
+
         // Update session
-        await sessionManager.updateSession(session.id, { 
-          crisisLevel: crisisAssessment.riskLevel 
+        await sessionManager.updateSession(session.id, {
+          crisisLevel: crisisAssessment.riskLevel
         });
 
         // Track and return
@@ -498,8 +498,34 @@ export async function POST(req: NextRequest) {
       console.log(`   Response length: ${agentResult.text.length} characters`);
     }
 
-    // STEP 5: Update session state based on conversation depth
+    // STEP 5: Save conversation to database (using service client to bypass RLS)
+    // ✅ CRITICAL FIX: Save BEFORE updating session state and returning response
+    // This prevents race condition where frontend re-fetches before messages are saved
+    console.log('💾 Saving conversation to database...');
+    const { error: saveError } = await serviceClient.from('agent_conversations').insert([
+      {
+        session_id: session.id,
+        role: 'user',
+        content: message
+      },
+      {
+        session_id: session.id,
+        role: 'assistant',
+        content: agentResult.text
+      }
+    ]);
+
+    if (saveError) {
+      console.error('❌ Failed to save conversation:', saveError);
+      // Don't fail the request if save fails - user still gets response
+      // But log it for monitoring
+    } else {
+      console.log('✅ Conversation saved successfully');
+    }
+
+    // STEP 6: Update session state based on conversation depth
     console.log('📊 Updating coaching session state...');
+
 
     // Increment reality exploration depth (each exchange counts)
     const newRealityDepth = realityDepth + 1;
@@ -508,9 +534,9 @@ export async function POST(req: NextRequest) {
     // Adapt minimum depth based on parent's available time
     const minRealityDepth =
       session.timeBudgetMinutes === 5 ? 2 :   // 5 mins: 1-2 exchanges (quick check-in)
-      session.timeBudgetMinutes === 15 ? 6 :  // 15 mins: 5-7 exchanges (brief session)
-      session.timeBudgetMinutes === 30 ? 9 :  // 30 mins: 8-12 exchanges (standard session)
-      10;                                      // 50 mins: 10-15+ exchanges (full exploration)
+        session.timeBudgetMinutes === 15 ? 6 :  // 15 mins: 5-7 exchanges (brief session)
+          session.timeBudgetMinutes === 30 ? 9 :  // 30 mins: 8-12 exchanges (standard session)
+            10;                                      // 50 mins: 10-15+ exchanges (full exploration)
     const canMoveToOptions = newRealityDepth >= minRealityDepth;
 
     // Estimate time elapsed (rough approximation: 2 minutes per exchange)
@@ -531,27 +557,6 @@ export async function POST(req: NextRequest) {
     console.log(`   Reality depth: ${newRealityDepth} exchanges`);
     console.log(`   Ready for Options: ${canMoveToOptions ? 'Yes' : `No (minimum ${minRealityDepth} exchanges for ${session.timeBudgetMinutes}-min session)`}`);
     console.log(`   Time elapsed: ~${estimatedTimeElapsed}/${session.timeBudgetMinutes} minutes`);
-
-    // STEP 6: Save conversation to database (using service client to bypass RLS)
-    console.log('💾 Saving conversation to database...');
-    const { error: saveError } = await serviceClient.from('agent_conversations').insert([
-      {
-        session_id: session.id,
-        role: 'user',
-        content: message
-      },
-      {
-        session_id: session.id,
-        role: 'assistant',
-        content: agentResult.text
-      }
-    ]);
-
-    if (saveError) {
-      console.error('❌ Failed to save conversation:', saveError);
-    } else {
-      console.log('✅ Conversation saved successfully');
-    }
 
     // STEP 7: Track performance
     const responseTime = Date.now() - startTime;
@@ -586,7 +591,7 @@ export async function POST(req: NextRequest) {
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
-    
+
   } catch (error) {
     console.error('❌ API error:', error);
     console.error('❌ Error stack:', (error as Error).stack);

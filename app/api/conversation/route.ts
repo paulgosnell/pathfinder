@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   // If excludeCompletedCoaching, filter out completed coaching/discovery sessions
   if (excludeCompletedCoaching) {
     // Get all active sessions, then filter in code to handle complex OR logic
-    query = query.limit(10); // Get last 10 sessions to check
+    query = query.limit(50); // Increased limit to ensure we find active discovery sessions
   } else {
     query = query.limit(1);
   }
@@ -112,12 +112,22 @@ export async function POST(req: NextRequest) {
   // Filter sessions if excludeCompletedCoaching is enabled
   let session = null;
   if (excludeCompletedCoaching && sessions && sessions.length > 0) {
-    // Find first session that is NOT a completed coaching or discovery session
-    session = sessions.find(s => {
-      const isCoachingOrDiscovery = s.session_type === 'coaching' || s.session_type === 'discovery';
-      const isComplete = s.status === 'complete';
-      return !(isCoachingOrDiscovery && isComplete);
-    }) || null;
+    // PRIORITY 1: Check for active Discovery session first
+    // If user has an incomplete discovery session, always resume that to finish onboarding
+    const activeDiscovery = sessions.find(s =>
+      s.session_type === 'discovery' && s.status !== 'complete'
+    );
+
+    if (activeDiscovery) {
+      session = activeDiscovery;
+    } else {
+      // PRIORITY 2: Most recent active session (excluding completed coaching)
+      session = sessions.find(s => {
+        const isCoachingOrDiscovery = s.session_type === 'coaching' || s.session_type === 'discovery';
+        const isComplete = s.status === 'complete';
+        return !(isCoachingOrDiscovery && isComplete);
+      }) || null;
+    }
   } else if (sessions && sessions.length > 0) {
     session = sessions[0];
   }

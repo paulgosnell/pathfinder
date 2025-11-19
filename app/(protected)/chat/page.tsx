@@ -38,7 +38,7 @@ const markdownComponents: Components = {
   em: ({ node, ...props }) => (
     <em style={{ color: '#2A3F5A' }} {...props} />
   ),
-  ul: ({ node, ...props}) => (
+  ul: ({ node, ...props }) => (
     <ul className="pl-5 mb-0 space-y-2" style={{ color: '#2A3F5A' }} {...props} />
   ),
   ol: ({ node, ...props }) => (
@@ -142,6 +142,23 @@ export default function ChatPage() {
   useEffect(() => {
     const loadSession = async () => {
       if (!user) return;
+
+      // ✅ CRITICAL FIX: Don't reload if we already have an active session
+      // This prevents the race condition where useEffect overwrites current conversation
+      // with stale database data during active chat
+      if (sessionId && messages.length > 0 && !isNewSession) {
+        console.log('[Chat] Session already loaded, skipping reload to prevent history loss');
+        setLoadingSession(false);
+        return;
+      }
+
+      // ✅ CRITICAL FIX: Don't reload if user has already sent messages
+      // This prevents overwriting an active conversation
+      if (messages.some(m => m.role === 'user')) {
+        console.log('[Chat] Active conversation detected, not reloading');
+        setLoadingSession(false);
+        return;
+      }
 
       try {
         // If user clicked "New Chat", start fresh with initial message
@@ -473,14 +490,14 @@ export default function ChatPage() {
     return (
       <MobileDeviceMockup>
         <div className="w-full h-full bg-white flex flex-col"
-             style={{
-               position: 'fixed',
-               top: 0,
-               left: 0,
-               right: 0,
-               bottom: 0,
-               overflow: 'hidden'
-             }}>
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            overflow: 'hidden'
+          }}>
           <NavigationDrawer
             isOpen={isDrawerOpen}
             onClose={() => setIsDrawerOpen(false)}
@@ -493,10 +510,10 @@ export default function ChatPage() {
           />
 
           <div className="flex-grow overflow-y-auto flex items-center justify-center"
-               style={{
-                 backgroundColor: '#F9F7F3',
-                 marginTop: SPACING.contentTopMargin
-               }}>
+            style={{
+              backgroundColor: '#F9F7F3',
+              marginTop: SPACING.contentTopMargin
+            }}>
             <div className="text-center">
               <div className="animate-pulse" style={{ color: '#D7CDEC', fontSize: '48px', marginBottom: '16px' }}>
                 💬
@@ -514,14 +531,14 @@ export default function ChatPage() {
     <MobileDeviceMockup>
       {/* Main UI Container - mobile sized */}
       <div className="w-full h-full bg-white flex flex-col"
-           style={{
-             position: 'fixed',
-             top: 0,
-             left: 0,
-             right: 0,
-             bottom: 0,
-             overflow: 'hidden'
-           }}>
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'hidden'
+        }}>
 
         <NavigationDrawer
           isOpen={isDrawerOpen}
@@ -665,7 +682,7 @@ export default function ChatPage() {
             )}
 
             {/* Typing indicator - wavy dots only */}
-              {loading && (
+            {loading && (
               <div className="flex justify-start" style={{ paddingLeft: '8px', paddingRight: '8px' }}>
                 <div
                   style={{

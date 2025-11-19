@@ -331,8 +331,8 @@ export default function FamilyPage() {
                       child={child}
                       isEditing={false}
                       onEdit={() => setEditingChild(child.id)}
-                      onSave={() => {}}
-                      onCancel={() => {}}
+                      onSave={() => { }}
+                      onCancel={() => { }}
                     />
                   )
                 ))}
@@ -590,9 +590,9 @@ function ChildProfileCard({
             {child.school_type && <div style={{ textTransform: 'capitalize' }}>{child.school_type} school</div>}
             {(child.has_iep || child.has_504_plan) && (
               <div style={{ marginTop: '4px', fontWeight: 600, color: '#4A9E5F' }}>
-                {child.has_iep && 'Has IEP'}
+                {child.has_iep && 'Has IEP / EHCP'}
                 {child.has_iep && child.has_504_plan && ' • '}
-                {child.has_504_plan && 'Has 504 Plan'}
+                {child.has_504_plan && 'Has 504 / Support Plan'}
               </div>
             )}
           </div>
@@ -621,39 +621,39 @@ function ChildProfileCard({
       {/* Strategy Summary */}
       {((child.successful_strategies && child.successful_strategies.length > 0) ||
         (child.failed_strategies && child.failed_strategies.length > 0)) && (
-        <div style={{
-          padding: '12px',
-          background: 'rgba(215, 205, 236, 0.05)',
-          borderRadius: BORDER_RADIUS.medium,
-          border: '1px solid rgba(215, 205, 236, 0.2)'
-        }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#7F8FA6', marginBottom: '8px' }}>
-            📝 Strategy History
+          <div style={{
+            padding: '12px',
+            background: 'rgba(215, 205, 236, 0.05)',
+            borderRadius: BORDER_RADIUS.medium,
+            border: '1px solid rgba(215, 205, 236, 0.2)'
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#7F8FA6', marginBottom: '8px' }}>
+              📝 Strategy History
+            </div>
+            {child.successful_strategies && child.successful_strategies.length > 0 && (
+              <div style={{ marginBottom: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#4A9E5F', fontWeight: 600, marginBottom: '4px' }}>
+                  ✓ What Worked ({child.successful_strategies.length})
+                </div>
+                <div style={{ fontSize: '12px', color: '#586C8E' }}>
+                  {child.successful_strategies.slice(0, 3).join(' • ')}
+                  {child.successful_strategies.length > 3 && ` • +${child.successful_strategies.length - 3} more`}
+                </div>
+              </div>
+            )}
+            {child.failed_strategies && child.failed_strategies.length > 0 && (
+              <div>
+                <div style={{ fontSize: '11px', color: '#C44569', fontWeight: 600, marginBottom: '4px' }}>
+                  ✗ Didn't Work ({child.failed_strategies.length})
+                </div>
+                <div style={{ fontSize: '12px', color: '#586C8E' }}>
+                  {child.failed_strategies.slice(0, 3).join(' • ')}
+                  {child.failed_strategies.length > 3 && ` • +${child.failed_strategies.length - 3} more`}
+                </div>
+              </div>
+            )}
           </div>
-          {child.successful_strategies && child.successful_strategies.length > 0 && (
-            <div style={{ marginBottom: '8px' }}>
-              <div style={{ fontSize: '11px', color: '#4A9E5F', fontWeight: 600, marginBottom: '4px' }}>
-                ✓ What Worked ({child.successful_strategies.length})
-              </div>
-              <div style={{ fontSize: '12px', color: '#586C8E' }}>
-                {child.successful_strategies.slice(0, 3).join(' • ')}
-                {child.successful_strategies.length > 3 && ` • +${child.successful_strategies.length - 3} more`}
-              </div>
-            </div>
-          )}
-          {child.failed_strategies && child.failed_strategies.length > 0 && (
-            <div>
-              <div style={{ fontSize: '11px', color: '#C44569', fontWeight: 600, marginBottom: '4px' }}>
-                ✗ Didn't Work ({child.failed_strategies.length})
-              </div>
-              <div style={{ fontSize: '12px', color: '#586C8E' }}>
-                {child.failed_strategies.slice(0, 3).join(' • ')}
-                {child.failed_strategies.length > 3 && ` • +${child.failed_strategies.length - 3} more`}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        )}
     </Card>
   );
 }

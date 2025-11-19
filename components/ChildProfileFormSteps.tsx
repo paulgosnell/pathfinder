@@ -308,10 +308,10 @@ export function SchoolStep({ formData, setFormData }: StepProps) {
       </div>
 
       <FormField
-        label="Grade Level (optional)"
+        label="Grade Level / Year (optional)"
         value={formData.grade_level}
         onChange={(e) => setFormData({ ...formData, grade_level: e.target.value })}
-        placeholder="2"
+        placeholder="2 or Year 3"
       />
 
       <div style={{
@@ -353,7 +353,7 @@ export function SchoolStep({ formData, setFormData }: StepProps) {
               cursor: 'pointer'
             }}
           />
-          <span style={{ fontWeight: 500 }}>Has IEP (Individualized Education Program)</span>
+          <span style={{ fontWeight: 500 }}>Has IEP / EHCP (Education Plan)</span>
         </label>
 
         <label style={{
@@ -375,7 +375,7 @@ export function SchoolStep({ formData, setFormData }: StepProps) {
               cursor: 'pointer'
             }}
           />
-          <span style={{ fontWeight: 500 }}>Has 504 Plan</span>
+          <span style={{ fontWeight: 500 }}>Has 504 / Support Plan</span>
         </label>
       </div>
 

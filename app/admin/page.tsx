@@ -6,7 +6,7 @@ import { logAdminAction } from '@/lib/admin/auth';
 import { useAuth } from '@/lib/auth/auth-context';
 import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye, Settings, Key } from 'lucide-react';
 
-type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge' | 'tools';
+type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge' | 'tools' | 'roadmap';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'knowledge', 'tools'];
+  const tabs: TabType[] = ['overview', 'analytics', 'monitor', 'sessions', 'users', 'waitlist', 'feedback', 'knowledge', 'tools', 'roadmap'];
 
   return (
     <AdminProtectedRoute>
@@ -205,6 +205,7 @@ export default function AdminDashboard() {
               {activeTab === 'feedback' && <FeedbackTab feedback={feedbackData} stats={feedbackStats} />}
               {activeTab === 'knowledge' && <KnowledgeTab />}
               {activeTab === 'tools' && <AdminToolsTab />}
+              {activeTab === 'roadmap' && <RoadmapTab />}
             </>
           )}
         </main>
@@ -1803,6 +1804,101 @@ function AdminToolsTab() {
           Additional tools will be added here as needed.
         </p>
       </Card>
+    </div>
+  );
+}
+
+// ============================================================================
+// ROADMAP TAB - Fixes and Upcoming Features
+// ============================================================================
+
+function RoadmapTab() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <Card title="Recently Deployed Fixes">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <RoadmapItem
+            status="deployed"
+            priority="P0"
+            title="Discovery Session Chat History Bug"
+            description="Fixed critical race condition where chat history would disappear during discovery sessions, causing the agent to restart questions."
+            date="Nov 19, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="P1"
+            title="Multi-Child Discovery UX Improvements"
+            description="Updated agent prompts to be more international-friendly (Year/EHCP), removed 'oldest child' assumption, and added privacy reassurances."
+            date="Nov 19, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="P1"
+            title="Conversation Persistence Fix"
+            description="Fixed issue where users lost context when returning to the app. System now prioritizes resuming incomplete Discovery sessions over empty check-ins."
+            date="Nov 19, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="P1"
+            title="Profile Update Error Fix"
+            description="Fixed 'Unknown error' when saving child profiles by adding strict validation for session expiry and improving error reporting."
+            date="Nov 19, 2025"
+          />
+        </div>
+      </Card>
+
+      <Card title="Known Issues & Upcoming">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <RoadmapItem
+            status="pending"
+            priority="P2"
+            title="Missing Email Confirmation"
+            description="Users are not receiving welcome emails. Pending email provider configuration (Resend/SendGrid)."
+            date="TBD"
+          />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function RoadmapItem({ status, priority, title, description, date }: any) {
+  const isDeployed = status === 'deployed';
+  return (
+    <div style={{
+      padding: '16px',
+      background: isDeployed ? 'rgba(227, 234, 221, 0.15)' : 'rgba(240, 217, 218, 0.15)',
+      border: `1px solid ${isDeployed ? 'rgba(183, 211, 216, 0.3)' : 'rgba(230, 168, 151, 0.3)'}`,
+      borderRadius: '8px',
+      display: 'flex',
+      gap: '16px'
+    }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '8px',
+        minWidth: '80px'
+      }}>
+        <Badge text={priority} />
+        <span style={{ fontSize: '12px', color: '#586C8E' }}>{date}</span>
+      </div>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', color: '#2A3F5A' }}>{title}</h3>
+          {isDeployed ? (
+            <span style={{ color: '#4A9E5F', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle size={14} /> Deployed
+            </span>
+          ) : (
+            <span style={{ color: '#E6A897', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <AlertCircle size={14} /> Pending
+            </span>
+          )}
+        </div>
+        <p style={{ margin: 0, fontSize: '14px', color: '#586C8E', lineHeight: '1.5' }}>{description}</p>
+      </div>
     </div>
   );
 }

@@ -1848,6 +1848,95 @@ function RoadmapTab() {
         </div>
       </Card>
 
+      <Card title="Previous Improvements">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
+            title="Knowledge Base (RAG) System"
+            description="Integrated Retrieval-Augmented Generation (RAG) system, allowing the agent to search and reference evidence-based knowledge during conversations."
+            date="Nov 11, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Admin"
+            title="Admin Monitor Redesign & Recovery Tools"
+            description="Redesigned the Admin Monitor for real-time metrics and added a manual password recovery link generator for support."
+            date="Nov 07, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
+            title="UAT Feedback System"
+            description="Implemented the user feedback collection system and admin feedback viewer to gather insights from early testers."
+            date="Nov 07, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Fix"
+            title="Critical Onboarding Fixes"
+            description="Resolved critical bugs in profile saving and discovery loops that were blocking user onboarding."
+            date="Oct 31, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Fix"
+            title="Voice Context Rate Limiting"
+            description="Fixed rate limit errors in voice mode by implementing request deduplication for smoother voice interactions."
+            date="Oct 30, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
+            title="Daily Check-ins & Reports"
+            description="Launched Daily Check-in feature and Progress Reports with PDF export capabilities."
+            date="Oct 26, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
+            title="Multi-Child Support"
+            description="Added support for multiple child profiles and a mobile-friendly wizard for family management."
+            date="Oct 19, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
+            title="Discovery Session Integration"
+            description="Completed the integration of the conversational onboarding (Discovery) session for personalized user context."
+            date="Oct 17, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Admin"
+            title="Admin Dashboard Launch"
+            description="Initial release of the Admin Dashboard for monitoring system health, user activity, and analytics."
+            date="Oct 13, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
+            title="ElevenLabs Voice Mode"
+            description="Integrated ElevenLabs for high-quality, low-latency voice interactions, replacing the previous LiveKit implementation."
+            date="Oct 08, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Major"
+            title="Coaching Transformation (V2.0)"
+            description="Major architectural shift from a simple chatbot to a therapeutic coaching companion using the GROW model and OARS framework."
+            date="Oct 03, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Launch"
+            title="Initial Release"
+            description="Initial launch of the ADHD Support Agent with conversation memory, responsive AI coaching, and secure authentication."
+            date="Oct 02, 2025"
+          />
+        </div>
+      </Card>
+
       <Card title="Known Issues & Upcoming">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <RoadmapItem

@@ -1819,6 +1819,13 @@ function RoadmapTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <RoadmapItem
             status="deployed"
+            priority="P2"
+            title="Agent Tone & UX Improvements"
+            description="Fixed repetitive 'How does that make you feel?' opener, removed excessive exclamation marks for calmer tone, improved voice check-in to offer tips sooner (value exchange), and clarified Discovery vs Chat CTAs on initial screen."
+            date="Nov 25, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
             priority="P0"
             title="Discovery Session Chat History Bug"
             description="Fixed critical race condition where chat history would disappear during discovery sessions, causing the agent to restart questions."

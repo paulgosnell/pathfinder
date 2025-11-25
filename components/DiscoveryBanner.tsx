@@ -142,7 +142,7 @@ export function DiscoveryBanner({ contextMessage, currentSessionType }: Discover
           lineHeight: '1.4'
         }}
       >
-        {isStarted ? `🔍 Discovery ${completeness.completionPercentage}% Complete` : '💡 First time here?'}
+        {isStarted ? `🔍 Discovery ${completeness.completionPercentage}% Complete` : '💡 Optional: Tell me about your child'}
       </p>
 
       {/* Progress bar (only show if started) */}

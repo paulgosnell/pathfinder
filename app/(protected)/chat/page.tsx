@@ -567,7 +567,7 @@ export default function ChatPage() {
           }}
         >
           <DiscoveryBanner
-            contextMessage="Start with a Discovery session so I can understand you and your child. I'll remember everything and give you better support."
+            contextMessage="You can start chatting below, or complete a quick Discovery session first so I can personalise my advice to your child."
             currentSessionType={sessionType}
           />
         </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ElevenLabsVoiceAssistant } from '@/components/ElevenLabsVoiceAssistant';
+import { OpenAIVoiceAssistant } from '@/components/OpenAIVoiceAssistant';
 import AppHeader from '@/components/AppHeader';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import MobileDeviceMockup from '@/components/MobileDeviceMockup';
@@ -12,7 +12,7 @@ import { Settings } from 'lucide-react';
 import Link from 'next/link';
 
 // TEMPORARY: Set to true to enable maintenance mode
-const VOICE_MAINTENANCE_MODE = true;
+const VOICE_MAINTENANCE_MODE = false;
 
 // Design system colors
 const colors = {
@@ -183,7 +183,7 @@ export default function VoicePage() {
           overflow: 'hidden',
           marginTop: SPACING.contentTopMargin
         }}>
-          <ElevenLabsVoiceAssistant
+          <OpenAIVoiceAssistant
             sessionType={sessionType}
             timeBudgetMinutes={timeBudgetMinutes}
           />

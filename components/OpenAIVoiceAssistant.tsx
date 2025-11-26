@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { useSession } from '@/lib/session/session-context';
 import type { SessionType } from '@/lib/config/session-types';
 import { getVoiceSystemPrompt, getVoiceFirstMessage, type VoiceUserContext } from '@/lib/agents/voice-prompts';
+import { useVoiceSettings } from '@/lib/voice/voice-settings';
 
 // Design system colors
 const colors = {
@@ -48,6 +49,7 @@ interface RealtimeEvent {
 export function OpenAIVoiceAssistant({ sessionType, timeBudgetMinutes }: OpenAIVoiceAssistantProps) {
   const { user } = useAuth();
   const { setCurrentSession } = useSession();
+  const { selectedVoice } = useVoiceSettings();
 
   // Connection state
   const [isConnected, setIsConnected] = useState(false);
@@ -167,12 +169,24 @@ export function OpenAIVoiceAssistant({ sessionType, timeBudgetMinutes }: OpenAIV
           const systemPrompt = getVoiceSystemPrompt(mode, timeBudget, userContext || undefined);
           const firstMessage = getVoiceFirstMessage(mode);
 
-          // Send session configuration with system prompt
+          // Voice behavior instructions (gpt-realtime follows these closely)
+          const voiceInstructions = `
+VOICE BEHAVIOR - Follow these instructions precisely:
+- Speak warmly and empathetically, like a supportive friend
+- Use a calm, measured pace - not rushed, not slow
+- Pause naturally between thoughts to give space for reflection
+- Vary your tone to match the emotional content - softer for validation, clearer for practical tips
+- Avoid sounding clinical or robotic - be genuinely human
+- When the parent shares something difficult, slow down slightly and soften your voice
+- Keep responses conversational - aim for 20-40 seconds per turn
+`;
+
+          // Send session configuration with system prompt + voice instructions
           dataChannelRef.current?.send(JSON.stringify({
             type: 'session.update',
             session: {
-              instructions: systemPrompt,
-              voice: 'sage', // Warm, empathetic voice
+              instructions: voiceInstructions + '\n\n' + systemPrompt,
+              voice: selectedVoice, // User-selected voice from settings
               input_audio_transcription: { model: 'whisper-1' },
               turn_detection: {
                 type: 'server_vad',
@@ -182,6 +196,8 @@ export function OpenAIVoiceAssistant({ sessionType, timeBudgetMinutes }: OpenAIV
               }
             }
           }));
+
+          console.log('🎤 Using voice:', selectedVoice);
 
           // Trigger first message after brief delay
           setTimeout(() => {
@@ -263,7 +279,7 @@ export function OpenAIVoiceAssistant({ sessionType, timeBudgetMinutes }: OpenAIV
     } catch (err) {
       console.error('Error parsing data channel message:', err);
     }
-  }, [sessionType, timeBudgetMinutes, userContext, user?.id, isAgentSpeaking]);
+  }, [sessionType, timeBudgetMinutes, userContext, user?.id, isAgentSpeaking, selectedVoice]);
 
   // Save user transcript to database
   const saveUserTranscript = async (transcript: string) => {

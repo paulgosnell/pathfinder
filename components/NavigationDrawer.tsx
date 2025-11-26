@@ -1,10 +1,11 @@
 'use client';
 
-import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar as CalendarIcon, TrendingUp, BookOpen, ClipboardList, FileText, Sparkles, MessageSquare } from 'lucide-react';
+import { X, MessageCircle, Mic, History, User, Users, LogOut, Calendar as CalendarIcon, TrendingUp, BookOpen, ClipboardList, FileText, Sparkles, MessageSquare, Volume2, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CoachingBookingModal from './CoachingBookingModal';
+import { useVoiceSettings, VOICE_OPTIONS, type VoiceId } from '@/lib/voice/voice-settings';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export default function NavigationDrawer({ isOpen, onClose, onOpenFeedback }: Na
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showVoiceSelector, setShowVoiceSelector] = useState(false);
+  const { selectedVoice, setSelectedVoice } = useVoiceSettings();
 
   const handleSignOut = async () => {
     await signOut();
@@ -274,6 +277,96 @@ export default function NavigationDrawer({ isOpen, onClose, onOpenFeedback }: Na
           <NavLink href="/profile" icon={<User size={20} />} onClick={onClose}>
             Profile Settings
           </NavLink>
+
+          {/* Voice Selector */}
+          <div style={{ padding: '0 24px', marginTop: '4px' }}>
+            <button
+              onClick={() => setShowVoiceSelector(!showVoiceSelector)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                padding: '12px 0',
+                color: '#586C8E',
+                fontSize: '15px',
+                fontWeight: 500,
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Volume2 size={20} />
+                <span>Voice: {VOICE_OPTIONS.find(v => v.id === selectedVoice)?.name || 'Sage'}</span>
+              </div>
+              <ChevronDown
+                size={16}
+                style={{
+                  transform: showVoiceSelector ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s'
+                }}
+              />
+            </button>
+
+            {showVoiceSelector && (
+              <div style={{
+                backgroundColor: 'rgba(249, 247, 243, 0.8)',
+                borderRadius: '12px',
+                padding: '8px',
+                marginBottom: '8px'
+              }}>
+                {VOICE_OPTIONS.map((voice) => (
+                  <button
+                    key={voice.id}
+                    onClick={() => {
+                      setSelectedVoice(voice.id as VoiceId);
+                      setShowVoiceSelector(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: selectedVoice === voice.id ? 'rgba(215, 205, 236, 0.4)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedVoice !== voice.id) {
+                        e.currentTarget.style.backgroundColor = 'rgba(227, 234, 221, 0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedVoice !== voice.id) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    <span style={{
+                      fontSize: '14px',
+                      fontWeight: selectedVoice === voice.id ? 600 : 500,
+                      color: '#2A3F5A'
+                    }}>
+                      {voice.name}
+                    </span>
+                    <span style={{
+                      fontSize: '12px',
+                      color: '#586C8E',
+                      opacity: 0.8
+                    }}>
+                      {voice.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {onOpenFeedback && (
             <button

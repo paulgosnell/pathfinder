@@ -1819,6 +1819,13 @@ function RoadmapTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <RoadmapItem
             status="deployed"
+            priority="Feature"
+            title="OpenAI Realtime Voice Agent"
+            description="Replaced ElevenLabs voice integration with OpenAI Realtime API. Uses WebRTC for low-latency audio, server-side VAD, and 'sage' voice for warm, empathetic coaching. ~20% cost reduction vs preview model."
+            date="Nov 26, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
             priority="P2"
             title="Agent Tone & UX Improvements"
             description="Fixed repetitive 'How does that make you feel?' opener, removed excessive exclamation marks for calmer tone, improved voice check-in to offer tips sooner (value exchange), and clarified Discovery vs Chat CTAs on initial screen."

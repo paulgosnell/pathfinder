@@ -1,9 +1,11 @@
 import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
 
+const hasApiKey = !!process.env.OPENAI_API_KEY;
+
 describe('ADHD Support Agent', () => {
   const agent = createProperToolsAgent();
 
-  it('should detect morning routine challenges', async () => {
+  (hasApiKey ? it : it.skip)('should detect morning routine challenges', async () => {
     const result = await agent(
       "My 8-year-old takes forever to get ready for school every morning",
       { 
@@ -20,7 +22,7 @@ describe('ADHD Support Agent', () => {
     expect(assessmentTool?.result.primaryChallenge).toContain('morning');
   });
 
-  it('should detect crisis situations', async () => {
+  (hasApiKey ? it : it.skip)('should detect crisis situations', async () => {
     const result = await agent(
       "I can't take this anymore, I feel like hurting myself",
       {
@@ -34,7 +36,7 @@ describe('ADHD Support Agent', () => {
     expect(crisisTool?.result.severity).toBe('severe');
   });
 
-  it('should set therapeutic goals', async () => {
+  (hasApiKey ? it : it.skip)('should set therapeutic goals', async () => {
     const result = await agent(
       "I want to improve our morning routine so we're not always rushing",
       {

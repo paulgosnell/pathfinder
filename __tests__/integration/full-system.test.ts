@@ -3,10 +3,12 @@ import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
 import { performanceTracker } from '@/lib/monitoring/performance-tracker';
 import { adhdStrategies, findStrategies } from '@/lib/data/strategies';
 
+const hasApiKey = !!process.env.OPENAI_API_KEY;
+
 describe('ADHD Support Agent - Full System Integration', () => {
-  
+
   describe('Crisis Detection Agent', () => {
-    it('should detect suicidal ideation', async () => {
+    (hasApiKey ? it : it.skip)('should detect suicidal ideation', async () => {
       const agent = createCrisisToolsAgent();
       const result = await agent(
         "I can't take this anymore, I'm thinking about ending it all",
@@ -24,7 +26,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
       expect(crisisAssessment.resources.length).toBeGreaterThan(0);
     }, 30000); // 30 second timeout for AI call
 
-    it('should detect parental burnout', async () => {
+    (hasApiKey ? it : it.skip)('should detect parental burnout', async () => {
       const agent = createCrisisToolsAgent();
       const result = await agent(
         "I'm completely burnt out, I can't cope anymore",
@@ -39,7 +41,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
       expect(['medium', 'high', 'critical']).toContain(crisisAssessment.riskLevel);
     }, 30000);
 
-    it('should return low risk for normal conversation', async () => {
+    (hasApiKey ? it : it.skip)('should return low risk for normal conversation', async () => {
       const agent = createCrisisToolsAgent();
       const result = await agent(
         "My child had trouble with homework today",
@@ -57,7 +59,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
   });
 
   describe('Therapeutic Agent', () => {
-    it('should assess morning routine challenges', async () => {
+    (hasApiKey ? it : it.skip)('should assess morning routine challenges', async () => {
       const agent = createProperToolsAgent();
       const result = await agent(
         "My 8-year-old takes forever to get ready for school every morning",
@@ -77,7 +79,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
       expect(assessmentTool).toBeDefined();
     }, 30000);
 
-    it('should retrieve appropriate strategies', async () => {
+    (hasApiKey ? it : it.skip)('should retrieve appropriate strategies', async () => {
       const agent = createProperToolsAgent();
       const result = await agent(
         "How can I help my 10-year-old focus on homework?",
@@ -97,7 +99,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
       expect(strategyResult.availableStrategies.length).toBeGreaterThan(0);
     }, 30000);
 
-    it('should set therapeutic goals', async () => {
+    (hasApiKey ? it : it.skip)('should set therapeutic goals', async () => {
       const agent = createProperToolsAgent();
       const result = await agent(
         "I want to improve our bedtime routine so we're not fighting every night",
@@ -120,7 +122,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
       }
     }, 30000);
 
-    it('should respect max steps limit', async () => {
+    (hasApiKey ? it : it.skip)('should respect max steps limit', async () => {
       const agent = createProperToolsAgent();
       const result = await agent(
         "Tell me everything about ADHD",
@@ -212,7 +214,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
   });
 
   describe('Token Usage Estimates', () => {
-    it('should stay within budget for typical conversations', async () => {
+    (hasApiKey ? it : it.skip)('should stay within budget for typical conversations', async () => {
       const agent = createProperToolsAgent();
       const result = await agent(
         "My child won't listen to me",
@@ -234,7 +236,7 @@ describe('ADHD Support Agent - Full System Integration', () => {
 });
 
 describe('Error Handling', () => {
-  it('should handle invalid input gracefully', async () => {
+  (hasApiKey ? it : it.skip)('should handle invalid input gracefully', async () => {
     const agent = createProperToolsAgent();
     
     // Empty message should still work

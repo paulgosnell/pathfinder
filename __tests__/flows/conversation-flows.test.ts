@@ -1,7 +1,9 @@
 import { createProperToolsAgent } from '@/lib/agents/proper-tools-agent';
 
+const hasApiKey = !!process.env.OPENAI_API_KEY;
+
 describe('Conversation Flows', () => {
-  it('should handle complete morning routine conversation', async () => {
+  (hasApiKey ? it : it.skip)('should handle complete morning routine conversation', async () => {
     const agent = createProperToolsAgent();
     const context = { 
       userId: 'test-user', 

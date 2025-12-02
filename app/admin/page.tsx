@@ -840,6 +840,56 @@ function FeedbackTab({ feedback, stats }: { feedback: any[]; stats: any }) {
         />
       </div>
 
+      {/* Wall of Love Link */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(230, 168, 151, 0.1), rgba(240, 217, 218, 0.15))',
+        border: '1px solid rgba(230, 168, 151, 0.3)',
+        borderRadius: '12px',
+        padding: '20px 24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #E6A897, #F0D9DA)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <TrendingUp size={20} style={{ color: 'white' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#2A3F5A' }}>
+              Wall of Love
+            </div>
+            <div style={{ fontSize: '14px', color: '#586C8E' }}>
+              View all positive testimonials (rating 8+) in a beautiful display
+            </div>
+          </div>
+        </div>
+        <a
+          href="/admin/testimonials"
+          style={{
+            background: 'linear-gradient(135deg, #E6A897, #D98A74)',
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: '600',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          View Testimonials
+        </a>
+      </div>
+
       {/* Rating Distribution */}
       <Card title="Rating Distribution">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>

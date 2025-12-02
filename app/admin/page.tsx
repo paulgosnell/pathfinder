@@ -1878,6 +1878,13 @@ function RoadmapTab() {
           <RoadmapItem
             status="deployed"
             priority="Feature"
+            title="Wall of Love - Admin Testimonials Page"
+            description="New admin page displaying positive feedback (rating 8+) from parents. Shows stats (Happy Parents count, Perfect 10s, Average rating), beautiful card-based layout with hover effects. Accessible from Feedback tab and Tools tab."
+            date="Dec 2, 2025"
+          />
+          <RoadmapItem
+            status="deployed"
+            priority="Feature"
             title="OpenAI Realtime Voice Agent"
             description="Replaced ElevenLabs voice integration with OpenAI Realtime API. Uses WebRTC for low-latency audio, server-side VAD, and 'sage' voice for warm, empathetic coaching. ~20% cost reduction vs preview model."
             date="Nov 26, 2025"

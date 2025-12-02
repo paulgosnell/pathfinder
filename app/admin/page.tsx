@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { logAdminAction } from '@/lib/admin/auth';
 import { useAuth } from '@/lib/auth/auth-context';
-import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye, Settings, Key } from 'lucide-react';
+import { BarChart3, Users, MessageSquare, AlertTriangle, TrendingUp, Activity, RefreshCw, FileText, Database, Upload, AlertCircle, CheckCircle, XCircle, Eye, Settings, Key, Heart } from 'lucide-react';
 
 type TabType = 'overview' | 'analytics' | 'monitor' | 'sessions' | 'users' | 'waitlist' | 'feedback' | 'knowledge' | 'tools' | 'roadmap';
 
@@ -1769,6 +1769,14 @@ function AdminToolsTab() {
       icon: <Key size={32} />,
       color: '#B7D3D8',
       href: '/admin/recovery'
+    },
+    {
+      id: 'wall-of-love',
+      title: 'Wall of Love',
+      description: 'View all positive testimonials (rating 8+) from parents in a beautiful, encouraging display.',
+      icon: <Heart size={32} />,
+      color: '#E6A897',
+      href: '/admin/testimonials'
     }
   ];
 
